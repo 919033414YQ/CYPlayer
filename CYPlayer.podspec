@@ -1,137 +1,183 @@
-#
-#  Be sure to run `pod spec lint CYPlayer.podspec' to ensure this is a
-#  valid spec and to remove all comments including this before submitting the spec.
-#
-#  To learn more about Podspec attributes see http://docs.cocoapods.org/specification.html
-#  To see working Podspecs in the CocoaPods repo see https://github.com/CocoaPods/Specs/
-#
 
 Pod::Spec.new do |s|
 
-  # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  These will help people to find your library, and whilst it
-  #  can feel like a chore to fill in it's definitely to your advantage. The
-  #  summary should be tweet-length, and the description more in depth.
-  #
-
-  s.name         = "CYPlayer"
-  s.version      = "0.0.1"
-  s.summary      = 'video player.'
-
-  # This description is used to generate tags and improve search results.
-  #   * Think: What does it do? Why did you write it? What is the focus?
-  #   * Try to keep it short, snappy and to the point.
-  #   * Write the description between the DESC delimiters below.
-  #   * Finally, don't worry about the indent, CocoaPods strips it!
-  s.description  = <<-DESC
-                   DESC
-
-  s.homepage     = "http://EXAMPLE/CYPlayer"
-  # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
+s.name         = "CYPlayer"
+s.version      = "1.0.0"
+s.summary      = 'A video player.'
+s.description  = 'https://github.com/yellowei/CYPlayer'
+s.homepage     = 'https://github.com/yellowei/CYPlayer'
+s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
+s.author             = { "yellowei" => "hw0521@vip.qq.com" }
+s.platform     = :ios, "8.0"
+s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
+s.resource     = 'CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle'
+s.frameworks  = "UIKit", "AVFoundation"
+s.requires_arc = true
+s.dependency 'Masonry'
 
 
-  # ―――  Spec License  ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  Licensing your code is important. See http://choosealicense.com for more info.
-  #  CocoaPods will detect a license file if there is a named LICENSE*
-  #  Popular ones are 'MIT', 'BSD' and 'Apache License, Version 2.0'.
-  #
+s.subspec 'CYAttributesFactory' do |ss|
+ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
+end
 
-  s.license      = "MIT (example)"
-  # s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
+s.subspec 'CYBorderLineView' do |ss|
+ss.source_files = 'CYPlayer/CYBorderLineView/*.{h,m}'
+end
+
+s.subspec 'CYObserverHelper' do |ss|
+ss.source_files = 'CYPlayer/CYObserverHelper/*.{h,m}'
+end
+
+s.subspec 'CYOrentationObserver' do |ss|
+ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
+end
+
+s.subspec 'CYPrompt' do |ss|
+ss.source_files = 'CYPlayer/CYPrompt/*.{h,m}'
+end
+
+s.subspec 'CYSlider' do |ss|
+ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
+end
+
+s.subspec 'CYUIFactory' do |ss|
+
+ss.source_files = 'CYPlayer/CYUIFactory/*.{h,m}'
+
+ss.subspec 'Category' do |sss|
+sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{h,m}'
+end
+
+end
+
+s.subspec 'CYVideoPlayerBackGR' do |ss|
+ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
+ss.dependency 'CYPlayer/CYObserverHelper'
+end
+
+s.subspec 'CYVideoPlayer' do |ss|
+
+ss.source_files = 'CYPlayer/CYVideoPlayer/*.{h}'
+
+# # ss.dependency 'CYPlayer/CYUIFactory/Category'
+ss.dependency 'CYPlayer/CYUIFactory'
+ss.dependency 'CYPlayer/CYPrompt'
+ss.dependency 'CYPlayer/CYAttributesFactory'
+ss.dependency 'CYPlayer/CYOrentationObserver'
+ss.dependency 'CYPlayer/CYSlider'
+ss.dependency 'CYPlayer/CYBorderLineView'
+ss.dependency 'CYPlayer/CYObserverHelper'
+ss.dependency 'CYPlayer/CYVideoPlayerBackGR'
+
+# ########
+ss.subspec 'Header' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Header/*.{h}'
+end
+
+ss.subspec 'Model' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
+end
+
+ss.subspec 'Resource' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Resource/*.{h,m}'
+end
+
+ss.subspec 'Base' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Base/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Header'
+sss.dependency 'CYPlayer/CYVideoPlayer/Model'
+sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
+# sss.dependency 'CYPlayer/CYUIFactory'
+# # sss.dependency 'CYPlayer/CYUIFactory/Category'
+# sss.dependency 'CYPlayer/CYPrompt'
+# sss.dependency 'CYPlayer/CYSlider'
+# sss.dependency 'CYPlayer/CYOrentationObserver'
+# sss.dependency 'CYPlayer/CYAttributesFactory'
+# sss.dependency 'CYPlayer/CYBorderLineView'
+end
+
+ss.subspec 'Other' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Other/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Base'
+end
+
+ss.subspec 'Player' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Player/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Control'
+sss.dependency 'CYPlayer/CYVideoPlayer/Loading'
+sss.dependency 'CYPlayer/CYVideoPlayer/MoreSetting'
+sss.dependency 'CYPlayer/CYVideoPlayer/VolBrigControl'
+sss.dependency 'CYPlayer/CYVideoPlayer/Present'
+sss.dependency 'CYPlayer/CYVideoPlayer/Registrar'
+sss.dependency 'CYPlayer/CYVideoPlayer/TimerControl'
+sss.dependency 'CYPlayer/CYVideoPlayer/GestureControl'
+# sss.dependency 'CYPlayer/CYUIFactory/Category'
+# sss.dependency 'CYPlayer/CYUIFactory'
+# sss.dependency 'CYPlayer/CYPrompt'
+# sss.dependency 'CYPlayer/CYSlider'
+# sss.dependency 'CYPlayer/CYAttributesFactory'
+# sss.dependency 'CYPlayer/CYOrentationObserver'
+end
 
 
-  # ――― Author Metadata  ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  Specify the authors of the library, with email addresses. Email addresses
-  #  of the authors are extracted from the SCM log. E.g. $ git log. CocoaPods also
-  #  accepts just a name if you'd rather not provide an email address.
-  #
-  #  Specify a social_media_url where others can refer to, for example a twitter
-  #  profile URL.
-  #
 
-  s.author             = { "yellowei" => "hw0521@vip.qq.com" }
-  # Or just: s.author    = "yellowei"
-  # s.authors            = { "yellowei" => "hw0521@vip.qq.com" }
-  # s.social_media_url   = "http://twitter.com/yellowei"
+ss.subspec 'Control' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Control/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Other'
+# sss.dependency 'CYPlayer/CYUIFactory/Category'
+# sss.dependency 'CYPlayer/CYUIFactory'
+# sss.dependency 'CYPlayer/CYSlider'
+# sss.dependency 'CYPlayer/CYAttributesFactory'
+end
 
-  # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  If this Pod runs only on iOS or OS X, then specify the platform and
-  #  the deployment target. You can optionally include the target after the platform.
-  #
+ss.subspec 'GestureControl' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/GestureControl/*.{h,m}'
+end
 
-  # s.platform     = :ios
-  # s.platform     = :ios, "5.0"
+ss.subspec 'Loading' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Loading/*.{h,m}'
+end
 
-  #  When using multiple platforms
-  # s.ios.deployment_target = "5.0"
-  # s.osx.deployment_target = "10.7"
-  # s.watchos.deployment_target = "2.0"
-  # s.tvos.deployment_target = "9.0"
+ss.subspec 'MoreSetting' do |sss|
 
+sss.dependency 'CYPlayer/CYVideoPlayer/Other'
+# sss.dependency 'CYPlayer/CYSlider'
 
-  # ――― Source Location ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  Specify the location from where the source should be retrieved.
-  #  Supports git, hg, bzr, svn and HTTP.
-  #
+sss.subspec 'MoreSetting' do |ssss|
+ssss.source_files = 'CYPlayer/CYVideoPlayer/MoreSetting/MoreSetting/*.{h,m}'
+end
 
-  s.source       = { :git => "http://EXAMPLE/CYPlayer.git", :tag => "#{s.version}" }
+sss.subspec 'Secondary' do |ssss|
+ssss.source_files = 'CYPlayer/CYVideoPlayer/MoreSetting/Secondary/*.{h,m}'
+end
 
+end
 
-  # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  CocoaPods is smart about how it includes source code. For source files
-  #  giving a folder will include any swift, h, m, mm, c & cpp files.
-  #  For header files it will include any header in the folder.
-  #  Not including the public_header_files will make all headers public.
-  #
-
-  s.source_files  = "Classes", "Classes/**/*.{h,m}"
-  s.exclude_files = "Classes/Exclude"
-
-  # s.public_header_files = "Classes/**/*.h"
+ss.subspec 'VolBrigControl' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/VolBrigControl/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Other'
+# sss.dependency 'CYPlayer/CYSlider'
+# sss.dependency 'CYPlayer/CYBorderLineView'
+end
 
 
-  # ――― Resources ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  A list of resources included with the Pod. These are copied into the
-  #  target bundle with a build phase script. Anything else will be cleaned.
-  #  You can preserve files from being cleaned, please don't preserve
-  #  non-essential files like tests, examples and documentation.
-  #
 
-  # s.resource  = "icon.png"
-  # s.resources = "Resources/*.png"
+ss.subspec 'Present' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Present/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Other'
+end
 
-  # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
+ss.subspec 'Registrar' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/Registrar/*.{h,m}'
+end
 
-
-  # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  Link your library with frameworks, or libraries. Libraries do not include
-  #  the lib prefix of their name.
-  #
-
-  # s.framework  = "SomeFramework"
-  # s.frameworks = "SomeFramework", "AnotherFramework"
-
-  # s.library   = "iconv"
-  # s.libraries = "iconv", "xml2"
+ss.subspec 'TimerControl' do |sss|
+sss.source_files = 'CYPlayer/CYVideoPlayer/TimerControl/*.{h,m}'
+end
 
 
-  # ――― Project Settings ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-  #
-  #  If your library depends on compiler flags you can set them in the xcconfig hash
-  #  where they will only apply to your library. If you depend on other Podspecs
-  #  you can include multiple dependencies to ensure it works.
+# ########
 
-  # s.requires_arc = true
-
-  # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
-  # s.dependency "JSONKit", "~> 1.4"
+end
 
 end
