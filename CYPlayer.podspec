@@ -17,41 +17,41 @@ s.dependency 'Masonry'
 
 
 s.subspec 'CYAttributesFactory' do |ss|
-ss.source_files = 'CYPlayer/CYAttributesFactory/*.{*}'
+ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
 end
 
 s.subspec 'CYBorderLineView' do |ss|
-ss.source_files = 'CYPlayer/CYBorderLineView/*.{h*}'
+ss.source_files = 'CYPlayer/CYBorderLineView/*.{h,m}'
 end
 
 s.subspec 'CYObserverHelper' do |ss|
-ss.source_files = 'CYPlayer/CYObserverHelper/*.{*}'
+ss.source_files = 'CYPlayer/CYObserverHelper/*.{h,m}'
 end
 
 s.subspec 'CYOrentationObserver' do |ss|
-ss.source_files = 'CYPlayer/CYOrentationObserver/*.{*}'
+ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
 end
 
 s.subspec 'CYPrompt' do |ss|
-ss.source_files = 'CYPlayer/CYPrompt/*.{*}'
+ss.source_files = 'CYPlayer/CYPrompt/*.{h,m}'
 end
 
 s.subspec 'CYSlider' do |ss|
-ss.source_files = 'CYPlayer/CYSlider/*.{*}'
+ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
 end
 
 s.subspec 'CYUIFactory' do |ss|
 
-ss.source_files = 'CYPlayer/CYUIFactory/*.{*}'
+ss.source_files = 'CYPlayer/CYUIFactory/*.{h,m}'
 
 ss.subspec 'Category' do |sss|
-sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{*}'
+sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{h,m}'
 end
 
 end
 
 # s.subspec 'CYVideoPlayerBackGR' do |ss|
-# ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{*}'
+# ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
 # ss.dependency 'CYPlayer/CYObserverHelper'
 # end
 
