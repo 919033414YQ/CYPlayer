@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.0.0"
+s.version      = "1.1.1"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -17,43 +17,43 @@ s.dependency 'Masonry'
 
 
 s.subspec 'CYAttributesFactory' do |ss|
-ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
+ss.source_files = 'CYPlayer/CYAttributesFactory/*.{*}'
 end
 
 s.subspec 'CYBorderLineView' do |ss|
-ss.source_files = 'CYPlayer/CYBorderLineView/*.{h,m}'
+ss.source_files = 'CYPlayer/CYBorderLineView/*.{h*}'
 end
 
 s.subspec 'CYObserverHelper' do |ss|
-ss.source_files = 'CYPlayer/CYObserverHelper/*.{h,m}'
+ss.source_files = 'CYPlayer/CYObserverHelper/*.{*}'
 end
 
 s.subspec 'CYOrentationObserver' do |ss|
-ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
+ss.source_files = 'CYPlayer/CYOrentationObserver/*.{*}'
 end
 
 s.subspec 'CYPrompt' do |ss|
-ss.source_files = 'CYPlayer/CYPrompt/*.{h,m}'
+ss.source_files = 'CYPlayer/CYPrompt/*.{*}'
 end
 
 s.subspec 'CYSlider' do |ss|
-ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
+ss.source_files = 'CYPlayer/CYSlider/*.{*}'
 end
 
 s.subspec 'CYUIFactory' do |ss|
 
-ss.source_files = 'CYPlayer/CYUIFactory/*.{h,m}'
+ss.source_files = 'CYPlayer/CYUIFactory/*.{*}'
 
 ss.subspec 'Category' do |sss|
-sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{h,m}'
+sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{*}'
 end
 
 end
 
-s.subspec 'CYVideoPlayerBackGR' do |ss|
-ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
-ss.dependency 'CYPlayer/CYObserverHelper'
-end
+# s.subspec 'CYVideoPlayerBackGR' do |ss|
+# ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{*}'
+# ss.dependency 'CYPlayer/CYObserverHelper'
+# end
 
 s.subspec 'CYVideoPlayer' do |ss|
 
@@ -67,7 +67,7 @@ ss.dependency 'CYPlayer/CYOrentationObserver'
 ss.dependency 'CYPlayer/CYSlider'
 ss.dependency 'CYPlayer/CYBorderLineView'
 ss.dependency 'CYPlayer/CYObserverHelper'
-ss.dependency 'CYPlayer/CYVideoPlayerBackGR'
+# ss.dependency 'CYPlayer/CYVideoPlayerBackGR'
 
 # ########
 ss.subspec 'Header' do |sss|
