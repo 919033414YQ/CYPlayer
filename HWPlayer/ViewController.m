@@ -38,7 +38,8 @@
 
 - (void)onTouch:(UIButton *)sender
 {
-    [self presentViewController:[[PlayerViewController alloc] init] animated:YES completion:nil];
+//    [self presentViewController:[[PlayerViewController alloc] init] animated:YES completion:nil];
+    [self.navigationController pushViewController:[[PlayerViewController alloc] init] animated:YES];
 }
 
 

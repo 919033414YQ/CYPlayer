@@ -22,7 +22,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [UIColor blueColor];
     
     [self.view addSubview:Player.view];
     [Player.view mas_makeConstraints:^(MASConstraintMaker *make) {

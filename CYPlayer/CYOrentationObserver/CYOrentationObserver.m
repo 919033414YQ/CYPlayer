@@ -39,8 +39,8 @@
     if ( ![UIDevice currentDevice].generatesDeviceOrientationNotifications ) {
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     }
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_handleDeviceOrientationChange)
-                                                 name:UIDeviceOrientationDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_handleDeviceOrientationChange) name:UIDeviceOrientationDidChangeNotification object:nil];
+    
 }
 
 - (void)_handleDeviceOrientationChange {
@@ -65,10 +65,10 @@
     
     if ( self.isTransitioning ) return;
     
-    
-    UIInterfaceOrientation statusBarOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    if ( (UIDeviceOrientation)statusBarOrientation == deviceOrientation ) return;
+    //注释掉这个判断, 在某些工程里面有些奇葩的设置, 通知调用的同时界面已经发生旋转了
+//    UIInterfaceOrientation statusBarOrientation = [UIApplication sharedApplication].statusBarOrientation;
+//    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+//    if ( (UIDeviceOrientation)statusBarOrientation == deviceOrientation ) return;
     
     _fullScreen = fullScreen;
     self.transitioning = YES;

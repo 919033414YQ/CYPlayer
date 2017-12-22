@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.1.1"
+s.version      = "1.1.2"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -41,25 +41,23 @@ ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
 end
 
 s.subspec 'CYUIFactory' do |ss|
-
 ss.source_files = 'CYPlayer/CYUIFactory/*.{h,m}'
-
 ss.subspec 'Category' do |sss|
 sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{h,m}'
 end
 
 end
 
-# s.subspec 'CYVideoPlayerBackGR' do |ss|
-# ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
-# ss.dependency 'CYPlayer/CYObserverHelper'
-# end
+s.subspec 'CYVideoPlayerBackGR' do |ss|
+ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
+ss.dependency 'CYPlayer/CYObserverHelper'
+end
 
 s.subspec 'CYVideoPlayer' do |ss|
 
 ss.source_files = 'CYPlayer/CYVideoPlayer/*.{h}'
 
-# # ss.dependency 'CYPlayer/CYUIFactory/Category'
+ss.dependency 'CYPlayer/CYUIFactory/Category'
 ss.dependency 'CYPlayer/CYUIFactory'
 ss.dependency 'CYPlayer/CYPrompt'
 ss.dependency 'CYPlayer/CYAttributesFactory'
