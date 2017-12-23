@@ -115,7 +115,6 @@ typedef void(^LockScreen)(BOOL isLock);
 
 @property (nonatomic, strong, readwrite) AVLayerVideoGravity videoGravity;
 
-@property (nonatomic, copy) LockScreen lockscreen;
 
 @end
 
@@ -144,6 +143,8 @@ typedef void(^LockScreen)(BOOL isLock);
  *  unit sec.
  */
 - (NSTimeInterval)currentTime;
+
+@property (nonatomic, copy) LockScreen lockscreen;
 
 @end
 

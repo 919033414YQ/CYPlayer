@@ -1523,6 +1523,16 @@ static BOOL _isLoading;
     self.disableRotation = NO;
 }
 
+- (void)setLockscreen:(LockScreen)lockscreen
+{
+    objc_setAssociatedObject(self, @selector(lockscreen), lockscreen, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (LockScreen)lockscreen
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
 @end
 
 
