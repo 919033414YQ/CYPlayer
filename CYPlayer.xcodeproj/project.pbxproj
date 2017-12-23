@@ -83,7 +83,6 @@
 		0E44F0021FEA6B2D00195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44EFBE1FEA6B2C00195639 /* README.md */; };
 		0E44F0041FEA6E0700195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44F0031FEA6E0700195639 /* README.md */; };
 		0E44F0061FEA6E0E00195639 /* CYPlayer.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 0E44F0051FEA6E0E00195639 /* CYPlayer.podspec */; };
-		E131378B5174EBE53D4F8A7A /* libPods-CYPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8DC207245FC4D1FDB970ED /* libPods-CYPlayer.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -232,8 +231,6 @@
 		0E44F0031FEA6E0700195639 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		0E44F0051FEA6E0E00195639 /* CYPlayer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CYPlayer.podspec; sourceTree = "<group>"; };
 		240E2C6A4D30253C72AE3C4F /* Pods-CYPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.debug.xcconfig"; sourceTree = "<group>"; };
-		655EE365D696ED539DBD4B87 /* libPods-SJPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SJPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DA8DC207245FC4D1FDB970ED /* libPods-CYPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CYPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FFE007B7A8394C0FA7B039F4 /* Pods-CYPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.release.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -242,7 +239,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E131378B5174EBE53D4F8A7A /* libPods-CYPlayer.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -653,8 +649,6 @@
 		B1F068201BA06CCF3A923A7A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				655EE365D696ED539DBD4B87 /* libPods-SJPlayer.a */,
-				DA8DC207245FC4D1FDB970ED /* libPods-CYPlayer.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

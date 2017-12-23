@@ -16,6 +16,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void(^LockScreen)(BOOL isLock);
+
 @interface CYVideoPlayer : NSObject
 
 + (instancetype)sharedPlayer;
@@ -112,6 +114,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL disableRotation;
 
 @property (nonatomic, strong, readwrite) AVLayerVideoGravity videoGravity;
+
+@property (nonatomic, copy) LockScreen lockscreen;
 
 @end
 

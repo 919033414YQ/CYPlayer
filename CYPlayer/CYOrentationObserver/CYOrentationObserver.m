@@ -43,14 +43,18 @@
     
 }
 
-- (void)_handleDeviceOrientationChange {
-    switch ( [UIDevice currentDevice].orientation ) {
-        case UIDeviceOrientationPortrait: {
+- (void)_handleDeviceOrientationChange
+{
+    switch ([UIDevice currentDevice].orientation)
+    {
+        case UIDeviceOrientationPortrait:
+        {
             self.fullScreen = NO;
         }
             break;
         case UIDeviceOrientationLandscapeLeft:
-        case UIDeviceOrientationLandscapeRight: {
+        case UIDeviceOrientationLandscapeRight:
+        {
             self.fullScreen = YES;
         }
             break;
@@ -65,77 +69,109 @@
     
     if ( self.isTransitioning ) return;
     
-    //注释掉这个判断, 在某些工程里面有些奇葩的设置, 通知调用的同时界面已经发生旋转了
-//    UIInterfaceOrientation statusBarOrientation = [UIApplication sharedApplication].statusBarOrientation;
-//    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-//    if ( (UIDeviceOrientation)statusBarOrientation == deviceOrientation ) return;
     
-    _fullScreen = fullScreen;
-    self.transitioning = YES;
-
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    UIView *superview = nil;
-    UIInterfaceOrientation ori = UIInterfaceOrientationUnknown;
-    switch ( [UIDevice currentDevice].orientation ) {
-        case UIDeviceOrientationPortrait: {
-            ori = UIInterfaceOrientationPortrait;
-            transform = CGAffineTransformIdentity;
-            superview = self.targetSuperview;
+    UIInterfaceOrientation statusBarOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    if ( (UIDeviceOrientation)statusBarOrientation == deviceOrientation )
+    {
+        if (deviceOrientation == UIDeviceOrientationPortrait)
+        {
+            _fullScreen = NO;
         }
-            break;
-        case UIDeviceOrientationLandscapeLeft: {
-            ori = UIInterfaceOrientationLandscapeRight;
-            transform = CGAffineTransformMakeRotation(M_PI_2);
-            superview = [UIApplication sharedApplication].keyWindow;
+        else if (deviceOrientation == UIDeviceOrientationLandscapeLeft || deviceOrientation == UIDeviceOrientationLandscapeRight)
+        {
+            _fullScreen = YES;
         }
-            break;
-        case UIDeviceOrientationLandscapeRight: {
-            ori = UIInterfaceOrientationLandscapeLeft;
-            transform = CGAffineTransformMakeRotation(-M_PI_2);
-            superview = [UIApplication sharedApplication].keyWindow;
+        
+        self.transitioning = YES;
+        
+        UIView *superview = self.targetSuperview;
+        UIInterfaceOrientation ori = statusBarOrientation;
+        [UIApplication sharedApplication].statusBarOrientation = ori;
+        if ( !superview || UIInterfaceOrientationUnknown == ori ) {
+            self.transitioning = NO;
+            return;
         }
-            break;
-        default: break;
-    }
-
-    if ( !superview || UIInterfaceOrientationUnknown == ori ) {
+        [superview addSubview:_view];
+        _view.translatesAutoresizingMaskIntoConstraints = NO;
         self.transitioning = NO;
-        return;
+        if ( _orientationChanged )
+        {
+            _orientationChanged(self);
+        }
+    }
+    else
+    {
+        _fullScreen = fullScreen;
+        self.transitioning = YES;
+        
+        CGAffineTransform transform = CGAffineTransformIdentity;
+        UIView *superview = nil;
+        UIInterfaceOrientation ori = UIInterfaceOrientationUnknown;
+        switch ( [UIDevice currentDevice].orientation ) {
+            case UIDeviceOrientationPortrait: {
+                ori = UIInterfaceOrientationPortrait;
+                transform = CGAffineTransformIdentity;
+                superview = self.targetSuperview;
+            }
+                break;
+            case UIDeviceOrientationLandscapeLeft: {
+                ori = UIInterfaceOrientationLandscapeRight;
+                transform = CGAffineTransformMakeRotation(M_PI_2);
+                superview = [UIApplication sharedApplication].keyWindow;
+            }
+                break;
+            case UIDeviceOrientationLandscapeRight: {
+                ori = UIInterfaceOrientationLandscapeLeft;
+                transform = CGAffineTransformMakeRotation(-M_PI_2);
+                superview = [UIApplication sharedApplication].keyWindow;
+            }
+                break;
+            default: break;
+        }
+        
+        if ( !superview || UIInterfaceOrientationUnknown == ori ) {
+            self.transitioning = NO;
+            return;
+        }
+        
+        [superview addSubview:_view];
+        _view.translatesAutoresizingMaskIntoConstraints = NO;
+        if ( UIInterfaceOrientationPortrait == ori ) {
+            [superview addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_view]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_view)]];
+            [superview addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_view]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_view)]];
+        }
+        else {
+            CGFloat width = [UIScreen mainScreen].bounds.size.width;
+            CGFloat height = [UIScreen mainScreen].bounds.size.height;
+            CGFloat max = MAX(width, height);
+            CGFloat min = MIN(width, height);
+            [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:max]];
+            [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:min]];
+            [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
+            [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
+        }
+        
+        [UIView animateWithDuration:_duration animations:^{
+            _view.transform = transform;
+        } completion:^(BOOL finished) {
+            self.transitioning = NO;
+        }];
+        [UIApplication sharedApplication].statusBarOrientation = ori;
+        if ( _orientationChanged ) _orientationChanged(self);
     }
     
-    [superview addSubview:_view];
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
-    if ( UIInterfaceOrientationPortrait == ori ) {
-        [superview addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_view]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_view)]];
-        [superview addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_view]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_view)]];
-    }
-    else {
-        CGFloat width = [UIScreen mainScreen].bounds.size.width;
-        CGFloat height = [UIScreen mainScreen].bounds.size.height;
-        CGFloat max = MAX(width, height);
-        CGFloat min = MIN(width, height);
-        [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:max]];
-        [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:min]];
-        [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
-        [superview addConstraint:[NSLayoutConstraint constraintWithItem:_view attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
-    }
     
-    [UIView animateWithDuration:_duration animations:^{
-        _view.transform = transform;
-    } completion:^(BOOL finished) {
-        self.transitioning = NO;
-    }];
-    [UIApplication sharedApplication].statusBarOrientation = ori;
-    if ( _orientationChanged ) _orientationChanged(self);
 }
+
 
 - (BOOL)_changeOrientation {
     if ( self.isTransitioning ) return NO;
     if ( self.fullScreen ) {
-        [[UIDevice currentDevice] setValue:@(UIInterfaceOrientationPortrait) forKey:@"orientation"];
+        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationPortrait] forKey:@"orientation"];
     }
     else {
-        [[UIDevice currentDevice] setValue:@(UIInterfaceOrientationLandscapeRight) forKey:@"orientation"];
+        [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationLandscapeLeft] forKey:@"orientation"];
     }
     return YES;
 }

@@ -95,4 +95,9 @@
     [self.navigationController setNavigationBarHidden:NO animated:YES];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+}
+
 @end

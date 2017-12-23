@@ -146,8 +146,18 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)setLockScreen:(BOOL)lockScreen {
-    if ( self.isLockedScrren == lockScreen ) return;
+    if ( self.isLockedScrren == lockScreen )
+    {
+        return;
+    }
     objc_setAssociatedObject(self, @selector(isLockedScrren), @(lockScreen), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    //外部调用
+    if (self.lockscreen)
+    {
+        self.lockscreen(lockScreen);
+    }
+    
     [self _cancelDelayHiddenControl];
     _cyAnima(^{
         if ( lockScreen ) {
@@ -562,21 +572,30 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 - (void)setHiddenLeftControlView:(BOOL)hiddenLeftControlView {
     if ( hiddenLeftControlView == _hiddenLeftControlView ) return;
     _hiddenLeftControlView = hiddenLeftControlView;
-    if ( _hiddenLeftControlView ) {
+    if ( _hiddenLeftControlView )
+    {
         self.controlView.leftControlView.transform = CGAffineTransformMakeTranslation(-CYControlLeftH, 0);
     }
-    else {
+    else
+    {
         self.controlView.leftControlView.transform =  CGAffineTransformIdentity;
     }
 }
 
-- (CYOrentationObserver *)orentation {
-    if ( _orentation ) return _orentation;
+- (CYOrentationObserver *)orentation
+{
+    if (_orentation)
+    {
+        return _orentation;
+    }
     _orentation = [[CYOrentationObserver alloc] initWithTarget:self.presentView container:self.view];
     __weak typeof(self) _self = self;
     _orentation.orientationChanged = ^(CYOrentationObserver * _Nonnull observer) {
         __strong typeof(_self) self = _self;
-        if ( !self ) return;
+        if ( !self )
+        {
+            return;
+        }
         self.hideControl = NO;
         _cyAnima(^{
             self.controlView.previewView.hidden = YES;
@@ -603,8 +622,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
             }
-        });
-    };
+        });//_cyAnima(^{})
+    };//orientationChanged
     
     _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
         __strong typeof(_self) self = _self;
