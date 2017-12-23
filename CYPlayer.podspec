@@ -29,6 +29,7 @@ ss.source_files = 'CYPlayer/CYObserverHelper/*.{h,m}'
 end
 
 s.subspec 'CYOrentationObserver' do |ss|
+ss.version      = "1.1.7"
 ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
 
 ss.subspec 'Category' do |sss|
