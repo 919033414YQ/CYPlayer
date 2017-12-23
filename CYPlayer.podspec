@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.1.4"
+s.version      = "1.1.5"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -30,6 +30,11 @@ end
 
 s.subspec 'CYOrentationObserver' do |ss|
 ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
+
+ss.subspec 'Category' do |sss|
+sss.source_files = 'CYPlayer/CYOrentationObserver/Category/*.{h,m}'
+end
+
 end
 
 s.subspec 'CYPrompt' do |ss|
