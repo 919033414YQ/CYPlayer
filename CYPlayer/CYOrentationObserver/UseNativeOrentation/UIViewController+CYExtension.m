@@ -7,7 +7,7 @@
 //
 
 #import "UIViewController+CYExtension.h"
-#import "AppDelegate+CYExtension.h"
+#import "UIResponder+CYExtension.h"
 #import <objc/message.h>
 
 @implementation UIViewController (CYExtension)

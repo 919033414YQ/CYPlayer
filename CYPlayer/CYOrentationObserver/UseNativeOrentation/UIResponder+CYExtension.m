@@ -6,7 +6,7 @@
 //  Copyright © 2017年 黄威. All rights reserved.
 //
 
-#import "AppDelegate+CYExtension.h"
+#import "UIResponder+CYExtension.h"
 #import <objc/message.h>
 
 @implementation AppDelegate (CYExtension)

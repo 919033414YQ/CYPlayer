@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0E35FD841FF1064800DEB0AB /* AppDelegate+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */; };
+		0E35FD841FF1064800DEB0AB /* UIResponder+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E35FD831FF1064800DEB0AB /* UIResponder+CYExtension.m */; };
 		0E35FD871FF1066500DEB0AB /* UIViewController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */; };
 		0E44EE061FEA606100195639 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EE051FEA606100195639 /* AppDelegate.m */; };
 		0E44EE091FEA606100195639 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EE081FEA606100195639 /* ViewController.m */; };
@@ -85,8 +85,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0E35FD821FF1064800DEB0AB /* AppDelegate+CYExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+CYExtension.h"; sourceTree = "<group>"; };
-		0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+CYExtension.m"; sourceTree = "<group>"; };
+		0E35FD821FF1064800DEB0AB /* UIResponder+CYExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIResponder+CYExtension.h"; sourceTree = "<group>"; };
+		0E35FD831FF1064800DEB0AB /* UIResponder+CYExtension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIResponder+CYExtension.m"; sourceTree = "<group>"; };
 		0E35FD851FF1066500DEB0AB /* UIViewController+CYExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+CYExtension.h"; sourceTree = "<group>"; };
 		0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+CYExtension.m"; sourceTree = "<group>"; };
 		0E44EE011FEA606100195639 /* CYPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CYPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -251,8 +251,8 @@
 		0E35FD811FF105B100DEB0AB /* UseNativeOrentation */ = {
 			isa = PBXGroup;
 			children = (
-				0E35FD821FF1064800DEB0AB /* AppDelegate+CYExtension.h */,
-				0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */,
+				0E35FD821FF1064800DEB0AB /* UIResponder+CYExtension.h */,
+				0E35FD831FF1064800DEB0AB /* UIResponder+CYExtension.m */,
 				0E35FD851FF1066500DEB0AB /* UIViewController+CYExtension.h */,
 				0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */,
 			);
@@ -821,7 +821,7 @@
 				0E44EFC91FEA6B2D00195639 /* CYVideoPlayerPresentView.m in Sources */,
 				0E44EFF31FEA6B2D00195639 /* CYPromptConfig.m in Sources */,
 				0E44EFD01FEA6B2D00195639 /* CYVideoPlayerAssetCarrier.m in Sources */,
-				0E35FD841FF1064800DEB0AB /* AppDelegate+CYExtension.m in Sources */,
+				0E35FD841FF1064800DEB0AB /* UIResponder+CYExtension.m in Sources */,
 				0E44EFDB1FEA6B2D00195639 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.m in Sources */,
 				0E44EFE11FEA6B2D00195639 /* CYVideoPlayerControlView.m in Sources */,
 				0E44EFDF1FEA6B2D00195639 /* CYVideoPlayerTipsView.m in Sources */,
