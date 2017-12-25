@@ -1,6 +1,6 @@
 # CYPlayer
 ```ruby
-pod 'SJVideoPlayer' 
+pod 'CYPlayer'
 ```
 ### Sample
 
@@ -10,6 +10,6 @@ pod 'SJVideoPlayer'
 
 ### Use
 ```Objective-C
- Player.asset = [[SJVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://....."] beginTime:10];
+ Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://....."] beginTime:10];
 ```
 ### 源自SJVideoPlayer
