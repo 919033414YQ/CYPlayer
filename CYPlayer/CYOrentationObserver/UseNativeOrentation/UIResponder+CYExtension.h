@@ -6,11 +6,12 @@
 //  Copyright © 2017年 黄威. All rights reserved.
 //
 
-#import "AppDelegate.h"
+#import <UIKit/UIKit.h>
 
-@interface AppDelegate (CYExtension)
+@interface UIResponder (CYExtension)
 
 @property (nonatomic, assign, readwrite, getter=isLockRotation) BOOL lockRotation;
 
 @property (nonatomic, assign, readwrite, getter=isAllowRotation) BOOL allowRotation;
+
 @end

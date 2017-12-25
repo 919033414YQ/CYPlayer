@@ -32,7 +32,7 @@
 //强制横屏
 -(void)forceForLandscape
 {
-    AppDelegate *delegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    UIResponder *delegate = (UIResponder *)[UIApplication sharedApplication].delegate;
     delegate.allowRotation = YES;
     [[UIDevice currentDevice] setValue:[NSNumber numberWithInteger: UIDeviceOrientationLandscapeLeft] forKey:@"orientation"];
     self.landSpace = YES;
@@ -53,7 +53,7 @@
 
 -(void)openLandscape
 {
-    AppDelegate *delegate =   (AppDelegate *)[UIApplication sharedApplication].delegate;
+    UIResponder *delegate =   (UIResponder *)[UIApplication sharedApplication].delegate;
     delegate.allowRotation = YES;
 }
 
@@ -62,19 +62,19 @@
 
 -(void)closeLandscape
 {
-    AppDelegate *delegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    UIResponder *delegate = (UIResponder *)[UIApplication sharedApplication].delegate;
     delegate.allowRotation = NO;
 }
 
 -(void)lockRotation
 {
-    AppDelegate *delegate =   (AppDelegate *)[UIApplication sharedApplication].delegate;
+    UIResponder *delegate =   (UIResponder *)[UIApplication sharedApplication].delegate;
     delegate.lockRotation = YES;
 }
 
 -(void)unlockRotation
 {
-    AppDelegate *delegate =   (AppDelegate *)[UIApplication sharedApplication].delegate;
+    UIResponder *delegate =   (UIResponder *)[UIApplication sharedApplication].delegate;
     delegate.lockRotation = NO;
 }
 

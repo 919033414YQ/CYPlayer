@@ -9,7 +9,7 @@
 #import "UIResponder+CYExtension.h"
 #import <objc/message.h>
 
-@implementation AppDelegate (CYExtension)
+@implementation UIResponder (CYExtension)
 
 - (void)setLockRotation:(BOOL)lockRotation
 {
