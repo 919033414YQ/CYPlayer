@@ -1,5 +1,5 @@
 //
-//  AppDelegate+CYExtension.h
+//  UIResponder+CYExtension.h
 //  CYPlayer
 //
 //  Created by 黄威 on 2017/12/25.

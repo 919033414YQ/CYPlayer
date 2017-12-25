@@ -1,5 +1,5 @@
 //
-//  AppDelegate+CYExtension.m
+//  UIResponder+CYExtension.m
 //  CYPlayer
 //
 //  Created by 黄威 on 2017/12/25.
@@ -40,6 +40,7 @@
 }
 
 # pragma mark - 横屏控制
+
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window
 {
     if (self.isLockRotation)
@@ -59,8 +60,7 @@
         [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
         return UIInterfaceOrientationMaskPortrait;
     }
-    
-    
 }
+
 
 @end
