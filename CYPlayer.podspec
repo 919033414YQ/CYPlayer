@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.1.8"
+s.version      = "1.1.9"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -31,9 +31,13 @@ end
 s.subspec 'CYOrentationObserver' do |ss|
 ss.source_files = 'CYPlayer/CYOrentationObserver/*.{h,m}'
 
+ss.subspec 'UseNativeOrentation' do |sss|
+sss.source_files = 'CYPlayer/CYOrentationObserver/UseNativeOrentation/*.{h,m}'
+end
+
 #如果不想用系统自动横屏, 请解开这个注释,并且切换代码的setFullScreen方法
-#ss.subspec 'Category' do |sss|
-#sss.source_files = 'CYPlayer/CYOrentationObserver/Category/*.{h,m}'
+#ss.subspec 'UnuseNativeOrentation' do |sss|
+#sss.source_files = 'CYPlayer/CYOrentationObserver/UnuseNativeOrentation/*.{h,m}'
 #end
 
 end

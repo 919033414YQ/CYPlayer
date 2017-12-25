@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E35FD841FF1064800DEB0AB /* AppDelegate+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */; };
+		0E35FD871FF1066500DEB0AB /* UIViewController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */; };
 		0E44EE061FEA606100195639 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EE051FEA606100195639 /* AppDelegate.m */; };
 		0E44EE091FEA606100195639 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EE081FEA606100195639 /* ViewController.m */; };
 		0E44EE0C1FEA606100195639 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E44EE0A1FEA606100195639 /* Main.storyboard */; };
@@ -83,6 +85,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0E35FD821FF1064800DEB0AB /* AppDelegate+CYExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+CYExtension.h"; sourceTree = "<group>"; };
+		0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+CYExtension.m"; sourceTree = "<group>"; };
+		0E35FD851FF1066500DEB0AB /* UIViewController+CYExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+CYExtension.h"; sourceTree = "<group>"; };
+		0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+CYExtension.m"; sourceTree = "<group>"; };
 		0E44EE011FEA606100195639 /* CYPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CYPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E44EE041FEA606100195639 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		0E44EE051FEA606100195639 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -242,6 +248,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0E35FD811FF105B100DEB0AB /* UseNativeOrentation */ = {
+			isa = PBXGroup;
+			children = (
+				0E35FD821FF1064800DEB0AB /* AppDelegate+CYExtension.h */,
+				0E35FD831FF1064800DEB0AB /* AppDelegate+CYExtension.m */,
+				0E35FD851FF1066500DEB0AB /* UIViewController+CYExtension.h */,
+				0E35FD861FF1066500DEB0AB /* UIViewController+CYExtension.m */,
+			);
+			path = UseNativeOrentation;
+			sourceTree = "<group>";
+		};
 		0E44EDF81FEA606100195639 = {
 			isa = PBXGroup;
 			children = (
@@ -542,7 +559,8 @@
 		0E44EF8C1FEA6B2C00195639 /* CYOrentationObserver */ = {
 			isa = PBXGroup;
 			children = (
-				0E44EF8E1FEA6B2C00195639 /* Category */,
+				0E35FD811FF105B100DEB0AB /* UseNativeOrentation */,
+				0E44EF8E1FEA6B2C00195639 /* UnuseNativeOrentation */,
 				0E44EF961FEA6B2C00195639 /* CYOrentationObserver.h */,
 				0E44EF8D1FEA6B2C00195639 /* CYOrentationObserver.m */,
 				0E44EF951FEA6B2C00195639 /* README.md */,
@@ -550,7 +568,7 @@
 			path = CYOrentationObserver;
 			sourceTree = "<group>";
 		};
-		0E44EF8E1FEA6B2C00195639 /* Category */ = {
+		0E44EF8E1FEA6B2C00195639 /* UnuseNativeOrentation */ = {
 			isa = PBXGroup;
 			children = (
 				0E44EF901FEA6B2C00195639 /* UINavigationController+CYExtension.h */,
@@ -560,7 +578,7 @@
 				0E44EF941FEA6B2C00195639 /* UIViewController+CYExtension.h */,
 				0E44EF911FEA6B2C00195639 /* UIViewController+CYExtension.m */,
 			);
-			path = Category;
+			path = UnuseNativeOrentation;
 			sourceTree = "<group>";
 		};
 		0E44EF971FEA6B2C00195639 /* CYVideoPlayerBackGR */ = {
@@ -790,6 +808,7 @@
 				0E44EFD11FEA6B2D00195639 /* CYMoreSettingsFooterViewModel.m in Sources */,
 				0E44EFEF1FEA6B2D00195639 /* CYScreenshotView.m in Sources */,
 				0E44EFFB1FEA6B2D00195639 /* CYCTFrameParserConfig.m in Sources */,
+				0E35FD871FF1066500DEB0AB /* UIViewController+CYExtension.m in Sources */,
 				0E44EFF41FEA6B2D00195639 /* CYPrompt.m in Sources */,
 				0E44EFD91FEA6B2D00195639 /* CYVideoPlayerMoreSettingsView.m in Sources */,
 				0E44EFE31FEA6B2D00195639 /* CYVideoPlayerBottomControlView.m in Sources */,
@@ -802,6 +821,7 @@
 				0E44EFC91FEA6B2D00195639 /* CYVideoPlayerPresentView.m in Sources */,
 				0E44EFF31FEA6B2D00195639 /* CYPromptConfig.m in Sources */,
 				0E44EFD01FEA6B2D00195639 /* CYVideoPlayerAssetCarrier.m in Sources */,
+				0E35FD841FF1064800DEB0AB /* AppDelegate+CYExtension.m in Sources */,
 				0E44EFDB1FEA6B2D00195639 /* CYVideoPlayerMoreSettingsSecondaryHeaderView.m in Sources */,
 				0E44EFE11FEA6B2D00195639 /* CYVideoPlayerControlView.m in Sources */,
 				0E44EFDF1FEA6B2D00195639 /* CYVideoPlayerTipsView.m in Sources */,
