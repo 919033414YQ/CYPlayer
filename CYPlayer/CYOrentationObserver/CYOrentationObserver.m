@@ -62,7 +62,48 @@
     }
 }
 
+//适用于系统自动横屏的app
 - (void)setFullScreen:(BOOL)fullScreen {
+    if ( self.rotationCondition ) {
+        if ( !self.rotationCondition(self) ) return;
+    }
+    
+    if ( self.isTransitioning ) return;
+    
+    
+    UIInterfaceOrientation statusBarOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    if (deviceOrientation == UIDeviceOrientationPortrait)
+    {
+        _fullScreen = NO;
+    }
+    else if (deviceOrientation == UIDeviceOrientationLandscapeLeft || deviceOrientation == UIDeviceOrientationLandscapeRight)
+    {
+        _fullScreen = YES;
+    }
+    
+    self.transitioning = YES;
+    
+    UIView *superview = self.targetSuperview;
+    UIInterfaceOrientation ori = statusBarOrientation;
+    [UIApplication sharedApplication].statusBarOrientation = ori;
+    if ( !superview || UIInterfaceOrientationUnknown == ori ) {
+        self.transitioning = NO;
+        return;
+    }
+    
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    self.transitioning = NO;
+    if ( _orientationChanged )
+    {
+        _orientationChanged(self);
+    }
+    
+    
+}
+
+//适用于系统不自动横屏的app
+- (void)xxx_setFullScreen:(BOOL)fullScreen {
     if ( self.rotationCondition ) {
         if ( !self.rotationCondition(self) ) return;
     }
@@ -92,7 +133,7 @@
             self.transitioning = NO;
             return;
         }
-        [superview addSubview:_view];
+        
         _view.translatesAutoresizingMaskIntoConstraints = NO;
         self.transitioning = NO;
         if ( _orientationChanged )
@@ -177,3 +218,4 @@
 }
 
 @end
+

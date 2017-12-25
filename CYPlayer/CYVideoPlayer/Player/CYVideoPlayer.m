@@ -448,7 +448,13 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (UIView *)view {
-    if ( _view ) return _view;
+    if ( _view )
+    {
+        [_presentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.edges.equalTo(_presentView.superview);
+        }];
+        return _view;
+    }
     _view = [CYVideoPlayerView new];
     _view.backgroundColor = [UIColor blackColor];
     [_view addSubview:self.presentView];

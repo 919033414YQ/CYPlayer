@@ -57,9 +57,6 @@
 		0E44EFE81FEA6B2D00195639 /* CYVideoPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF881FEA6B2C00195639 /* CYVideoPlayerView.m */; };
 		0E44EFE91FEA6B2D00195639 /* CYVideoPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF891FEA6B2C00195639 /* CYVideoPlayer.m */; };
 		0E44EFEA1FEA6B2D00195639 /* CYOrentationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF8D1FEA6B2C00195639 /* CYOrentationObserver.m */; };
-		0E44EFEB1FEA6B2D00195639 /* UITabBarController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF8F1FEA6B2C00195639 /* UITabBarController+CYExtension.m */; };
-		0E44EFEC1FEA6B2D00195639 /* UIViewController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF911FEA6B2C00195639 /* UIViewController+CYExtension.m */; };
-		0E44EFED1FEA6B2D00195639 /* UINavigationController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF921FEA6B2C00195639 /* UINavigationController+CYExtension.m */; };
 		0E44EFEE1FEA6B2D00195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44EF951FEA6B2C00195639 /* README.md */; };
 		0E44EFEF1FEA6B2D00195639 /* CYScreenshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF991FEA6B2C00195639 /* CYScreenshotView.m */; };
 		0E44EFF01FEA6B2D00195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44EF9B1FEA6B2C00195639 /* README.md */; };
@@ -796,7 +793,6 @@
 				0E44EFF41FEA6B2D00195639 /* CYPrompt.m in Sources */,
 				0E44EFD91FEA6B2D00195639 /* CYVideoPlayerMoreSettingsView.m in Sources */,
 				0E44EFE31FEA6B2D00195639 /* CYVideoPlayerBottomControlView.m in Sources */,
-				0E44EFEC1FEA6B2D00195639 /* UIViewController+CYExtension.m in Sources */,
 				0E44EFE41FEA6B2D00195639 /* CYVideoPlayerPreviewCollectionViewCell.m in Sources */,
 				0E44EFD31FEA6B2D00195639 /* CYVideoPreviewModel.m in Sources */,
 				0E44EFD51FEA6B2D00195639 /* CYVideoPlayerSettings.m in Sources */,
@@ -825,13 +821,11 @@
 				0E44EFFE1FEA6B2D00195639 /* CYLabel.m in Sources */,
 				0E44EFCB1FEA6B2D00195639 /* CYVideoPlayerRegistrar.m in Sources */,
 				0E44EFE71FEA6B2D00195639 /* CYVideoPlayerBaseView.m in Sources */,
-				0E44EFEB1FEA6B2D00195639 /* UITabBarController+CYExtension.m in Sources */,
 				0E44EFDA1FEA6B2D00195639 /* CYVideoPlayerMoreSettingsColCell.m in Sources */,
 				0E44F0001FEA6B2D00195639 /* CYAttributesFactory.m in Sources */,
 				0E44EFCE1FEA6B2D00195639 /* CYPlayerGestureControl.m in Sources */,
 				0E44EFF11FEA6B2D00195639 /* UINavigationController+CYVideoPlayerAdd.m in Sources */,
 				0E44EFC71FEA6B2D00195639 /* CYButtonSlider.m in Sources */,
-				0E44EFED1FEA6B2D00195639 /* UINavigationController+CYExtension.m in Sources */,
 				0E44EFF61FEA6B2D00195639 /* NSObject+CYObserverHelper.m in Sources */,
 				0E44EFCD1FEA6B2D00195639 /* CYVideoPlayerDraggingProgressView.m in Sources */,
 				0E44EFCF1FEA6B2D00195639 /* CYTimerControl.m in Sources */,
