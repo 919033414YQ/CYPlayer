@@ -81,7 +81,7 @@
         }
     };
     
-    [self _setPlayerMoreSettingItems];
+//    [self _setPlayerMoreSettingItems];
     
     // Do any additional setup after loading the view.
 }

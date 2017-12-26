@@ -8,15 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "CYMoreSettingsFooterViewModel.h"
-#import "CYVideoPlayerSettings.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CYVideoPlayerMoreSettingsFooterSlidersView : UICollectionReusableView
 
 @property (nonatomic, weak, readwrite) CYMoreSettingsFooterViewModel *model;
-
-@property (nonatomic, copy, readwrite, nullable) void(^setting)(CYVideoPlayerSettings *setting);
 
 @end
 

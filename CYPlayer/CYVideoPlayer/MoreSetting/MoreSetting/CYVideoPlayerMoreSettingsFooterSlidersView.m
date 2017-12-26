@@ -11,6 +11,7 @@
 #import <Masonry/Masonry.h>
 #import "CYUIFactory.h"
 #import "CYVideoPlayerControlViewEnumHeader.h"
+#import "CYVideoPlayerSettings.h"
 
 @interface CYVideoPlayerMoreSettingsFooterSlidersView ()<CYSliderDelegate>
 
@@ -44,17 +45,12 @@
     if ( !self ) return nil;
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewSetupUI];
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewObservers];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsPlayerNotification:) name:CYSettingsPlayerNotification object:nil];
     return self;
 }
 
-- (void)settingsPlayerNotification:(NSNotification *)notifi {
-    if ( _setting ) _setting(notifi.object);
-}
 
 - (void)dealloc {
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewRemoveObservers];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)setModel:(CYMoreSettingsFooterViewModel *)model {
@@ -83,16 +79,13 @@
     if ( model.initialBrightnessValue ) self.brightnessSlider.value = model.initialBrightnessValue();
     if ( model.initialPlayerRateValue )self.rateSlider.value = model.initialPlayerRateValue();
     
-    self.setting = ^(CYVideoPlayerSettings * _Nonnull setting) {
-        __strong typeof(_self) self = _self;
-        if ( !self ) return;
-        self.rateSlider.trackImageView.backgroundColor = setting.more_trackColor;
-        self.rateSlider.traceImageView.backgroundColor = setting.more_traceColor;
-        self.volumeSlider.trackImageView.backgroundColor = setting.more_trackColor;
-        self.volumeSlider.traceImageView.backgroundColor = setting.more_traceColor;
-        self.brightnessSlider.trackImageView.backgroundColor = setting.more_trackColor;
-        self.brightnessSlider.traceImageView.backgroundColor = setting.more_traceColor;
-    };
+    CYVideoPlayerSettings * setting = [CYVideoPlayerSettings sharedVideoPlayerSettings];
+    self.rateSlider.trackImageView.backgroundColor = setting.more_trackColor;
+    self.rateSlider.traceImageView.backgroundColor = setting.more_traceColor;
+    self.volumeSlider.trackImageView.backgroundColor = setting.more_trackColor;
+    self.volumeSlider.traceImageView.backgroundColor = setting.more_traceColor;
+    self.brightnessSlider.trackImageView.backgroundColor = setting.more_trackColor;
+    self.brightnessSlider.traceImageView.backgroundColor = setting.more_traceColor;
 }
 
 - (void)_CYVideoPlayerMoreSettingsFooterSlidersViewSetupUI {

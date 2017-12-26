@@ -1304,10 +1304,6 @@ static BOOL _isLoading;
         [self dressSetting:obj];
     }];
     self.moreSettingView.moreSettings = moreSettings;
-    __weak typeof(self) _self = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-       [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[_self settings]];
-    });
 }
 
 - (void)addSetting:(CYVideoPlayerMoreSetting *)setting container:(NSMutableSet<CYVideoPlayerMoreSetting *> *)moreSttingsM {
@@ -1362,7 +1358,7 @@ static BOOL _isLoading;
 - (CYVideoPlayerSettings *)settings {
     CYVideoPlayerSettings *setting = objc_getAssociatedObject(self, _cmd);
     if ( setting ) return setting;
-    setting = [CYVideoPlayerSettings new];
+    setting = [CYVideoPlayerSettings sharedVideoPlayerSettings];
     objc_setAssociatedObject(self, _cmd, setting, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return setting;
 }

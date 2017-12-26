@@ -41,4 +41,6 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 @property (nonatomic, strong, readwrite) UIColor *loadingLineColor;
 @property (nonatomic, assign, readwrite) float loadingLineWidth;
 
++ (instancetype)sharedVideoPlayerSettings;
+
 @end
