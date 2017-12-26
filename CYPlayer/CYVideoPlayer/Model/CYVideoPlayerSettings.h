@@ -2,8 +2,8 @@
 //  CYVideoPlayerSettings.h
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/9/25.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/9/25.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

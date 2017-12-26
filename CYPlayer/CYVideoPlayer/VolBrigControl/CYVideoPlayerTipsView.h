@@ -2,8 +2,8 @@
 //  CYVideoPlayerTipsView.h
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/8/24.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/8/24.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

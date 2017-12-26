@@ -6,7 +6,7 @@
 ___
 
 ### 进度(支持 AutoLayout)
-<img src = "https://github.com/changsanjiang/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG86.jpeg" >    
+<img src = "https://github.com/yellowei/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG86.jpeg" >    
 
 ```Objective-C    
 
@@ -20,7 +20,7 @@ ___
 ___   
 
 ### 滑块 + 不切圆角
-<img src = "https://github.com/changsanjiang/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG88.jpeg">    
+<img src = "https://github.com/yellowei/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG88.jpeg">    
 
 ```Objective-C    
     CYSlider *slider = [CYSlider new];
@@ -33,7 +33,7 @@ ___
 ___    
 
 ### 缓冲
-<img src = "https://github.com/changsanjiang/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG87.jpeg">    
+<img src = "https://github.com/yellowei/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG87.jpeg">    
 
 ```Objective-C    
     CYSlider *slider = [CYSlider new];
@@ -46,7 +46,7 @@ ___
 ___    
 
 ### 左右标签
-<img src = "https://github.com/changsanjiang/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG89.jpeg">    
+<img src = "https://github.com/yellowei/CYSlider/blob/master/CYSliderProjectFile/CYSlider/WechatIMG89.jpeg">    
 
 ```Objective-C    
     CYButtonSlider *b_slider = [CYButtonSlider new];

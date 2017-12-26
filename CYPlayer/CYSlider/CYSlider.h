@@ -2,7 +2,7 @@
 //  CYSlider.h
 //  dancebaby
 //
-//  Created by BlueDancer on 2017/6/12.
+//  Created by yellowei on 2017/6/12.
 //  Copyright © 2017年 SanJing. All rights reserved.
 //
 

@@ -2,8 +2,8 @@
 //  UIView+CYUIFactory.m
 //  CYUIFactory
 //
-//  Created by BlueDancer on 2017/11/25.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/11/25.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "UIView+CYUIFactory.h"

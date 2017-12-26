@@ -2,8 +2,8 @@
 //  CYSlider.m
 //  dancebaby
 //
-//  Created by BlueDancer on 2017/6/12.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/6/12.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYSlider.h"

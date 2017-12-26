@@ -48,7 +48,7 @@ pod 'CYVideoPlayerBackGR'
 ```
 
 ### Example
-<img src="https://github.com/changsanjiang/CYVideoPlayerBackGR/blob/master/CYBackGRProject/CYBackGRProject/GestrueSample.gif" width="40%">    
+<img src="https://github.com/yellowei/CYVideoPlayerBackGR/blob/master/CYBackGRProject/CYBackGRProject/GestrueSample.gif" width="40%">    
 
 
 ### 天朝

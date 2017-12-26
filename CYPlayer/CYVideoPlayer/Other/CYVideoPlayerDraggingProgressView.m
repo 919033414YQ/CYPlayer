@@ -3,7 +3,7 @@
 //  CYVideoPlayerProject
 //
 //  Created by 畅三江 on 2017/12/4.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYVideoPlayerDraggingProgressView.h"

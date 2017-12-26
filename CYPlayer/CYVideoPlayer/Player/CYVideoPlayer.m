@@ -2,8 +2,8 @@
 //  CYVideoPlayer.m
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/11/29.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/11/29.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYVideoPlayer.h"
@@ -26,6 +26,8 @@
 #import "CYPlayerGestureControl.h"
 
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
+
+#define CYColorWithHEX(hex) [UIColor colorWithRed:(float)((hex & 0xFF0000) >> 16)/255.0 green:(float)((hex & 0xFF00) >> 8)/255.0 blue:(float)(hex & 0xFF)/255.0 alpha:1.0]
 
 inline static void _cyErrorLog(id msg) {
     NSLog(@"__error__: %@", msg);
@@ -1302,6 +1304,10 @@ static BOOL _isLoading;
         [self dressSetting:obj];
     }];
     self.moreSettingView.moreSettings = moreSettings;
+    __weak typeof(self) _self = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+       [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[_self settings]];
+    });
 }
 
 - (void)addSetting:(CYVideoPlayerMoreSetting *)setting container:(NSMutableSet<CYVideoPlayerMoreSetting *> *)moreSttingsM {
@@ -1346,7 +1352,10 @@ static BOOL _isLoading;
 }
 
 - (void)settingPlayer:(void (^)(CYVideoPlayerSettings * _Nonnull))block {
-    if ( block ) block([self settings]);
+    if ( block )
+    {
+        block([self settings]);   
+    }
     [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[self settings]];
 }
 
@@ -1370,11 +1379,12 @@ static BOOL _isLoading;
     setting.unlockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_unlock"];
     setting.replayBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_replay"];
     setting.replayBtnTitle = @"重播";
-    setting.progress_traceColor = [UIColor orangeColor];
+    setting.progress_traceColor = CYColorWithHEX(0x00c5b5);
     setting.progress_bufferColor = [UIColor colorWithWhite:0 alpha:0.2];
     setting.progress_trackColor =  [UIColor whiteColor];
+    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail"];
     setting.progress_traceHeight = 3;
-    setting.more_traceColor = [UIColor greenColor];
+    setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];
     setting.more_traceHeight = 5;
     setting.loadingLineColor = [UIColor whiteColor];

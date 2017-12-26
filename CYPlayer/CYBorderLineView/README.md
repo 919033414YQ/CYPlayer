@@ -9,6 +9,6 @@ pod 'CYBorderLineView'
     [self.view addSubview:lineView];
 ```
     
-<img src="https://github.com/changsanjiang/CYBorderLineView/blob/master/CYBorderLineViewProject/sample1.png" width="30%" />
+<img src="https://github.com/yellowei/CYBorderLineView/blob/master/CYBorderLineViewProject/sample1.png" width="30%" />
    
-<img src="https://github.com/changsanjiang/CYBorderLineView/blob/master/CYBorderLineViewProject/sample.png" width="30%" />
+<img src="https://github.com/yellowei/CYBorderLineView/blob/master/CYBorderLineViewProject/sample.png" width="30%" />

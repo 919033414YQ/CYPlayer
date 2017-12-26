@@ -2,8 +2,8 @@
 //  CYVideoPlayerMoreSettingsSecondaryHeaderView.m
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/12/5.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/12/5.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYVideoPlayerMoreSettingsSecondaryHeaderView.h" 

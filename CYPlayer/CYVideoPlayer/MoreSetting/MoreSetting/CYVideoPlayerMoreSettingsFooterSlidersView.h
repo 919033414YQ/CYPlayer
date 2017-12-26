@@ -2,18 +2,21 @@
 //  CYVideoPlayerMoreSettingsFooterSlidersView.h
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/9/25.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/9/25.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import "CYMoreSettingsFooterViewModel.h"
+#import "CYVideoPlayerSettings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CYVideoPlayerMoreSettingsFooterSlidersView : UICollectionReusableView
 
 @property (nonatomic, weak, readwrite) CYMoreSettingsFooterViewModel *model;
+
+@property (nonatomic, copy, readwrite, nullable) void(^setting)(CYVideoPlayerSettings *setting);
 
 @end
 

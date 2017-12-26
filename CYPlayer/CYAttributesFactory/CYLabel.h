@@ -2,7 +2,7 @@
 //  CYLabel.h
 //  CYAttributesFactory
 //
-//  Created by BlueDancer on 2017/12/14.
+//  Created by yellowei on 2017/12/14.
 //  Copyright © 2017年 畅三江. All rights reserved.
 //
 

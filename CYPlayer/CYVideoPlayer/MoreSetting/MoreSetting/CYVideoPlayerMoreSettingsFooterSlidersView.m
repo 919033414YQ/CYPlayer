@@ -2,8 +2,8 @@
 //  CYVideoPlayerMoreSettingsFooterSlidersView.m
 //  CYVideoPlayerProject
 //
-//  Created by BlueDancer on 2017/9/25.
-//  Copyright © 2017年 SanJiang. All rights reserved.
+//  Created by yellowei on 2017/9/25.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYVideoPlayerMoreSettingsFooterSlidersView.h"
@@ -44,11 +44,17 @@
     if ( !self ) return nil;
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewSetupUI];
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewObservers];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsPlayerNotification:) name:CYSettingsPlayerNotification object:nil];
     return self;
+}
+
+- (void)settingsPlayerNotification:(NSNotification *)notifi {
+    if ( _setting ) _setting(notifi.object);
 }
 
 - (void)dealloc {
     [self _CYVideoPlayerMoreSettingsFooterSlidersViewRemoveObservers];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)setModel:(CYMoreSettingsFooterViewModel *)model {
@@ -76,6 +82,17 @@
     if ( model.initialVolumeValue ) self.volumeSlider.value = model.initialVolumeValue();
     if ( model.initialBrightnessValue ) self.brightnessSlider.value = model.initialBrightnessValue();
     if ( model.initialPlayerRateValue )self.rateSlider.value = model.initialPlayerRateValue();
+    
+    self.setting = ^(CYVideoPlayerSettings * _Nonnull setting) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        self.rateSlider.trackImageView.backgroundColor = setting.more_trackColor;
+        self.rateSlider.traceImageView.backgroundColor = setting.more_traceColor;
+        self.volumeSlider.trackImageView.backgroundColor = setting.more_trackColor;
+        self.volumeSlider.traceImageView.backgroundColor = setting.more_traceColor;
+        self.brightnessSlider.trackImageView.backgroundColor = setting.more_trackColor;
+        self.brightnessSlider.traceImageView.backgroundColor = setting.more_traceColor;
+    };
 }
 
 - (void)_CYVideoPlayerMoreSettingsFooterSlidersViewSetupUI {
