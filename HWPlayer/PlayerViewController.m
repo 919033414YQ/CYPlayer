@@ -27,7 +27,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor blueColor];
+    self.view.backgroundColor = [UIColor colorWithRed:221.0/255.0 green:39.0/255.0 blue:150.0/255.0 alpha:0.5];
     
     UIView * contentView = [UIView new];
     contentView.backgroundColor = [UIColor blackColor];
