@@ -60,7 +60,9 @@
 //    http://vod.lanwuzhe.com/d09d3a5f9ba4491fa771cd63294ad349%2F0831eae12c51428fa7aed3825c511370-5287d2089db37e62345123a1be272f8b.mp4
 //    Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[[NSBundle mainBundle] URLForResource:@"sample.mp4" withExtension:nil] beginTime:10];
     
-    Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://vod.lanwuzhe.com/d09d3a5f9ba4491fa771cd63294ad349%2F0831eae12c51428fa7aed3825c511370-5287d2089db37e62345123a1be272f8b.mp4"] beginTime:10];
+//    Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://vod.lanwuzhe.com/d09d3a5f9ba4491fa771cd63294ad349%2F0831eae12c51428fa7aed3825c511370-5287d2089db37e62345123a1be272f8b.mp4"] beginTime:10];
+    Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4"] beginTime:10];
+    
     __weak typeof(self) weakSelf = self;
     Player.clickedBackEvent = ^(CYVideoPlayer * _Nonnull player) {
         if ( !weakSelf ) return;
