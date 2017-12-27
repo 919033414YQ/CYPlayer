@@ -71,17 +71,41 @@
 }
 
 - (void)setVolume:(float)volume {
+    if (volume < -0.1)
+    {
+        volume = -0.1;
+    }
+    else if (volume > 1.0)
+    {
+        volume = 1.0;
+    }
+    
+    if ( isnan(volume) ) volume = 0.0;
+    
     _volume = volume;
     _systemVolume.value = volume;
 }
 
 - (void)setBrightness:(float)brightness {
-    if ( isnan(brightness) ) brightness = 0;
-    if ( brightness < 0.1 ) brightness = 0.1;
-    else if ( brightness > 1 ) brightness = 1;
+    if ( isnan(brightness) )
+    {
+        brightness = 0;
+        
+    }
+    if ( brightness < 0.1 )
+    {
+        brightness = 0.1;
+    }
+    else if ( brightness > 1 )
+    {
+        brightness = 1;
+    }
     [UIScreen mainScreen].brightness = brightness;
     _brightnessView.value = brightness;
-    if ( _brightnessChanged ) _brightnessChanged(brightness);
+    if ( _brightnessChanged )
+    {
+        _brightnessChanged(brightness);
+    }
 }
 
 - (float)brightness {
