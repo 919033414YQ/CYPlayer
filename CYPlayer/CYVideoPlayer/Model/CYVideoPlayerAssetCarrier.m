@@ -208,6 +208,24 @@ NSNotificationName const CY_AVPlayerRateDidChangeNotification = @"CY_AVPlayerRat
     return image;
 }
 
+- (UIImage *)randomScreenshot {
+    if ( !_playerItem || !_asset ) return nil;
+    NSInteger seconds = (long)_asset.duration.value / _asset.duration.timescale;
+    NSTimeInterval timeInterval = [self getRandomNumber:0 to:seconds];
+    CMTime time = CMTimeMakeWithSeconds(timeInterval, NSEC_PER_SEC);
+    AVAssetImageGenerator *generator = [AVAssetImageGenerator assetImageGeneratorWithAsset:_asset];
+    generator.appliesPreferredTrackTransform = YES;
+    CGImageRef imgRef = [generator copyCGImageAtTime:time actualTime:&time error:nil];
+    UIImage *image = [UIImage imageWithCGImage:imgRef];
+    CGImageRelease(imgRef);
+    return image;
+}
+
+- (long)getRandomNumber:(long)from to:(long)to
+{
+    return (long)(from + (arc4random()% (to - from + 1)));
+}
+
 - (NSTimeInterval)duration {
     return CMTimeGetSeconds(_playerItem.duration);
 }

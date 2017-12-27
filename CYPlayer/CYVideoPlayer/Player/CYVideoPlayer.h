@@ -139,6 +139,11 @@ typedef void(^LockScreen)(BOOL isLock);
 
 - (UIImage *)screenshot;
 
+- (UIImage *)randomScreenshot;
+
+- (NSArray<CYVideoPreviewModel *> *)getPreviewImages;
+
+
 /*!
  *  unit sec.
  */

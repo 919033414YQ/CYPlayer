@@ -18,6 +18,8 @@ extern NSNotificationName const CY_AVPlayerRateDidChangeNotification;
 
 - (UIImage * __nullable)screenshot;
 
+- (UIImage *__nullable)randomScreenshot;
+
 - (instancetype)initWithAssetURL:(NSURL *)assetURL;
 
 /// unit is sec.

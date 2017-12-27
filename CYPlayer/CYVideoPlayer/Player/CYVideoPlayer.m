@@ -1523,6 +1523,15 @@ static BOOL _isLoading;
     return [self.asset screenshot];
 }
 
+- (UIImage *)randomScreenshot {
+    return [self.asset randomScreenshot];
+}
+
+- (NSArray<CYVideoPreviewModel *> *)getPreviewImages
+{
+    return self.controlView.previewView.previewImages;
+}
+
 - (NSTimeInterval)currentTime {
     return self.asset.currentTime;
 }
