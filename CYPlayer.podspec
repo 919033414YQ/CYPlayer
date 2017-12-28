@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.2.6"
+s.version      = "1.2.7"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -18,6 +18,10 @@ s.dependency 'Masonry'
 
 s.subspec 'CYAttributesFactory' do |ss|
 ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
+end
+
+s.subspec 'CYLoadingView' do |ss|
+ss.source_files = 'CYPlayer/CYLoadingView/*.{h,m}'
 end
 
 s.subspec 'CYBorderLineView' do |ss|
@@ -76,6 +80,7 @@ ss.dependency 'CYPlayer/CYSlider'
 ss.dependency 'CYPlayer/CYBorderLineView'
 ss.dependency 'CYPlayer/CYObserverHelper'
 # ss.dependency 'CYPlayer/CYVideoPlayerBackGR'
+# ss.dependency 'CYPlayer/CYLoadingView'
 
 # ########
 ss.subspec 'Header' do |sss|
@@ -112,7 +117,6 @@ end
 ss.subspec 'Player' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Player/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Control'
-sss.dependency 'CYPlayer/CYVideoPlayer/Loading'
 sss.dependency 'CYPlayer/CYVideoPlayer/MoreSetting'
 sss.dependency 'CYPlayer/CYVideoPlayer/VolBrigControl'
 sss.dependency 'CYPlayer/CYVideoPlayer/Present'
@@ -140,10 +144,6 @@ end
 
 ss.subspec 'GestureControl' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/GestureControl/*.{h,m}'
-end
-
-ss.subspec 'Loading' do |sss|
-sss.source_files = 'CYPlayer/CYVideoPlayer/Loading/*.{h,m}'
 end
 
 ss.subspec 'MoreSetting' do |sss|

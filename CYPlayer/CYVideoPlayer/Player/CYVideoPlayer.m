@@ -22,7 +22,7 @@
 #import "CYVolBrigControl.h"
 #import "CYTimerControl.h"
 #import "CYVideoPlayerView.h"
-#import "JDradualLoadingView.h"
+#import "CYLoadingView.h"
 #import "CYPlayerGestureControl.h"
 
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
@@ -75,7 +75,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 @property (nonatomic, strong, readonly) CYVideoPlayerRegistrar *registrar;
 @property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
 @property (nonatomic, strong, readonly) CYPlayerGestureControl *gestureControl;
-@property (nonatomic, strong, readonly) JDradualLoadingView *loadingView;
+@property (nonatomic, strong, readonly) CYLoadingView *loadingView;
 
 
 @property (nonatomic, assign, readwrite) CYVideoPlayerPlayState state;
@@ -370,7 +370,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     CYMoreSettingsFooterViewModel *_moreSettingFooterViewModel;
     CYVideoPlayerRegistrar *_registrar;
     CYVolBrigControl *_volBrigControl;
-    JDradualLoadingView *_loadingView;
+    CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
 }
 
@@ -486,15 +486,16 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         make.edges.equalTo(_moreSettingView);
     }];
     
-    _loadingView = [JDradualLoadingView new];
-    _loadingView.lineWidth = 0.6;
-    _loadingView.lineColor = [UIColor whiteColor];
+    _loadingView = [CYLoadingView new];
+    [_controlView addSubview:_loadingView];
+    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.offset(0);
+    }];
     
     __weak typeof(self) _self = self;
     _view.setting = ^(CYVideoPlayerSettings * _Nonnull setting) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
-        self.loadingView.lineWidth = setting.loadingLineWidth;
         self.loadingView.lineColor = setting.loadingLineColor;
     };
     
@@ -525,6 +526,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( !self ) return;
         if ( !self.asset ) return;
         self.rate = rate;
+        if ( self.internallyChangedRate ) self.internallyChangedRate(self, rate);
     };
     
     _moreSettingFooterViewModel.needChangeVolume = ^(float volume) {
@@ -631,6 +633,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 }];
             }
         });//_cyAnima(^{})
+        if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);
     };//orientationChanged
     
     _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
@@ -750,11 +753,13 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             case CYVideoPlayerPlayState_Buffing:
             case CYVideoPlayerPlayState_Playing: {
                 [self pause];
+                self.userClickedPause = YES;
             }
                 break;
             case CYVideoPlayerPlayState_Pause:
             case CYVideoPlayerPlayState_PlayEnd: {
                 [self play];
+                self.userClickedPause = NO;
             }
                 break;
             case CYVideoPlayerPlayState_PlayFailed:
@@ -772,8 +777,16 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 _cyAnima(^{
                     _cyShowViews(@[self.controlView.draggingProgressView]);
                 });
-                self.controlView.draggingProgressView.progressSlider.value = self.asset.progress;
-                self.controlView.draggingProgressView.progressLabel.text = _formatWithSec(self.asset.currentTime);
+                if ( self.orentation.fullScreen )
+                {
+                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+                }
+                else
+                {
+                    self.controlView.draggingProgressView.hiddenProgressSlider = YES;
+                }
+                
+                self.controlView.draggingProgressView.progress = self.asset.progress;
                 self.hideControl = YES;
             }
                 break;
@@ -806,8 +819,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
-                self.controlView.draggingProgressView.progressSlider.value += translate.x * 0.003;
-                self.controlView.draggingProgressView.progressLabel.text =  _formatWithSec(self.asset.duration * self.controlView.draggingProgressView.progressSlider.value);
+                self.controlView.draggingProgressView.progress += translate.x * 0.003;
             }
                 break;
             case CYPanDirection_V: {
@@ -838,7 +850,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 _cyAnima(^{
                     _cyHiddenViews(@[_self.controlView.draggingProgressView]);
                 });
-                [_self jumpedToTime:_self.controlView.draggingProgressView.progressSlider.value * _self.asset.duration completionHandler:^(BOOL finished) {
+                [_self jumpedToTime:_self.controlView.draggingProgressView.progress * _self.asset.duration completionHandler:^(BOOL finished) {
                     __strong typeof(_self) self = _self;
                     if ( !self ) return;
                     [self play];
@@ -873,8 +885,15 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 _cyShowViews(@[self.controlView.draggingProgressView]);
             });
             [self _cancelDelayHiddenControl];
-            self.controlView.draggingProgressView.progressSlider.value = slider.value;
-            self.controlView.draggingProgressView.progressLabel.text = _formatWithSec(currentTime);
+            self.controlView.draggingProgressView.progress = slider.value;
+            if ( self.orentation.fullScreen )
+            {
+                self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+            }
+            else
+            {
+                self.controlView.draggingProgressView.hiddenProgressSlider = YES;
+            }
         }
             break;
             
@@ -888,9 +907,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         case CYVideoPlaySliderTag_Progress: {
             NSInteger currentTime = slider.value * self.asset.duration;
             [self _refreshingTimeLabelWithCurrentTime:currentTime duration:self.asset.duration];
-            
-            self.controlView.draggingProgressView.progressSlider.value = slider.value;
-            self.controlView.draggingProgressView.progressLabel.text =  _formatWithSec(self.asset.duration * slider.value);
+            self.controlView.draggingProgressView.progress = slider.value;
         }
             break;
             
@@ -911,6 +928,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 [self _delayHiddenControl];
                 _cyAnima(^{
                     _cyHiddenViews(@[self.controlView.draggingProgressView]);
+                });
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
                 });
             }];
         }
@@ -942,10 +962,12 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             
         case CYVideoPlayControlViewTag_Play: {
             [self play];
+            self.userClickedPause = NO;
         }
             break;
         case CYVideoPlayControlViewTag_Pause: {
             [self pause];
+            self.userClickedPause = YES;
         }
             break;
         case CYVideoPlayControlViewTag_Replay: {
@@ -1067,21 +1089,13 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 static BOOL _isLoading;
 - (void)_startLoading {
-    if ( _isLoading ) return;
-    _isLoading = YES;
-    [_controlView addSubview:_loadingView];
-    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.offset(0);
-        make.height.equalTo(_loadingView.superview).multipliedBy(0.2);
-        make.width.equalTo(_loadingView.mas_height);
-    }];
-    [_loadingView startAnimation];
+    if ( _loadingView.isAnimating ) return;
+    [_loadingView start];
 }
 
 - (void)_stopLoading {
-    _isLoading = NO;
-    [_loadingView stopAnimation];
-    [_loadingView removeFromSuperview];
+    if ( !_loadingView.isAnimating ) return;
+    [_loadingView stop];
 }
 
 - (void)_buffering {
@@ -1421,7 +1435,15 @@ static BOOL _isLoading;
 
 - (BOOL)disableRotation {
     return [objc_getAssociatedObject(self, _cmd) boolValue];
-} 
+}
+
+- (void)setRotatedScreen:(void (^)(CYVideoPlayer * _Nonnull, BOOL))rotatedScreen {
+    objc_setAssociatedObject(self, @selector(rotatedScreen), rotatedScreen, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYVideoPlayer * _Nonnull, BOOL))rotatedScreen {
+    return objc_getAssociatedObject(self, _cmd);
+}
 
 - (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
     objc_setAssociatedObject(self, @selector(videoGravity), videoGravity, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -1463,6 +1485,14 @@ static BOOL _isLoading;
     objc_setAssociatedObject(self, @selector(rateChanged), rateChanged, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
+- (void)setInternallyChangedRate:(void (^)(CYVideoPlayer * _Nonnull, float))internallyChangedRate {
+    objc_setAssociatedObject(self, @selector(internallyChangedRate), internallyChangedRate, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYVideoPlayer * _Nonnull, float))internallyChangedRate {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
 @end
 
 
@@ -1472,6 +1502,10 @@ static BOOL _isLoading;
 #pragma mark -
 
 @implementation CYVideoPlayer (Control)
+
+- (BOOL)userPaused {
+    return self.userClickedPause;
+}
 
 - (BOOL)play {
     if ( !self.asset ) return NO;
@@ -1485,7 +1519,6 @@ static BOOL _isLoading;
 
 - (BOOL)pause {
     if ( !self.asset ) return NO;
-    self.userClickedPause = YES;
     _cyAnima(^{
         [self _pauseState];
     });

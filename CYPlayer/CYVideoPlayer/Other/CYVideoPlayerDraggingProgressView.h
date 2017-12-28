@@ -10,12 +10,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CYSlider;
+@class CYVideoPlayerAssetCarrier;
 
 @interface CYVideoPlayerDraggingProgressView : CYVideoPlayerBaseView
 
-@property (nonatomic, strong, readonly) UILabel *progressLabel;
-@property (nonatomic, strong, readonly) CYSlider *progressSlider;
+@property (nonatomic, assign) float progress;
+
+@property (nonatomic, weak, readwrite, nullable) CYVideoPlayerAssetCarrier *asset;
+
+@property (nonatomic, assign) BOOL hiddenProgressSlider;
+
+@property (nonatomic, assign) CGSize size;
 
 @end
 

@@ -40,6 +40,7 @@ NSNotificationName const CY_AVPlayerRateDidChangeNotification = @"CY_AVPlayerRat
 }
 
 @property (nonatomic, strong, readwrite) AVAssetImageGenerator *imageGenerator;
+@property (nonatomic, strong, readwrite) AVAssetImageGenerator *tmp_imageGenerator;
 @property (nonatomic, assign, readwrite) BOOL hasBeenGeneratedPreviewImages;
 @property (nonatomic, strong, readwrite) NSArray<CYVideoPreviewModel *> *generatedPreviewImages;
 @property (nonatomic, assign, readwrite) BOOL removedScrollObserver;
@@ -224,6 +225,30 @@ NSNotificationName const CY_AVPlayerRateDidChangeNotification = @"CY_AVPlayerRat
 - (long)getRandomNumber:(long)from to:(long)to
 {
     return (long)(from + (arc4random()% (to - from + 1)));
+}
+
+- (void)screenshotWithTime:(NSTimeInterval)time
+                      size:(CGSize)size
+                completion:(void(^)(CYVideoPlayerAssetCarrier *asset, CYVideoPreviewModel *images, NSError *__nullable error))block {
+    if ( !_playerItem || !_asset ) return;
+    [_tmp_imageGenerator cancelAllCGImageGeneration];
+    
+    CMTime time_tmp = CMTimeMakeWithSeconds(time, NSEC_PER_SEC);
+    _tmp_imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:_asset];
+    _tmp_imageGenerator.appliesPreferredTrackTransform = YES;
+    _tmp_imageGenerator.maximumSize = size;
+    __weak typeof(self) _self = self;
+    [_tmp_imageGenerator generateCGImagesAsynchronouslyForTimes:@[[NSValue valueWithCMTime:time_tmp]] completionHandler:^(CMTime requestedTime, CGImageRef  _Nullable imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError * _Nullable error) {
+        if ( result == AVAssetImageGeneratorSucceeded ) {
+            UIImage *image = [UIImage imageWithCGImage:imageRef];
+            if ( block ) block(self, [CYVideoPreviewModel previewModelWithImage:image localTime:actualTime], nil);
+        }
+        else if ( result == AVAssetImageGeneratorFailed ) {
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            if ( block ) block(self, nil, error);
+        }
+    }];
 }
 
 - (NSTimeInterval)duration {

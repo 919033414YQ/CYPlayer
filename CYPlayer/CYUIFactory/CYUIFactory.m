@@ -1,6 +1,6 @@
 //
 //  CYUIFactory.m
-//  LanWuZheiOS
+//  CYUIFactory
 //
 //  Created by yellowei on 2017/11/4.
 //  Copyright © 2017年 lanwuzhe. All rights reserved.
@@ -9,6 +9,7 @@
 #import "CYUIFactory.h"
 #import "UIImagePickerController+Extension.h"
 #import "UIView+CYUIFactory.h"
+#import "CYLabel.h"
 
 CGSize CYScreen_Size(void) {
     return [UIScreen mainScreen].bounds.size;
@@ -117,14 +118,13 @@ static void _CY_Round(UIView *view, float cornerRadius) {
 }
 
 + (void)commonShadowWithLayer:(CALayer *)layer {
-    layer.shadowColor = [UIColor colorWithWhite:0 alpha:0.2].CGColor;
+    layer.shadowColor = [UIColor colorWithWhite:0.9 alpha:1].CGColor;
     layer.shadowOpacity = 1;
-    layer.shadowOffset = CGSizeMake(0, 0.2);
+    layer.shadowOffset = CGSizeMake(0.2, 0.2);
     layer.masksToBounds = NO;
 }
 
 + (void)commonShadowWithView:(UIView *)view size:(CGSize)size {
-    [self commonShadowWithView:view];
     [self commonShadowWithView:view size:size cornerRadius:0];
 }
 
@@ -246,6 +246,18 @@ static void _CY_Round(UIView *view, float cornerRadius) {
 
 @end
 
+
+@implementation CYShapeViewFactory
+
++ (UIView *)viewWithCornerRadius:(CGFloat)cornerRaius
+                 backgroundColor:(UIColor *)backgroundColor {
+    CYShadowView *view = [CYShadowView new];
+    view.cornerRadius = cornerRaius;
+    view.backgroundColor = backgroundColor;
+    return view;
+}
+
+@end
 
 
 #pragma mark - UIScrollView
@@ -473,6 +485,74 @@ estimatedSectionFooterHeight:(CGFloat)estimatedSectionFooterHeight {
         label.font = font;
     }
     [label sizeToFit];
+}
+
+@end
+
+
+
+@implementation CYCYLabelFactory
+
++ (CYLabel *)labelWithFont:(UIFont *)font {
+    return [self labelWithFont:font textColor:nil];
+}
+
++ (CYLabel *)labelWithFont:(UIFont *)font
+                 textColor:(UIColor *)textColor {
+    return [self labelWithFont:font textColor:textColor alignment:NSTextAlignmentLeft];
+}
+
++ (CYLabel *)labelWithFont:(UIFont *)font
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment {
+    return [self labelWithText:nil textColor:textColor alignment:alignment font:font];
+}
+
++ (CYLabel *)labelWithText:(NSString *)text {
+    return [self labelWithText:text textColor:nil];
+}
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor {
+    return [self labelWithText:text textColor:nil alignment:NSTextAlignmentLeft];
+}
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                      font:(UIFont *)font {
+    return [self labelWithText:text textColor:textColor alignment:NSTextAlignmentLeft font:font];
+}
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment {
+    return [self labelWithText:text textColor:textColor alignment:alignment font:nil];
+}
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment
+                      font:(UIFont *)font {
+    CYLabel *label = [[CYLabel alloc] initWithText:text font:font textColor:textColor lineSpacing:0 userInteractionEnabled:NO];
+    label.textAlignment = alignment;
+    return label;
+}
+
++ (CYLabel *)attributeLabel {
+    return [self labelWithAttrStr:nil];
+}
+
++ (CYLabel *)labelWithAttrStr:(NSAttributedString *)attrStr {
+    return [self labelWithAttrStr:attrStr userInteractionEnabled:NO];
+}
+
++ (CYLabel *)labelWithAttrStr:(NSAttributedString *)attrStr userInteractionEnabled:(BOOL)bol {
+    CYLabel *label = [CYLabel new];
+    label.numberOfLines = 0;
+    label.attributedText = attrStr;
+    label.userInteractionEnabled = bol;
+    label.backgroundColor = [UIColor clearColor];
+    return label;
 }
 
 @end
@@ -759,7 +839,7 @@ estimatedSectionFooterHeight:(CGFloat)estimatedSectionFooterHeight {
 }
 
 + (UIImageView *)imageViewWithViewMode:(UIViewContentMode)mode {
-    return [self imageViewWithImageName:nil];
+    return [self imageViewWithImageName:nil viewMode:mode];
 }
 
 + (UIImageView *)imageViewWithImageName:(NSString *)imageName
@@ -1050,5 +1130,17 @@ estimatedSectionFooterHeight:(CGFloat)estimatedSectionFooterHeight {
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
+@end
+
+
+#pragma mark - CYDrawView
+
+@implementation CYDrawUIView
+
+- (void)drawRect:(CGRect)rect {
+    [super drawRect:rect];
+    if ( _drawBlock ) _drawBlock(self);
+}
+
 @end
 

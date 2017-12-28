@@ -43,6 +43,11 @@
     return self;
 }
 
+- (void)setAsset:(CYVideoPlayerAssetCarrier *)asset {
+    _asset = asset;
+    _draggingProgressView.asset = asset;
+}
+
 #pragma mark
 
 - (void)_controlSetupView {

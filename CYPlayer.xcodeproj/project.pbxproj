@@ -26,7 +26,6 @@
 		0E44EFC71FEA6B2D00195639 /* CYButtonSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF351FEA6B2C00195639 /* CYButtonSlider.m */; };
 		0E44EFC81FEA6B2D00195639 /* CYCommonSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF361FEA6B2C00195639 /* CYCommonSlider.m */; };
 		0E44EFC91FEA6B2D00195639 /* CYVideoPlayerPresentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF391FEA6B2C00195639 /* CYVideoPlayerPresentView.m */; };
-		0E44EFCA1FEA6B2D00195639 /* JDradualLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF3D1FEA6B2C00195639 /* JDradualLoadingView.m */; };
 		0E44EFCB1FEA6B2D00195639 /* CYVideoPlayerRegistrar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF3F1FEA6B2C00195639 /* CYVideoPlayerRegistrar.m */; };
 		0E44EFCC1FEA6B2D00195639 /* CYVideoPlayerControlMaskView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF441FEA6B2C00195639 /* CYVideoPlayerControlMaskView.m */; };
 		0E44EFCD1FEA6B2D00195639 /* CYVideoPlayerDraggingProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF451FEA6B2C00195639 /* CYVideoPlayerDraggingProgressView.m */; };
@@ -82,6 +81,7 @@
 		0E44F0021FEA6B2D00195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44EFBE1FEA6B2C00195639 /* README.md */; };
 		0E44F0041FEA6E0700195639 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E44F0031FEA6E0700195639 /* README.md */; };
 		0E44F0061FEA6E0E00195639 /* CYPlayer.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 0E44F0051FEA6E0E00195639 /* CYPlayer.podspec */; };
+		0EB07F8A1FF53D0200668D09 /* CYLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EB07F891FF53D0200668D09 /* CYLoadingView.m */; };
 		944D19A920C1226CCAEBC184 /* libPods-CYPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B98C1AD191B044BFCFF2EF2 /* libPods-CYPlayer.a */; };
 /* End PBXBuildFile section */
 
@@ -121,8 +121,6 @@
 		0E44EF361FEA6B2C00195639 /* CYCommonSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYCommonSlider.m; sourceTree = "<group>"; };
 		0E44EF391FEA6B2C00195639 /* CYVideoPlayerPresentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerPresentView.m; sourceTree = "<group>"; };
 		0E44EF3A1FEA6B2C00195639 /* CYVideoPlayerPresentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerPresentView.h; sourceTree = "<group>"; };
-		0E44EF3C1FEA6B2C00195639 /* JDradualLoadingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JDradualLoadingView.h; sourceTree = "<group>"; };
-		0E44EF3D1FEA6B2C00195639 /* JDradualLoadingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JDradualLoadingView.m; sourceTree = "<group>"; };
 		0E44EF3F1FEA6B2C00195639 /* CYVideoPlayerRegistrar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerRegistrar.m; sourceTree = "<group>"; };
 		0E44EF401FEA6B2C00195639 /* CYVideoPlayerRegistrar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerRegistrar.h; sourceTree = "<group>"; };
 		0E44EF421FEA6B2C00195639 /* CYVideoPlayerControlMaskView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerControlMaskView.h; sourceTree = "<group>"; };
@@ -234,6 +232,8 @@
 		0E44EFBF1FEA6B2C00195639 /* CYBorderlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYBorderlineView.h; sourceTree = "<group>"; };
 		0E44F0031FEA6E0700195639 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		0E44F0051FEA6E0E00195639 /* CYPlayer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CYPlayer.podspec; sourceTree = "<group>"; };
+		0EB07F881FF53D0200668D09 /* CYLoadingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYLoadingView.h; sourceTree = "<group>"; };
+		0EB07F891FF53D0200668D09 /* CYLoadingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYLoadingView.m; sourceTree = "<group>"; };
 		240E2C6A4D30253C72AE3C4F /* Pods-CYPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		7B98C1AD191B044BFCFF2EF2 /* libPods-CYPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CYPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FFE007B7A8394C0FA7B039F4 /* Pods-CYPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.release.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.release.xcconfig"; sourceTree = "<group>"; };
@@ -304,6 +304,7 @@
 		0E44EF221FEA6B2C00195639 /* CYPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				0EB07F871FF53CDC00668D09 /* CYLoadingView */,
 				0E44EF231FEA6B2C00195639 /* CYUIFactory */,
 				0E44EF2D1FEA6B2C00195639 /* CYSlider */,
 				0E44EF371FEA6B2C00195639 /* CYVideoPlayer */,
@@ -361,7 +362,6 @@
 			children = (
 				0E44EF461FEA6B2C00195639 /* CYPlayer.h */,
 				0E44EF381FEA6B2C00195639 /* Present */,
-				0E44EF3B1FEA6B2C00195639 /* Loading */,
 				0E44EF3E1FEA6B2C00195639 /* Registrar */,
 				0E44EF411FEA6B2C00195639 /* Other */,
 				0E44EF471FEA6B2C00195639 /* GestureControl */,
@@ -385,15 +385,6 @@
 				0E44EF391FEA6B2C00195639 /* CYVideoPlayerPresentView.m */,
 			);
 			path = Present;
-			sourceTree = "<group>";
-		};
-		0E44EF3B1FEA6B2C00195639 /* Loading */ = {
-			isa = PBXGroup;
-			children = (
-				0E44EF3C1FEA6B2C00195639 /* JDradualLoadingView.h */,
-				0E44EF3D1FEA6B2C00195639 /* JDradualLoadingView.m */,
-			);
-			path = Loading;
 			sourceTree = "<group>";
 		};
 		0E44EF3E1FEA6B2C00195639 /* Registrar */ = {
@@ -655,6 +646,15 @@
 			path = CYBorderLineView;
 			sourceTree = "<group>";
 		};
+		0EB07F871FF53CDC00668D09 /* CYLoadingView */ = {
+			isa = PBXGroup;
+			children = (
+				0EB07F881FF53D0200668D09 /* CYLoadingView.h */,
+				0EB07F891FF53D0200668D09 /* CYLoadingView.m */,
+			);
+			path = CYLoadingView;
+			sourceTree = "<group>";
+		};
 		344DF5328683AFE26C01B3A8 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -835,7 +835,6 @@
 				0E44EFDD1FEA6B2D00195639 /* CYVideoPlayerMoreSettingSecondaryView.m in Sources */,
 				0E44EFE51FEA6B2D00195639 /* CYVideoPlayerPreviewView.m in Sources */,
 				0E44EFC61FEA6B2D00195639 /* CYLabelSlider.m in Sources */,
-				0E44EFCA1FEA6B2D00195639 /* JDradualLoadingView.m in Sources */,
 				0E44EFDC1FEA6B2D00195639 /* CYVideoPlayerMoreSettingSecondaryColCell.m in Sources */,
 				0E44EFD21FEA6B2D00195639 /* CYVideoPlayerMoreSettingSecondary.m in Sources */,
 				0E44EFCC1FEA6B2D00195639 /* CYVideoPlayerControlMaskView.m in Sources */,
@@ -853,6 +852,7 @@
 				0E44EFF61FEA6B2D00195639 /* NSObject+CYObserverHelper.m in Sources */,
 				0E44EFCD1FEA6B2D00195639 /* CYVideoPlayerDraggingProgressView.m in Sources */,
 				0E44EFCF1FEA6B2D00195639 /* CYTimerControl.m in Sources */,
+				0EB07F8A1FF53D0200668D09 /* CYLoadingView.m in Sources */,
 				0E44EFEA1FEA6B2D00195639 /* CYOrentationObserver.m in Sources */,
 				0E44EE061FEA606100195639 /* AppDelegate.m in Sources */,
 				0E44EFC81FEA6B2D00195639 /* CYCommonSlider.m in Sources */,

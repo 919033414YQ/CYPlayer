@@ -1,12 +1,14 @@
 //
 //  CYUIFactory.h
-//  LanWuZheiOS
+//  CYUIFactory
 //
 //  Created by yellowei on 2017/11/4.
 //  Copyright © 2017年 lanwuzhe. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
+
+@class CYLabel;
 
 extern CGSize CYScreen_Size(void);
 extern float CYScreen_W(void);
@@ -71,6 +73,14 @@ extern BOOL CY_is_iPhoneX(void);
                      lineColor:(UIColor *)color;
 
 + (UIView *)shadowViewWithCornerRadius:(CGFloat)cornerRadius;
+
+@end
+
+#pragma mark -
+@interface CYShapeViewFactory : NSObject
+
++ (UIView *)viewWithCornerRadius:(CGFloat)cornerRaius
+                 backgroundColor:(UIColor *)backgroundColor;
 
 @end
 
@@ -186,6 +196,49 @@ estimatedSectionFooterHeight:(CGFloat)estimatedSectionFooterHeight;
                       attrStr:(NSAttributedString *)attrStr;
 
 @end
+
+
+#pragma mark -
+/*!
+ *  textColor if nil, it will be set black.
+ *  font if nil, it will be set 14.
+ **/
+@interface CYCYLabelFactory : NSObject
+
++ (CYLabel *)labelWithFont:(UIFont *)font;
+
++ (CYLabel *)labelWithFont:(UIFont *)font
+                 textColor:(UIColor *)textColor;
+
++ (CYLabel *)labelWithFont:(UIFont *)font
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment;
+
++ (CYLabel *)labelWithText:(NSString *)text;
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor;
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                      font:(UIFont *)font;
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment;
+
++ (CYLabel *)labelWithText:(NSString *)text
+                 textColor:(UIColor *)textColor
+                 alignment:(NSTextAlignment)alignment
+                      font:(UIFont *)font;
+
++ (CYLabel *)attributeLabel;
+
++ (CYLabel *)labelWithAttrStr:(NSAttributedString *)attrStr;
+
++ (CYLabel *)labelWithAttrStr:(NSAttributedString *)attrStr userInteractionEnabled:(BOOL)bol;
+@end
+
 
 
 #pragma mark -
@@ -483,5 +536,15 @@ estimatedSectionFooterHeight:(CGFloat)estimatedSectionFooterHeight;
                                             msg:(NSString *)msg
                                    photoLibrary:(void(^)(UIImage *selectedImage))photoLibraryBlock
                                          camera:(void(^)(UIImage *selectedImage))cameraBlock;
+@end
+
+
+
+#pragma mark -
+
+@interface CYDrawUIView : UIView
+
+@property (nonatomic, copy, readwrite) void(^drawBlock)(CYDrawUIView *view);
+
 @end
 

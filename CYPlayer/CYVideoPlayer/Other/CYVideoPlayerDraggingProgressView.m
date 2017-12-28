@@ -11,14 +11,26 @@
 #import "CYVideoPlayerResources.h"
 #import <Masonry/Masonry.h>
 #import "CYSlider.h"
+#import "CYVideoPlayerAssetCarrier.h"
+
+inline static NSString *_formatWithSec(NSInteger sec) {
+    NSInteger seconds = sec % 60;
+    NSInteger minutes = sec / 60;
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)minutes, (long)seconds];
+}
 
 @interface CYVideoPlayerDraggingProgressView ()
+
+@property (nonatomic, strong, readonly) UILabel *progressLabel;
+@property (nonatomic, strong, readonly) UIImageView *imageView;
+@property (nonatomic, strong, readonly) CYSlider *progressSlider;
 
 @end
 
 @implementation CYVideoPlayerDraggingProgressView
 
 @synthesize progressLabel = _progressLabel;
+@synthesize imageView = _imageView;
 @synthesize progressSlider = _progressSlider;
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -36,18 +48,54 @@
 }
 
 - (void)_draggingProgressSetupView {
+    [self addSubview:self.imageView];
     [self addSubview:self.progressLabel];
     [self addSubview:self.progressSlider];
     
+    [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(_progressLabel.mas_top).offset(-12);
+        make.centerX.offset(0);
+        make.width.offset(120);
+        make.height.equalTo(_imageView.mas_width).multipliedBy(9.f / 16);
+    }];
+    
     [_progressLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(_progressLabel.superview);
-        make.bottom.equalTo(_progressLabel.superview.mas_centerY).offset(-8);
+        make.top.equalTo(_progressLabel.superview.mas_centerY);
+        make.centerX.offset(0);
     }];
     
     [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.offset(130);
+        make.top.equalTo(_progressLabel.mas_bottom).offset(8);
+        make.centerX.offset(0);
+        make.width.offset(54);
         make.height.offset(3);
-        make.center.offset(0);
+    }];
+}
+
+- (void)setProgress:(float)progress {
+    if ( isnan(progress) || progress < 0 ) progress = 0;
+    else if ( progress > 1 ) progress = 1;
+    _progress = progress;
+    _progressSlider.value = progress;
+    _progressLabel.text = _formatWithSec(_asset.duration * progress);
+    [self changeDragging];
+}
+
+- (void)setHiddenProgressSlider:(BOOL)hiddenProgressSlider {
+    _hiddenProgressSlider = hiddenProgressSlider;
+    _progressSlider.hidden = hiddenProgressSlider;
+}
+
+- (void)changeDragging {
+    NSTimeInterval time = _asset.duration * _progress;
+    __weak typeof(self) _self = self;
+    [_asset screenshotWithTime:time size:_size completion:^(CYVideoPlayerAssetCarrier * _Nonnull asset, CYVideoPreviewModel * _Nonnull images, NSError * _Nullable error) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.imageView.alpha = 1;
+            self.imageView.image = images.image;
+        });
     }];
 }
 
@@ -64,6 +112,15 @@
     if ( _progressLabel ) return _progressLabel;
     _progressLabel = [CYUILabelFactory labelWithText:@"00:00" textColor:[UIColor whiteColor] alignment:NSTextAlignmentCenter font:[UIFont boldSystemFontOfSize:42]];
     return _progressLabel;
+}
+
+- (UIImageView *)imageView {
+    if ( _imageView ) return _imageView;
+    _imageView = [CYShapeImageViewFactory imageViewWithCornerRadius:4];
+    _imageView.backgroundColor = [UIColor colorWithWhite:0.2 alpha:0.2];
+    _imageView.layer.borderColor = [UIColor colorWithWhite:0 alpha:0.4].CGColor;
+    _imageView.layer.borderWidth = 0.6;
+    return _imageView;
 }
 
 @end

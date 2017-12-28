@@ -49,6 +49,7 @@ extern NSNotificationName const CY_AVPlayerRateDidChangeNotification;
 
 - (void)generatedPreviewImagesWithMaxItemSize:(CGSize)itemSize completion:(void(^)(CYVideoPlayerAssetCarrier *asset, NSArray<CYVideoPreviewModel *> *__nullable images, NSError *__nullable error))block;
 - (void)cancelPreviewImagesGeneration;
+- (void)screenshotWithTime:(NSTimeInterval)time size:(CGSize)size completion:(void(^)(CYVideoPlayerAssetCarrier *asset, CYVideoPreviewModel *images, NSError *__nullable error))block ;
 
 @property (nonatomic, copy, readwrite, nullable) void(^deallocCallBlock)(CYVideoPlayerAssetCarrier *asset);
 
