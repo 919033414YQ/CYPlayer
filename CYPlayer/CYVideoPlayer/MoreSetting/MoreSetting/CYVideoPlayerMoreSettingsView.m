@@ -52,6 +52,7 @@ static NSString *const CYVideoPlayerMoreSettingsFooterSlidersViewID = @"CYVideoP
     [_colView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_colView.superview);
     }];
+    [self.colView reloadData];
 }
 
 - (UICollectionView *)colView {
