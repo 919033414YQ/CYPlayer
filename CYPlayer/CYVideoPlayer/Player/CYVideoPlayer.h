@@ -188,7 +188,7 @@ typedef void(^LockScreen)(BOOL isLock);
 
 /*!
  *  跳转到指定位置, 不建议使用
- *  如果要跳转到某个位置, 可以在初始化时, 设置`SJVideoPlayerAssetCarrier`的`beginTime`.
+ *  如果要跳转到某个位置, 可以在初始化时, 设置`CYVideoPlayerAssetCarrier`的`beginTime`.
  **/
 - (void)jumpedToTime:(NSTimeInterval)time completionHandler:(void (^ __nullable)(BOOL finished))completionHandler;
 

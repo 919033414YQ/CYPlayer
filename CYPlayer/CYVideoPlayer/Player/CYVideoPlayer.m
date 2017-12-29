@@ -76,6 +76,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 @property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
 @property (nonatomic, strong, readonly) CYPlayerGestureControl *gestureControl;
 @property (nonatomic, strong, readonly) CYLoadingView *loadingView;
+@property (nonatomic, strong, readonly) dispatch_queue_t workQueue;
 
 
 @property (nonatomic, assign, readwrite) CYVideoPlayerPlayState state;
@@ -372,6 +373,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     CYVolBrigControl *_volBrigControl;
     CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
+    dispatch_queue_t _workQueue;
 }
 
 + (instancetype)sharedPlayer {
@@ -409,6 +411,21 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [self _unknownState];
     
     return self;
+}
+
+- (dispatch_queue_t)workQueue {
+    if ( _workQueue ) return _workQueue;
+    _workQueue = dispatch_queue_create("com.CYVideoPlayer.workQueue", DISPATCH_QUEUE_SERIAL);
+    return _workQueue;
+}
+
+- (void)_addOperation:(void(^)(CYVideoPlayer *player))block {
+    __weak typeof(self) _self = self;
+    dispatch_async(self.workQueue, ^{
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        if ( block ) block(self);
+    });
 }
 
 - (CYVideoPlayerPresentView *)presentView {
@@ -1362,11 +1379,12 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)settingPlayer:(void (^)(CYVideoPlayerSettings * _Nonnull))block {
-    if ( block )
-    {
-        block([self settings]);   
-    }
-    [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[self settings]];
+    [self _addOperation:^(CYVideoPlayer *player) {
+        if ( block ) block([player settings]);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[player settings]];
+        });
+    }];
 }
 
 - (CYVideoPlayerSettings *)settings {
@@ -1396,9 +1414,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     setting.progress_traceHeight = 3;
     setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];
-    setting.more_traceHeight = 5;
+    setting.more_trackHeight = 5;
     setting.loadingLineColor = [UIColor whiteColor];
-    setting.loadingLineWidth = 1;
 }
 
 - (void)setPlaceholder:(UIImage *)placeholder {
