@@ -1087,7 +1087,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [self.asset.player pause];
 }
 
-static BOOL _isLoading;
+
 - (void)_startLoading {
     if ( _loadingView.isAnimating ) return;
     [_loadingView start];

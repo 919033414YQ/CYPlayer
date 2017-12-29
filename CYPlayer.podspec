@@ -55,6 +55,7 @@ ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
 end
 
 s.subspec 'CYUIFactory' do |ss|
+ss.dependency 'CYPlayer/CYAttributesFactory'
 ss.source_files = 'CYPlayer/CYUIFactory/*.{h,m}'
 ss.subspec 'Category' do |sss|
 sss.source_files = 'CYPlayer/CYUIFactory/Category/*.{h,m}'
@@ -80,7 +81,7 @@ ss.dependency 'CYPlayer/CYSlider'
 ss.dependency 'CYPlayer/CYBorderLineView'
 ss.dependency 'CYPlayer/CYObserverHelper'
 # ss.dependency 'CYPlayer/CYVideoPlayerBackGR'
-# ss.dependency 'CYPlayer/CYLoadingView'
+ss.dependency 'CYPlayer/CYLoadingView'
 
 # ########
 ss.subspec 'Header' do |sss|
