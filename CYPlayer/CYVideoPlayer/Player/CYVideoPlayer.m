@@ -1637,10 +1637,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     }];
 }
 
-- (UIImage *)screenshot {
-    return [self.asset screenshot];
-}
-
 - (UIImage *)randomScreenshot {
     return [self.asset randomScreenshot];
 }

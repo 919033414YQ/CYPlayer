@@ -221,10 +221,8 @@ typedef void(^LockScreen)(BOOL isLock);
 - (void)seekToTime:(CMTime)time completionHandler:(void (^ __nullable)(BOOL finished))completionHandler;
 
 /*!
- *  获取当前截图
+ *  获取随机截图
  **/
-- (UIImage *)screenshot;
-
 - (UIImage *)randomScreenshot;
 
 - (NSArray<CYVideoPreviewModel *> *)getPreviewImages;
