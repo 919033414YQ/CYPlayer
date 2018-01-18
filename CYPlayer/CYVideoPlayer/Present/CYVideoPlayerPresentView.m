@@ -11,6 +11,9 @@
 #import "CYVideoPlayerAssetCarrier.h"
 
 @interface CYVideoPlayerPresentView ()
+
+@property (nonatomic, strong, readonly) UIImageView *placeholderImageView;
+
 @end
 
 @implementation CYVideoPlayerPresentView
@@ -21,18 +24,18 @@
     return [AVPlayerLayer class];
 }
 
+- (AVPlayerLayer *)avLayer {
+    return (AVPlayerLayer *)self.layer;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if ( !self ) return nil;
-    _videoGravity = AVLayerVideoGravityResizeAspect;
     [self _presentSetupView];
     [self _addObserver];
     return self;
 }
 
-- (AVPlayerLayer *)avLayer {
-    return (AVPlayerLayer *)self.layer;
-}
 
 #pragma mark - Observer
 
@@ -46,20 +49,43 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if ( [keyPath isEqualToString:@"readyForDisplay"] ) {
-        if ( self.readyForDisplay ) self.readyForDisplay(self);
+        if ( self.readyForDisplay ) self.readyForDisplay(self, self.avLayer.videoRect);
     }
 }
 
 #pragma mark - Setter
 
 - (void)setAsset:(CYVideoPlayerAssetCarrier *)asset {
+    if ( asset == _asset ) return;
     _asset = asset;
     self.avLayer.player = asset.player;
 }
 
-- (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
-    _videoGravity = videoGravity;
-    self.avLayer.videoGravity = videoGravity;
+- (void)setPlaceholder:(UIImage *)placeholder {
+    if ( placeholder == _placeholder ) return;
+    _placeholder = placeholder;
+    _placeholderImageView.image = placeholder;
+}
+
+- (void)setState:(CYVideoPlayerPlayState)state {
+    _state = state;
+    [UIView animateWithDuration:0.25 animations:^{
+        switch ( state ) {
+            case CYVideoPlayerPlayState_Unknown:
+            case CYVideoPlayerPlayState_Prepare: {
+                _placeholderImageView.alpha = 1;
+            }
+                break;
+            case CYVideoPlayerPlayState_Playing: {
+                _placeholderImageView.alpha = 0.001;
+            }
+                break;
+            case CYVideoPlayerPlayState_Buffing:
+            case CYVideoPlayerPlayState_Pause:
+            case CYVideoPlayerPlayState_PlayEnd:
+            case CYVideoPlayerPlayState_PlayFailed: break;
+        }
+    }];
 }
 
 #pragma mark - Views

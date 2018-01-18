@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import "CYVideoPlayerState.h"
 
 @class CYVideoPlayerAssetCarrier;
 
@@ -15,15 +16,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CYVideoPlayerPresentView : UIView
 
-- (AVPlayerLayer *)avLayer;
-
-@property (nonatomic, strong, readonly) UIImageView *placeholderImageView;
-
-@property (nonatomic, strong, readwrite) AVLayerVideoGravity videoGravity;
-
 @property (nonatomic, weak, readwrite, nullable) CYVideoPlayerAssetCarrier *asset;
 
-@property (nonatomic, copy, readwrite, nullable) void(^readyForDisplay)(CYVideoPlayerPresentView *view);
+@property (nonatomic, copy, readwrite, nullable) void(^readyForDisplay)(CYVideoPlayerPresentView *view, CGRect videoRect);
+
+@property (nonatomic, strong, readwrite, nullable) UIImage *placeholder;
+
+@property (nonatomic, assign, readwrite) CYVideoPlayerPlayState state;
 
 @end
 

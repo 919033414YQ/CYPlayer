@@ -10,6 +10,7 @@
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
 #import <Masonry/Masonry.h>
+#import "CYVideoPlayerAssetCarrier.h"
 
 @interface CYVideoPlayerPreviewCollectionViewCell ()
 

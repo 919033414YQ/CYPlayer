@@ -22,6 +22,10 @@ typedef void(^LockScreen)(BOOL isLock);
 
 + (instancetype)sharedPlayer;
 
++ (instancetype)player;
+
+- (instancetype)init;
+
 /*!
  *  present View. support autoLayout.
  *
@@ -38,12 +42,32 @@ typedef void(^LockScreen)(BOOL isLock);
 
 @property (nonatomic, assign, readonly) CYVideoPlayerPlayState state;
 
+/*!
+ *  获取当前截图
+ **/
+- (UIImage *__nullable)screenshot;
+
+/*!
+ *  unit sec.
+ *
+ *  当前播放时间.
+ */
+- (NSTimeInterval)currentTime;
+
+- (NSTimeInterval)totalTime;
+
 @end
 
 
 #pragma mark - 
 
 @interface CYVideoPlayer (Setting)
+/*!
+ *  clicked back btn exe block.
+ *
+ *  点击返回按钮的回调.
+ */
+@property (nonatomic, copy, readwrite) void(^clickedBackEvent)(CYVideoPlayer *player);
 
 - (void)playWithURL:(NSURL *)playURL;
 
@@ -83,12 +107,6 @@ typedef void(^LockScreen)(BOOL isLock);
 - (void)settingPlayer:(void(^)(CYVideoPlayerSettings *settings))block;
 - (void)resetSetting;// 重置配置
 
-/*!
- *  rate
- *
- *  0.5..1.5
- **/
-@property (nonatomic, assign, readwrite) float rate;
 
 /*!
  *  Call when the rate changes.
@@ -104,6 +122,7 @@ typedef void(^LockScreen)(BOOL isLock);
  *  当滑动内部的`rate slider`时候调用. 外部改变`rate`不会调用.
  **/
 @property (nonatomic, copy, readwrite, nullable) void(^internallyChangedRate)(CYVideoPlayer *player, float rate);
+@property (nonatomic, assign, readwrite) float rate; /// 0.5 .. 1.5
 
 /*!
  *  loading show this.
@@ -122,16 +141,9 @@ typedef void(^LockScreen)(BOOL isLock);
 /*!
  *  default is YES.
  *
- *  是否自动生成预览视图, 默认是 YES.
+ *  是否自动生成预览视图, 默认是 YES. 如果为NO, 则预览按钮将不会显示.
  */
 @property (nonatomic, assign, readwrite) BOOL generatePreviewImages;
-
-/*!
- *  clicked back btn exe block.
- *
- *  点击返回按钮的回调
- */
-@property (nonatomic, copy, readwrite) void(^clickedBackEvent)(CYVideoPlayer *player);
 
 /*!
  *  Whether screen rotation is disabled. default is NO.
@@ -146,9 +158,20 @@ typedef void(^LockScreen)(BOOL isLock);
  *  屏幕旋转的时候调用.
  **/
 @property (nonatomic, copy, readwrite, nullable) void(^rotatedScreen)(CYVideoPlayer *player, BOOL isFullScreen);
+@property (nonatomic, assign, readonly) BOOL isFullScreen; // 是否全屏
 
-@property (nonatomic, strong, readwrite) AVLayerVideoGravity videoGravity;
+/*!
+ *  播放完毕的时候调用.
+ **/
+@property (nonatomic, copy, readwrite, nullable) void(^playDidToEnd)(CYVideoPlayer *player);
 
+/*!
+ *  Call when the control view is hidden or displayed.
+ *
+ *  控制视图隐藏或显示的时候调用.
+ **/
+@property (nonatomic, copy, readwrite, nullable) void(^controlViewDisplayStatus)(CYVideoPlayer *player, BOOL displayed);
+@property (nonatomic, assign, readonly) BOOL controlViewDisplayed; // 控制视图是否显示
 
 @end
 
@@ -171,6 +194,9 @@ typedef void(^LockScreen)(BOOL isLock);
 - (BOOL)pause;
 
 - (void)stop;
+
+/// 停止播放并淡出
+- (void)stopAndFadeOut;
 
 /*!
  *  停止旋转.

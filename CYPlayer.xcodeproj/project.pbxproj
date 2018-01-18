@@ -34,7 +34,6 @@
 		0E44EFD01FEA6B2D00195639 /* CYVideoPlayerAssetCarrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF521FEA6B2C00195639 /* CYVideoPlayerAssetCarrier.m */; };
 		0E44EFD11FEA6B2D00195639 /* CYMoreSettingsFooterViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF541FEA6B2C00195639 /* CYMoreSettingsFooterViewModel.m */; };
 		0E44EFD21FEA6B2D00195639 /* CYVideoPlayerMoreSettingSecondary.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF551FEA6B2C00195639 /* CYVideoPlayerMoreSettingSecondary.m */; };
-		0E44EFD31FEA6B2D00195639 /* CYVideoPreviewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF561FEA6B2C00195639 /* CYVideoPreviewModel.m */; };
 		0E44EFD41FEA6B2D00195639 /* CYVideoPlayerMoreSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF571FEA6B2C00195639 /* CYVideoPlayerMoreSetting.m */; };
 		0E44EFD51FEA6B2D00195639 /* CYVideoPlayerSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF591FEA6B2C00195639 /* CYVideoPlayerSettings.m */; };
 		0E44EFD61FEA6B2D00195639 /* CYVideoPlayerResources.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E44EF5C1FEA6B2C00195639 /* CYVideoPlayerResources.m */; };
@@ -132,7 +131,6 @@
 		0E44EF491FEA6B2C00195639 /* CYPlayerGestureControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerGestureControl.m; sourceTree = "<group>"; };
 		0E44EF4B1FEA6B2C00195639 /* CYTimerControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYTimerControl.h; sourceTree = "<group>"; };
 		0E44EF4C1FEA6B2C00195639 /* CYTimerControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYTimerControl.m; sourceTree = "<group>"; };
-		0E44EF4E1FEA6B2C00195639 /* CYVideoPreviewModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPreviewModel.h; sourceTree = "<group>"; };
 		0E44EF4F1FEA6B2C00195639 /* CYVideoPlayerMoreSettingSecondary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerMoreSettingSecondary.h; sourceTree = "<group>"; };
 		0E44EF501FEA6B2C00195639 /* CYMoreSettingsFooterViewModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYMoreSettingsFooterViewModel.h; sourceTree = "<group>"; };
 		0E44EF511FEA6B2C00195639 /* CYVideoPlayerMoreSetting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerMoreSetting.h; sourceTree = "<group>"; };
@@ -140,7 +138,6 @@
 		0E44EF531FEA6B2C00195639 /* CYVideoPlayerSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSettings.h; sourceTree = "<group>"; };
 		0E44EF541FEA6B2C00195639 /* CYMoreSettingsFooterViewModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYMoreSettingsFooterViewModel.m; sourceTree = "<group>"; };
 		0E44EF551FEA6B2C00195639 /* CYVideoPlayerMoreSettingSecondary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerMoreSettingSecondary.m; sourceTree = "<group>"; };
-		0E44EF561FEA6B2C00195639 /* CYVideoPreviewModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPreviewModel.m; sourceTree = "<group>"; };
 		0E44EF571FEA6B2C00195639 /* CYVideoPlayerMoreSetting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerMoreSetting.m; sourceTree = "<group>"; };
 		0E44EF581FEA6B2C00195639 /* CYVideoPlayerAssetCarrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerAssetCarrier.h; sourceTree = "<group>"; };
 		0E44EF591FEA6B2C00195639 /* CYVideoPlayerSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerSettings.m; sourceTree = "<group>"; };
@@ -438,8 +435,6 @@
 				0E44EF551FEA6B2C00195639 /* CYVideoPlayerMoreSettingSecondary.m */,
 				0E44EF531FEA6B2C00195639 /* CYVideoPlayerSettings.h */,
 				0E44EF591FEA6B2C00195639 /* CYVideoPlayerSettings.m */,
-				0E44EF4E1FEA6B2C00195639 /* CYVideoPreviewModel.h */,
-				0E44EF561FEA6B2C00195639 /* CYVideoPreviewModel.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -817,7 +812,6 @@
 				0E44EFD91FEA6B2D00195639 /* CYVideoPlayerMoreSettingsView.m in Sources */,
 				0E44EFE31FEA6B2D00195639 /* CYVideoPlayerBottomControlView.m in Sources */,
 				0E44EFE41FEA6B2D00195639 /* CYVideoPlayerPreviewCollectionViewCell.m in Sources */,
-				0E44EFD31FEA6B2D00195639 /* CYVideoPreviewModel.m in Sources */,
 				0E44EFD51FEA6B2D00195639 /* CYVideoPlayerSettings.m in Sources */,
 				0E44EFE01FEA6B2D00195639 /* CYVideoPlayerTopControlView.m in Sources */,
 				0E44EFFF1FEA6B2D00195639 /* CYAttributeWorker.m in Sources */,

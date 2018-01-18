@@ -7,9 +7,10 @@
 //
 
 #import "CYVideoPlayerBaseView.h"
-#import "CYVideoPreviewModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class CYVideoPreviewModel;
 
 @protocol CYVideoPlayerPreviewViewDelegate;
 

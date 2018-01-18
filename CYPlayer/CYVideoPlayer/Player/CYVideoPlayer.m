@@ -84,8 +84,11 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 @property (nonatomic, assign, readwrite) BOOL hiddenMoreSecondarySettingView;
 @property (nonatomic, assign, readwrite) BOOL hiddenLeftControlView;
 @property (nonatomic, assign, readwrite) BOOL userClickedPause;
+@property (nonatomic, assign, readwrite) BOOL suspend; // Set it when the [`pause` + `play` + `stop`] is called.
 @property (nonatomic, assign, readwrite) BOOL playOnCell;
 @property (nonatomic, assign, readwrite) BOOL scrollIn;
+@property (nonatomic, assign, readwrite) BOOL touchedScrollView;
+@property (nonatomic, assign, readwrite) BOOL stopped; // Set it when the [`play` + `stop`] is called.
 @property (nonatomic, strong, readwrite) NSError *error;
 
 - (void)_play;
@@ -177,13 +180,17 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)setHideControl:(BOOL)hideControl {
-//    if ( self.isHiddenControl == hideControl ) return;
-    objc_setAssociatedObject(self, @selector(isHiddenControl), @(hideControl), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     [self.timerControl reset];
     if ( hideControl ) [self _hideControlState];
     else {
         [self _showControlState];
         [self _delayHiddenControl];
+    }
+    
+    BOOL oldValue = self.isHiddenControl;
+    if ( oldValue != hideControl ) {
+        objc_setAssociatedObject(self, @selector(isHiddenControl), @(hideControl), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        if ( self.controlViewDisplayStatus ) self.controlViewDisplayStatus(self, !hideControl);
     }
 }
 
@@ -192,9 +199,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)_unknownState {
-    // show
-    _cyShowViews(@[self.presentView.placeholderImageView,]);
-    
     // hidden
     _cyHiddenViews(@[self.controlView]);
     
@@ -203,8 +207,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 - (void)_prepareState {
     // show
-    _cyShowViews(@[self.controlView,
-                   self.presentView.placeholderImageView]);
+    _cyShowViews(@[self.controlView]);
     
     // hidden
     self.controlView.previewView.hidden = YES;
@@ -240,8 +243,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _cyShowViews(@[self.controlView.bottomControlView.pauseBtn]);
     
     // hidden
+    // hidden
     _cyHiddenViews(@[
-                     self.presentView.placeholderImageView,
                      self.controlView.bottomControlView.playBtn,
                      self.controlView.centerControlView.replayBtn,
                      ]);
@@ -374,6 +377,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
     dispatch_queue_t _workQueue;
+    CYVideoPlayerAssetCarrier *_asset;
 }
 
 + (instancetype)sharedPlayer {
@@ -383,6 +387,10 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         _instance = [[self alloc] init];
     });
     return _instance;
+}
+
++ (instancetype)player {
+    return [[self alloc] init];
 }
 
 #pragma mark
@@ -399,7 +407,10 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [self view];
     [self orentation];
     [self volBrig];
+    __weak typeof(self) _self = self;
     [self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return ;
         [self resetSetting];
     }];
     [self registrar];
@@ -410,8 +421,30 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     
     [self _unknownState];
     
+    self.rate = 1;
+    
     return self;
 }
+
+- (void)dealloc {
+    self.state = CYVideoPlayerPlayState_Unknown;
+    [self stop];
+    NSLog(@"%s - %zd", __func__, __LINE__);
+}
+
+- (UIImage *)screenshot {
+    return [_asset screenshot];
+}
+
+- (NSTimeInterval)currentTime {
+    return _asset.currentTime;
+}
+
+- (NSTimeInterval)totalTime {
+    return _asset.duration;
+}
+
+#pragma mark -
 
 - (dispatch_queue_t)workQueue {
     if ( _workQueue ) return _workQueue;
@@ -426,44 +459,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( !self ) return;
         if ( block ) block(self);
     });
-}
-
-- (CYVideoPlayerPresentView *)presentView {
-    if ( _presentView ) return _presentView;
-    _presentView = [CYVideoPlayerPresentView new];
-    _presentView.clipsToBounds = YES;
-    __weak typeof(self) _self = self;
-    _presentView.readyForDisplay = ^(CYVideoPlayerPresentView * _Nonnull view) {
-        if ( _self.asset.hasBeenGeneratedPreviewImages ) { return ; }
-        if ( !_self.generatePreviewImages ) return;
-        CGRect bounds = view.avLayer.videoRect;
-        CGFloat width = [UIScreen mainScreen].bounds.size.width * 0.4;
-        CGFloat height = width * bounds.size.height / bounds.size.width;
-        CGSize size = CGSizeMake(width, height);
-        [_self.asset generatedPreviewImagesWithMaxItemSize:size completion:^(CYVideoPlayerAssetCarrier * _Nonnull asset, NSArray<CYVideoPreviewModel *> * _Nullable images, NSError * _Nullable error) {
-            if ( error ) {
-                _cyErrorLog(@"Generate Preview Image Failed!");
-            }
-            else {
-                __strong typeof(_self) self = _self;
-                if ( !self ) return;
-                if ( self.orentation.fullScreen ) {
-                    _cyAnima(^{
-                        _cyShowViews(@[self.controlView.topControlView.previewBtn]);
-                    });
-                }
-                self.controlView.previewView.previewImages = images;
-            }
-        }];
-    };
-    return _presentView;
-}
-
-- (CYVideoPlayerControlView *)controlView {
-    if ( _controlView ) return _controlView;
-    _controlView = [CYVideoPlayerControlView new];
-    _controlView.clipsToBounds = YES;
-    return _controlView;
 }
 
 - (UIView *)view {
@@ -519,6 +514,48 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     return _view;
 }
 
+- (CYVideoPlayerPresentView *)presentView {
+    if ( _presentView ) return _presentView;
+    _presentView = [CYVideoPlayerPresentView new];
+    _presentView.clipsToBounds = YES;
+    __weak typeof(self) _self = self;
+    _presentView.readyForDisplay = ^(CYVideoPlayerPresentView * _Nonnull view, CGRect videoRect) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return ;
+        if ( self.asset.hasBeenGeneratedPreviewImages ) { return ; }
+        if ( !self.generatePreviewImages ) return;
+        CGRect bounds = videoRect;
+        CGFloat width = [UIScreen mainScreen].bounds.size.width * 0.4;
+        CGFloat height = width * bounds.size.height / bounds.size.width;
+        CGSize size = CGSizeMake(width, height);
+        self.controlView.draggingProgressView.size = size;
+        [_self.asset generatedPreviewImagesWithMaxItemSize:size completion:^(CYVideoPlayerAssetCarrier * _Nonnull asset, NSArray<CYVideoPreviewModel *> * _Nullable images, NSError * _Nullable error) {
+            if ( error ) {
+                _cyErrorLog(@"Generate Preview Image Failed!");
+            }
+            else {
+                __strong typeof(_self) self = _self;
+                if ( !self ) return;
+                if ( self.orentation.fullScreen ) {
+                    _cyAnima(^{
+                        _cyShowViews(@[self.controlView.topControlView.previewBtn]);
+                    });
+                }
+                self.controlView.previewView.previewImages = images;
+            }
+        }];
+    };
+    return _presentView;
+}
+
+- (CYVideoPlayerControlView *)controlView {
+    if ( _controlView ) return _controlView;
+    _controlView = [CYVideoPlayerControlView new];
+    _controlView.clipsToBounds = YES;
+    return _controlView;
+}
+
+
 - (CYVideoPlayerMoreSettingsView *)moreSettingView {
     if ( _moreSettingView ) return _moreSettingView;
     _moreSettingView = [CYVideoPlayerMoreSettingsView new];
@@ -567,12 +604,14 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _moreSettingFooterViewModel.initialPlayerRateValue = ^float{
         __strong typeof(_self) self = _self;
         if ( !self ) return 0;
-       return self.asset.player.rate;
+       return self.rate;
     };
     
     _moreSettingView.footerViewModel = _moreSettingFooterViewModel;
     return _moreSecondarySettingView;
 }
+
+#pragma mark -
 
 - (void)setHiddenMoreSettingView:(BOOL)hiddenMoreSettingView {
     if ( hiddenMoreSettingView == _hiddenMoreSettingView ) return;
@@ -617,6 +656,27 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     }
     _orentation = [[CYOrentationObserver alloc] initWithTarget:self.presentView container:self.view];
     __weak typeof(self) _self = self;
+    
+    _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return NO;
+        if ( self.stopped ) {
+            if ( observer.isFullScreen ) return YES;
+            else return NO;
+        }
+        if ( self.touchedScrollView ) return NO;
+        switch (self.state) {
+            case CYVideoPlayerPlayState_Unknown:
+            case CYVideoPlayerPlayState_Prepare:
+            case CYVideoPlayerPlayState_PlayFailed: return NO;
+            default: break;
+        }
+        if ( self.playOnCell && !self.scrollIn ) return NO;
+        if ( self.disableRotation ) return NO;
+        if ( self.isLockedScrren ) return NO;
+        return YES;
+    };
+    
     _orentation.orientationChanged = ^(CYOrentationObserver * _Nonnull observer) {
         __strong typeof(_self) self = _self;
         if ( !self )
@@ -653,20 +713,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);
     };//orientationChanged
     
-    _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
-        __strong typeof(_self) self = _self;
-        if ( !self ) return NO;
-        switch (self.state) {
-            case CYVideoPlayerPlayState_Unknown:
-            case CYVideoPlayerPlayState_Prepare:
-            case CYVideoPlayerPlayState_PlayFailed: return NO;
-            default: break;
-        }
-        if ( self.playOnCell && !self.scrollIn ) return NO;
-        if ( self.disableRotation ) return NO;
-        if ( self.isLockedScrren ) return NO;
-        return YES;
-    };
     return _orentation;
 }
 
@@ -678,14 +724,18 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _registrar.willResignActive = ^(CYVideoPlayerRegistrar * _Nonnull registrar) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
-        [self _pause];
         self.lockScreen = YES;
+        [self _pause];
     };
     
     _registrar.didBecomeActive = ^(CYVideoPlayerRegistrar * _Nonnull registrar) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         self.lockScreen = NO;
+        if ( self.playOnCell && !self.scrollIn ) return;
+        if ( self.state == CYVideoPlayerPlayState_PlayEnd ||
+            self.state == CYVideoPlayerPlayState_Unknown ||
+            self.state == CYVideoPlayerPlayState_PlayFailed ) return;
         if ( !self.userClickedPause ) [self play];
     };
     
@@ -784,7 +834,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         }
     };
     
-    static __weak UIView *target = nil;
     _gestureControl.beganPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
@@ -872,6 +921,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                     if ( !self ) return;
                     [self play];
                 }];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    _self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+                });
             }
                 break;
             case CYPanDirection_V:{
@@ -886,7 +938,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 break;
             case CYPanDirection_Unknown: break;
         }
-        target = nil;
     };
 }
 
@@ -1046,7 +1097,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     self.hiddenMoreSecondarySettingView = YES;
     self.controlView.bottomProgressSlider.value = 0;
     self.controlView.bottomProgressSlider.bufferProgress = 0;
-    self.rate = 1;
     if ( self.moreSettingFooterViewModel.volumeChanged ) {
         self.moreSettingFooterViewModel.volumeChanged(self.volBrigControl.volume);
     }
@@ -1067,17 +1117,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _cyAnima(^{
         self.hideControl = NO;
     });
-    if ( 0 != self.asset.beginTime && !self.asset.jumped ) {
-        __weak typeof(self) _self = self;
-        [self jumpedToTime:self.asset.beginTime completionHandler:^(BOOL finished) {
-            __strong typeof(_self) self = _self;
-            if ( !self ) return;
-            self.asset.jumped = YES;
-            if ( self.autoplay ) [self play];
-        }];
-    }
-    else {
-        if ( self.autoplay && !self.userClickedPause ) [self play];
+    if ( self.autoplay && !self.userClickedPause && !self.suspend ) {
+        [self play];
     }
 }
 
@@ -1091,6 +1132,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)_itemPlayEnd {
+    [self _pause];
     [self jumpedToTime:0 completionHandler:nil];
     [self _playEndState];
 }
@@ -1116,21 +1158,41 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)_buffering {
-    if ( self.state == CYVideoPlayerPlayState_PlayEnd ) return;
-    if ( self.userClickedPause ) return;
+    if ( !self.asset ||
+        self.userClickedPause ||
+        self.state == CYVideoPlayerPlayState_PlayFailed ||
+        self.state == CYVideoPlayerPlayState_PlayEnd ||
+        self.state == CYVideoPlayerPlayState_Unknown ||
+        self.state == CYVideoPlayerPlayState_Playing ) return;
     
     [self _startLoading];
     [self _pause];
     self.state = CYVideoPlayerPlayState_Buffing;
+    __weak typeof(self) _self = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(_self) self = _self;
+        if ( !self ) return ;
+        if ( !self.asset ||
+            self.userClickedPause ||
+            self.state == CYVideoPlayerPlayState_PlayFailed ||
+            self.state == CYVideoPlayerPlayState_PlayEnd ||
+            self.state == CYVideoPlayerPlayState_Unknown ||
+            self.state == CYVideoPlayerPlayState_Playing ) return;
+        
         if ( !self.asset.playerItem.isPlaybackLikelyToKeepUp ) {
             [self _buffering];
         }
         else {
             [self _stopLoading];
-            if ( !self.userClickedPause ) [self play];
+            if ( !self.suspend ) [self play];
         }
     });
+}
+
+- (void)setState:(CYVideoPlayerPlayState)state {
+    if ( state == _state ) return;
+    _state = state;
+    _presentView.state = state;
 }
 
 @end
@@ -1142,6 +1204,14 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 #pragma mark -
 
 @implementation CYVideoPlayer (Setting)
+
+- (void)setClickedBackEvent:(void (^)(CYVideoPlayer *player))clickedBackEvent {
+    objc_setAssociatedObject(self, @selector(clickedBackEvent), clickedBackEvent, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYVideoPlayer * _Nonnull))clickedBackEvent {
+    return objc_getAssociatedObject(self, _cmd);
+}
 
 - (void)playWithURL:(NSURL *)playURL {
     [self playWithURL:playURL jumpedToTime:0];
@@ -1161,7 +1231,10 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)setAsset:(CYVideoPlayerAssetCarrier *)asset {
-    objc_setAssociatedObject(self, @selector(asset), asset, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self _clear];
+    _asset = asset;
+    if ( !asset || !asset.assetURL ) return;
+    _view.alpha = 1;
     _presentView.asset = asset;
     _controlView.asset = asset;
     
@@ -1181,7 +1254,11 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 }
                     break;
                 case AVPlayerItemStatusReadyToPlay: {
-                    [self performSelector:@selector(_itemReadyToPlay) withObject:nil afterDelay:1];
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        __strong typeof(_self) self = _self;
+                        if ( !self ) return ;
+                        [self _itemReadyToPlay];
+                    });
                 }
                     break;
             }
@@ -1200,6 +1277,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         [self _itemPlayEnd];
+        if ( self.playDidToEnd ) self.playDidToEnd(self);
     };
     
     asset.loadedTimeProgress = ^(float progress) {
@@ -1211,16 +1289,12 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     asset.beingBuffered = ^(BOOL state) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ( self.state == CYVideoPlayerPlayState_Buffing ) return;
         [self _buffering];
     };
     
-    asset.deallocCallBlock = ^(CYVideoPlayerAssetCarrier * _Nonnull asset) {
-        __strong typeof(_self) self = _self;
-        if ( !self ) return;
-        self.view.alpha = 1;
-    };
-    
     if ( asset.indexPath ) {
+        /// 默认滑入
         self.playOnCell = YES;
         self.scrollIn = YES;
     }
@@ -1229,99 +1303,55 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         self.scrollIn = NO;
     }
     
-    asset.scrollViewDidScroll = ^(CYVideoPlayerAssetCarrier * _Nonnull asset) {
-        __strong typeof(_self) self = _self;
-        if ( !self ) return;
-        if ( [asset.scrollView isKindOfClass:[UITableView class]] ) {
-            UITableView *tableView = (UITableView *)asset.scrollView;
-            __block BOOL visable = NO;
-            [tableView.indexPathsForVisibleRows enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                if ( [obj compare:self.asset.indexPath] == NSOrderedSame ) {
-                    visable = YES;
-                    *stop = YES;
-                }
-            }];
-            if ( visable ) {
-                if ( YES == self.scrollIn ) return;
-                /// 滑入时
-                self.scrollIn = YES;
-                self.view.alpha = 1;
-                UITableViewCell *cell = [tableView cellForRowAtIndexPath:self.asset.indexPath];
-                UIView *superview = [cell.contentView viewWithTag:self.asset.superviewTag];
-                if ( superview && self.view.superview != superview ) {
-                    [self.view removeFromSuperview];
-                    [superview addSubview:self.view];
-                    [self.view mas_remakeConstraints:^(MASConstraintMaker *make) {
-                        make.edges.equalTo(self.view.superview);
-                    }];
-                }
-            }
-            else {
-                if ( NO == self.scrollIn ) return;
-                /// 滑出时
-                self.scrollIn = NO;
-                self.view.alpha = 0.001;
-                [self pause];
-                self.hideControl = NO;
-            }
-        }
-        else if ( [asset.scrollView isKindOfClass:[UICollectionView class]] ) {
-            UICollectionView *collectionView = (UICollectionView *)asset.scrollView;
-            UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:self.asset.indexPath];
-            if ( [collectionView.visibleCells containsObject:cell] ) {
-                if ( YES == self.scrollIn ) return;
-                /// 滑入时
-                self.scrollIn = YES;
-                self.view.alpha = 1;
+    // scroll view
+    if ( asset.scrollView ) {
+        /// 滑入
+        asset.scrollIn = ^(CYVideoPlayerAssetCarrier * _Nonnull asset, UIView * _Nonnull superview) {
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            if ( self.scrollIn ) return;
+            self.scrollIn = YES;
+            self.hideControl = NO;
+            self.view.alpha = 1;
+            if ( superview && self.view.superview != superview ) {
                 [self.view removeFromSuperview];
-                UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:self.asset.indexPath];
-                UIView *superview = [cell.contentView viewWithTag:self.asset.superviewTag];
-                if ( superview && self.view.superview != superview ) {
-                    [self.view removeFromSuperview];
-                    [superview addSubview:self.view];
-                    [self.view mas_remakeConstraints:^(MASConstraintMaker *make) {
-                        make.edges.equalTo(self.view.superview);
-                    }];
-                }
+                [superview addSubview:self.view];
+                [self.view mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    make.edges.equalTo(self.view.superview);
+                }];
             }
-            else {
-                if ( NO == self.scrollIn ) return;
-                /// 滑出时
-                self.scrollIn = NO;
-                self.view.alpha = 0.001;
-                [self pause];
-                self.hideControl = NO;
-            }
-        }
-    };
+            //            if ( !self.userPaused &&
+            //                 self.state != SJVideoPlayerPlayState_PlayEnd ) [self play];
+        };
+        
+        /// 滑出
+        asset.scrollOut = ^(CYVideoPlayerAssetCarrier * _Nonnull asset) {
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            if ( !self.scrollIn ) return;
+            self.scrollIn = NO;
+            self.view.alpha = 0.001;
+            if ( !self.userPaused &&
+                self.state != CYVideoPlayerPlayState_PlayEnd ) [self pause];
+        };
+        
+        ///
+        asset.touchedScrollView = ^(CYVideoPlayerAssetCarrier * _Nonnull asset, BOOL tracking) {
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            self.touchedScrollView = tracking;
+        };
+    }
 }
 
-//static __weak UIView *tmpView = nil;
-//- (UIView *)_getSuperviewWithContentView:(UIView *)contentView tag:(NSInteger)tag {
-//    if ( contentView.tag == tag ) return contentView;
-//    
-//    [self _searchingWithView:contentView tag:tag];
-//    UIView *target = tmpView;
-//    tmpView = nil;
-//    return target;
-//}
-//
-//- (void)_searchingWithView:(UIView *)view tag:(NSInteger)tag {
-//    if ( tmpView ) return;
-//    [view.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        if ( obj.tag == tag ) {
-//            *stop = YES;
-//            tmpView = obj;
-//        }
-//        else {
-//            [self _searchingWithView:obj tag:tag];
-//        }
-//    }];
-//    return;
-//}
-
 - (CYVideoPlayerAssetCarrier *)asset {
-    return objc_getAssociatedObject(self, _cmd);
+    return _asset;
+}
+
+- (void)_clear {
+    _presentView.asset = nil;
+    _controlView.asset = nil;
+    _asset = nil;
 }
 
 - (void)setMoreSettings:(NSArray<CYVideoPlayerMoreSetting *> *)moreSettings {
@@ -1419,7 +1449,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)setPlaceholder:(UIImage *)placeholder {
-    self.presentView.placeholderImageView.image = placeholder;
+    _presentView.placeholder = placeholder;
 }
 
 - (void)setAutoplay:(BOOL)autoplay {
@@ -1438,14 +1468,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     return [objc_getAssociatedObject(self, _cmd) boolValue];
 }
 
-- (void)setClickedBackEvent:(void (^)(CYVideoPlayer *player))clickedBackEvent {
-    objc_setAssociatedObject(self, @selector(clickedBackEvent), clickedBackEvent, OBJC_ASSOCIATION_COPY);
-}
-
-- (void (^)(CYVideoPlayer * _Nonnull))clickedBackEvent {
-    return objc_getAssociatedObject(self, _cmd);
-}
-
 - (void)setDisableRotation:(BOOL)disableRotation {
     objc_setAssociatedObject(self, @selector(disableRotation), @(disableRotation), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
@@ -1462,24 +1484,34 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     return objc_getAssociatedObject(self, _cmd);
 }
 
-- (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
-    objc_setAssociatedObject(self, @selector(videoGravity), videoGravity, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    _presentView.videoGravity = videoGravity;
+- (BOOL)isFullScreen {
+    return self.orentation.isFullScreen;
 }
 
-- (AVLayerVideoGravity)videoGravity {
+- (void)setPlayDidToEnd:(void (^)(CYVideoPlayer * _Nonnull))playDidToEnd {
+    objc_setAssociatedObject(self, @selector(playDidToEnd), playDidToEnd, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYVideoPlayer * _Nonnull))playDidToEnd {
     return objc_getAssociatedObject(self, _cmd);
 }
 
-- (void)_cleanSetting {
-    [self.asset cancelPreviewImagesGeneration];
-    self.asset = nil;
-    self.rate = 1;
+- (void)setControlViewDisplayStatus:(void (^)(CYVideoPlayer * _Nonnull, BOOL))controlViewDisplayStatus {
+    objc_setAssociatedObject(self, @selector(controlViewDisplayStatus), controlViewDisplayStatus, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYVideoPlayer * _Nonnull, BOOL))controlViewDisplayStatus {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (BOOL)controlViewDisplayed {
+    return !self.isHiddenControl;
 }
 
 - (void)setRate:(float)rate {
     if ( self.rate == rate ) return;
     objc_setAssociatedObject(self, @selector(rate), @(rate), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if ( !self.asset ) return;
     self.asset.player.rate = rate;
     self.userClickedPause = NO;
     _cyAnima(^{
@@ -1525,35 +1557,71 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (BOOL)play {
+    self.suspend = NO;
+    self.stopped = NO;
+    
     if ( !self.asset ) return NO;
     self.userClickedPause = NO;
-    _cyAnima(^{
-        [self _playState];
-    });
+    if ( self.state != CYVideoPlayerPlayState_Playing ) {
+        _cyAnima(^{
+            [self _playState];
+        });
+    }
     [self _play];
     return YES;
 }
 
+
 - (BOOL)pause {
+    self.suspend = YES;
+    
     if ( !self.asset ) return NO;
-    _cyAnima(^{
-        [self _pauseState];
-    });
+    if ( self.state != CYVideoPlayerPlayState_Pause ) {
+        _cyAnima(^{
+            [self _pauseState];
+            self.hideControl = NO;
+        });
+    }
     [self _pause];
     if ( !self.playOnCell || self.orentation.fullScreen ) [self showTitle:@"已暂停"];
     return YES;
 }
 
 - (void)stop {
-    [self _pause];
-    [self _cleanSetting];
+    self.suspend = NO;
+    self.stopped = YES;
     
-    _cyAnima(^{
-        [self _unknownState];
-    });
+    if ( !self.asset ) return;
+    if ( self.state != CYVideoPlayerPlayState_Unknown ) {
+        _cyAnima(^{
+            [self _unknownState];
+        });
+    }
+    [self _clear];
+}
+
+- (void)stopAndFadeOut {
+    self.suspend = NO;
+    self.stopped = YES;
+    // state
+    if ( self.state != CYVideoPlayerPlayState_Unknown ) {
+        _cyAnima(^{
+            [self _unknownState];
+        });
+    }
+    // pause
+    [self _pause];
+    // fade out
+    [UIView animateWithDuration:0.5 animations:^{
+        self.view.alpha = 0.001;
+    } completion:^(BOOL finished) {
+        [self stop];
+        [_view removeFromSuperview];
+    }];
 }
 
 - (void)jumpedToTime:(NSTimeInterval)time completionHandler:(void (^ __nullable)(BOOL finished))completionHandler {
+    if ( isnan(time) ) { return;}
     CMTime seekTime = CMTimeMakeWithSeconds(time, NSEC_PER_SEC);
     [self seekToTime:seekTime completionHandler:completionHandler];
 }
@@ -1561,7 +1629,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 - (void)seekToTime:(CMTime)time completionHandler:(void (^ __nullable)(BOOL finished))completionHandler {
     [self _startLoading];
     __weak typeof(self) _self = self;
-    [self.asset.playerItem seekToTime:time completionHandler:^(BOOL finished) {
+    [self.asset seekToTime:time completionHandler:^(BOOL finished) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         [self _stopLoading];

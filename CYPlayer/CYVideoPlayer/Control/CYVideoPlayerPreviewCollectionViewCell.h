@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "CYVideoPreviewModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class CYVideoPreviewModel;
 
 @interface CYVideoPlayerPreviewCollectionViewCell : UICollectionViewCell
 

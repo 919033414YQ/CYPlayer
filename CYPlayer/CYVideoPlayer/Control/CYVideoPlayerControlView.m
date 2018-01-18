@@ -8,7 +8,6 @@
 
 #import "CYVideoPlayerControlView.h"
 #import "CYVideoPlayerAssetCarrier.h"
-#import "CYVideoPreviewModel.h"
 #import <Masonry/Masonry.h>
 #import "CYVideoPlayerResources.h"
 
