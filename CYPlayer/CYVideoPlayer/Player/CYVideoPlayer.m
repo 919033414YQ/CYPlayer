@@ -1646,9 +1646,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     return self.controlView.previewView.previewImages;
 }
 
-- (NSTimeInterval)currentTime {
-    return self.asset.currentTime;
-}
 
 - (void)stopRotation {
     self.disableRotation = YES;

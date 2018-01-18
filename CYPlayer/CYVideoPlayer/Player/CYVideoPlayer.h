@@ -228,13 +228,6 @@ typedef void(^LockScreen)(BOOL isLock);
 - (NSArray<CYVideoPreviewModel *> *)getPreviewImages;
 
 
-/*!
- *  unit sec.
- *
- *  当前播放时间.
- */
-- (NSTimeInterval)currentTime;
-
 @property (nonatomic, copy) LockScreen lockscreen;
 
 @end
