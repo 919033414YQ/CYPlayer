@@ -14,4 +14,5 @@ pod 'CYPlayer'
 ```Objective-C
  Player.asset = [[CYVideoPlayerAssetCarrier alloc] initWithAssetURL:[NSURL URLWithString:@"http://....."] beginTime:10];
 ```
-### 源自CYVideoPlayer, 尊重开源, 致敬原创
+### 基于原版的自定义优化,源自SJVideoPlayer
+尊重开源, 致敬原创
