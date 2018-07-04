@@ -33,6 +33,8 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 @property (nonatomic, strong, readwrite) UIColor *progress_trackColor;
 /// 拇指图片
 @property (nonatomic, strong, readwrite) UIImage *progress_thumbImage;
+@property (nonatomic, strong, readwrite) UIImage *progress_thumbImage_nor;
+@property (nonatomic, strong, readwrite) UIImage *progress_thumbImage_sel;
 /// 缓冲颜色
 @property (nonatomic, strong, readwrite) UIColor *progress_bufferColor;
 /// 轨道高度

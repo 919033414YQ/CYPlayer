@@ -42,6 +42,8 @@
         self.progressSlider.traceImageView.backgroundColor = setting.progress_traceColor;
         self.progressSlider.trackImageView.backgroundColor = setting.progress_trackColor;
         self.progressSlider.thumbImageView.image = setting.progress_thumbImage;
+        self.progressSlider.thumbnail_nor = setting.progress_thumbImage_nor;
+        self.progressSlider.thumbnail_sel = setting.progress_thumbImage_sel;
         self.progressSlider.bufferProgressColor = setting.progress_bufferColor;
         self.progressSlider.trackHeight = setting.progress_traceHeight;
     };

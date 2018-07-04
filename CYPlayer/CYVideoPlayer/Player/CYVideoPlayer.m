@@ -942,6 +942,32 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 #pragma mark ======================================================
+- (void)sliderClick:(CYSlider *)slider
+{
+    switch (slider.tag) {
+        case CYVideoPlaySliderTag_Progress: {
+            [self _pause];
+            NSInteger currentTime = slider.value * self.asset.duration;
+            __weak typeof(self) _self = self;
+            [self jumpedToTime:currentTime completionHandler:^(BOOL finished) {
+                __strong typeof(_self) self = _self;
+                if ( !self ) return;
+                [self play];
+                [self _delayHiddenControl];
+                _cyAnima(^{
+                    _cyHiddenViews(@[self.controlView.draggingProgressView]);
+                });
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+                });
+            }];
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
 
 - (void)sliderWillBeginDragging:(CYSlider *)slider {
     switch (slider.tag) {
@@ -1440,7 +1466,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     setting.progress_traceColor = CYColorWithHEX(0x00c5b5);
     setting.progress_bufferColor = [UIColor colorWithWhite:0 alpha:0.2];
     setting.progress_trackColor =  [UIColor whiteColor];
-    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail"];
+    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
+    setting.progress_thumbImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
+    setting.progress_thumbImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_sel"];
     setting.progress_traceHeight = 3;
     setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];

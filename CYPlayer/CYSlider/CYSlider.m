@@ -142,6 +142,7 @@
 @synthesize thumbImageView = _thumbImageView;
 @synthesize bufferProgressView = _bufferProgressView;
 @synthesize pan = _pan;
+@synthesize tap = _tap;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -154,6 +155,8 @@
     [self _CYSliderInitialize];
     
     [self _CYSliderPanGR];
+    
+    [self _CYSliderTapGR];
     
     
     return self;
@@ -224,15 +227,51 @@
     [self addGestureRecognizer:_pan];
 }
 
-- (void)handlePanGR:(UIPanGestureRecognizer *)pan {
+- (void)_CYSliderTapGR {
+    _tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGR:)];
+    [self addGestureRecognizer:_tap];
+}
+
+- (void)handleTapGR:(UITapGestureRecognizer *)tap {
+    CGPoint startPoint = [tap locationInView:tap.view];
+    self.value = startPoint.x / tap.view.ccy_w;
+    if ([self.delegate respondsToSelector:@selector(sliderClick:)] )
+    {
+        [self.delegate sliderClick:self];
+    }
     
+    switch (tap.state) {
+        case UIGestureRecognizerStateBegan:
+        {
+            NSLog(@"");
+        }
+            break;
+        case UIGestureRecognizerStateEnded:
+        {
+            NSLog(@"");
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)handlePanGR:(UIPanGestureRecognizer *)pan {
+    CGPoint startPoint = [pan locationInView:pan.view];
     switch (pan.state) {
         case UIGestureRecognizerStateBegan: {
             _isDragging = YES;
+            self.value = startPoint.x / pan.view.ccy_w;
+            self.thumbImageView.image = self.thumbnail_sel;
+            [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
+                make.width.height.equalTo(@48);
+            }];
             if ( ![self.delegate respondsToSelector:@selector(sliderWillBeginDragging:)] ) break;
             [self.delegate sliderWillBeginDragging:self];
         }
         case UIGestureRecognizerStateChanged: {
+            self.value = startPoint.x / pan.view.ccy_w;
             if ( ![self.delegate respondsToSelector:@selector(sliderDidDrag:)] ) break;
             [self.delegate sliderDidDrag:self];
         }
@@ -241,6 +280,10 @@
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateCancelled: {
             _isDragging = NO;
+            self.thumbImageView.image = self.thumbnail_nor;
+            [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
+                make.width.height.equalTo(@16);
+            }];
             if ( ![self.delegate respondsToSelector:@selector(sliderDidEndDragging:)] ) break;
             [self.delegate sliderDidEndDragging:self];
         }
@@ -249,8 +292,8 @@
             break;
     }
     
-    CGPoint offset = [pan velocityInView:pan.view];
-    self.value += offset.x / 15000;
+//    CGPoint offset = [pan velocityInView:pan.view];
+//    self.value += offset.x / 10000;
 }
 
 // MARK: UI
@@ -311,13 +354,14 @@
     [_thumbImageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_thumbImageView.superview);
         make.centerX.equalTo(_traceImageView.mas_trailing);
+        make.width.height.equalTo(@16);
     }];
     return _thumbImageView;
 }
 
 - (UIImageView *)imageViewWithImageStr:(NSString *)imageStr {
     UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:imageStr]];
-    imageView.contentMode = UIViewContentModeCenter;
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
     return imageView;
 }
@@ -354,10 +398,14 @@
         if ( rate < minX ) rate = minX;
         else if ( rate > (1 - minX) ) rate = 1 - minX;
     }
-    [_traceImageView mas_remakeConstraints:^(MASConstraintMaker *make) {
-        make.top.leading.bottom.offset(0);
-        make.width.equalTo(_traceImageView.superview).multipliedBy(rate);
-    }];
+    
+    __weak __typeof(&*self)weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [weakSelf.traceImageView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.leading.bottom.offset(0);
+            make.width.equalTo(weakSelf.traceImageView.superview).multipliedBy(rate);
+        }];
+    });
 }
 
 @end

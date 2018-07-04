@@ -34,6 +34,9 @@
  *  If you do not set the image, it will not display.
  */
 @property (nonatomic, strong, readonly) UIImageView *thumbImageView;
+@property (nonatomic, strong) UIImage *thumbnail_nor;
+@property (nonatomic, strong) UIImage *thumbnail_sel;
+
 
 /*!
  *  当前进度值
@@ -67,6 +70,7 @@
  *  pan.enable = NO.
  */
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *pan;
+@property (nonatomic, strong, readonly) UITapGestureRecognizer *tap;
 
 /*!
  *  slider是否被拖拽
@@ -133,6 +137,11 @@
 @protocol CYSliderDelegate <NSObject>
 
 @optional
+
+/*!
+ * 点击
+ */
+- (void)sliderClick:(CYSlider *)slider;
 
 /*!
  *  开始滑动
