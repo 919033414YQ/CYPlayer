@@ -234,7 +234,17 @@
 
 - (void)handleTapGR:(UITapGestureRecognizer *)tap {
     CGPoint startPoint = [tap locationInView:tap.view];
-    self.value = startPoint.x / tap.view.ccy_w;
+    CGFloat value = startPoint.x / tap.view.ccy_w;
+    if (value + self.minValue <= self.maxValue)
+    {
+        value = value + self.minValue;
+    }
+    else
+    {
+        value = self.maxValue;
+    }
+    self.value = value;
+    
     if ([self.delegate respondsToSelector:@selector(sliderClick:)] )
     {
         [self.delegate sliderClick:self];
@@ -262,7 +272,16 @@
     switch (pan.state) {
         case UIGestureRecognizerStateBegan: {
             _isDragging = YES;
-            self.value = startPoint.x / pan.view.ccy_w;
+            CGFloat value = startPoint.x / pan.view.ccy_w;
+            if (value + self.minValue <= self.maxValue)
+            {
+                value = value + self.minValue;
+            }
+            else
+            {
+                value = self.maxValue;
+            }
+            self.value = value;
             self.thumbImageView.image = self.thumbnail_sel;
             [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
                 make.width.height.equalTo(@48);
@@ -271,7 +290,16 @@
             [self.delegate sliderWillBeginDragging:self];
         }
         case UIGestureRecognizerStateChanged: {
-            self.value = startPoint.x / pan.view.ccy_w;
+            CGFloat value = startPoint.x / pan.view.ccy_w;
+            if (value + self.minValue <= self.maxValue)
+            {
+                value = value + self.minValue;
+            }
+            else
+            {
+                value = self.maxValue;
+            }
+            self.value = value;
             if ( ![self.delegate respondsToSelector:@selector(sliderDidDrag:)] ) break;
             [self.delegate sliderDidDrag:self];
         }
@@ -393,7 +421,7 @@
     CGFloat rate = self.rate;
     if ( 0 != self.containerView.ccy_w ) {
         CGFloat minX = 0;
-        minX = _thumbImageView.ccy_w * 0.25 / self.containerView.ccy_w;
+        minX = _thumbImageView.ccy_w / 3.0 * 0.25 / self.containerView.ccy_w;//其中"3.0",是手势会触发放大的效果,放大系数
         // spacing
         if ( rate < minX ) rate = minX;
         else if ( rate > (1 - minX) ) rate = 1 - minX;

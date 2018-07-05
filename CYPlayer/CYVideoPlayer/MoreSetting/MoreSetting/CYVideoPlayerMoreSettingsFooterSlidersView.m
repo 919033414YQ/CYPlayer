@@ -62,6 +62,10 @@
     _volumeSlider.trackHeight = _brightnessSlider.trackHeight = _rateSlider.trackHeight = settings.more_trackHeight;
     _volumeSlider.trackImageView.backgroundColor = _brightnessSlider.trackImageView.backgroundColor = _rateSlider.trackImageView.backgroundColor = settings.more_trackColor;
     _volumeSlider.traceImageView.backgroundColor = _brightnessSlider.traceImageView.backgroundColor = _rateSlider.traceImageView.backgroundColor = settings.more_traceColor;
+    _volumeSlider.thumbnail_nor = _brightnessSlider.thumbnail_nor = _rateSlider.thumbnail_nor = settings.progress_thumbImage_nor;
+    _volumeSlider.thumbnail_sel = _brightnessSlider.thumbnail_sel = _rateSlider.thumbnail_sel = settings.progress_thumbImage_nor;
+    _volumeSlider.thumbImageView.image = _brightnessSlider.thumbImageView.image = _rateSlider.thumbImageView.image = settings.progress_thumbImage_nor;
+    
 }
 
 - (void)dealloc {
@@ -216,6 +220,19 @@
 }
 
 #pragma mark
+
+- (void)sliderClick:(CYSlider *)slider
+{
+    if ( slider == _rateSlider ) {
+        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
+    }
+    else if ( slider == _volumeSlider ) {
+        if ( _model.needChangeVolume ) _model.needChangeVolume(slider.value);
+    }
+    else {
+        if ( _model.needChangeBrightness ) _model.needChangeBrightness(slider.value);
+    }
+}
 
 - (void)sliderWillBeginDragging:(CYSlider *)slider {
     if ( slider == _rateSlider ) {

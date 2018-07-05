@@ -885,7 +885,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
-                self.controlView.draggingProgressView.progress += translate.x * 0.003;
+                self.controlView.draggingProgressView.progress += translate.x * 0.0003;
             }
                 break;
             case CYPanDirection_V: {
