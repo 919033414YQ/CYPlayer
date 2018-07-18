@@ -12,6 +12,8 @@ s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
 s.resource     = 'CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle'
 s.frameworks  = "UIKit", "AVFoundation"
+#s.vendored_frameworks = "CYPlayer/CYVideoPlayer/framework/*.framework"
+#s.libraries = 'libbz2.1.0', 'libc++.1', 'libz.1.1.3'
 s.requires_arc = true
 s.dependency 'Masonry'
 
