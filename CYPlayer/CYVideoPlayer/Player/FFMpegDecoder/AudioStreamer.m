@@ -32,13 +32,15 @@ void audioQueueIsRunningCallback(void *inClientData, AudioQueueRef inAQ,
 - (id)initWithStreamer:(CYRtspPlayer*)streamer {
     if (self = [super init]) {
         AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-        [audioSession setCategory:AVAudioSessionCategoryPlayback error:nil];
+        [audioSession setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:nil];
+        [audioSession setActive:YES error:nil];
         _streamer = streamer;
         _audioCodecContext = _streamer.CYAudioCodecCtx;
     }
     
     return  self;
 }
+
 
 - (void)dealloc
 {

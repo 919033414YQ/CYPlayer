@@ -10,6 +10,8 @@
 #import "PlayerViewController.h"
 #import "RTSPViewController.h"
 #import <Masonry.h>
+#import "MainViewController.h"
+#import "CYFFmpegViewController.h"
 
 
 @implementation ViewController
@@ -80,13 +82,18 @@
         [self.navigationController pushViewController:pvc animated:YES];
     }
     else if (sender.tag == 200) {
-        PlayerViewController * pvc = [[PlayerViewController alloc] init];
-        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
-        pvc.assetURL = [NSURL fileURLWithPath:path];
-        [self.navigationController pushViewController:pvc animated:YES];
+//        PlayerViewController * pvc = [[PlayerViewController alloc] init];
+//        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
+//        pvc.assetURL = [NSURL fileURLWithPath:path];
+//        [self.navigationController pushViewController:pvc animated:YES];
+        UIViewController *vc = [[MainViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
     }
     else if (sender.tag == 300) {
-        RTSPViewController * vc = [[RTSPViewController alloc] init];
+//        RTSPViewController * vc = [[RTSPViewController alloc] init];
+//        UIViewController *vc = [[MainViewController alloc] init];
+        UIViewController *vc = [[CYFFmpegViewController alloc] init];
+        
         [self.navigationController pushViewController:vc animated:YES];
     }
 }

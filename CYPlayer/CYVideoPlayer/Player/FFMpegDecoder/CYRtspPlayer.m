@@ -21,11 +21,11 @@
     AVFormatContext     *CYFormatCtx;
     AVCodecContext      *CYVideoCodecCtx;
     AVCodecContext      *CYAudioCodecCtx;
-    AVFrame             *CYFrame;
+    AVFrame             *video_frame;
+    AVFrame             *audio_frame;
     AVStream            *video_Stream;
     AVStream            *audio_Stream;
-    AVPacket            video_packet;
-    AVPacket            audio_packet;
+    AVPacket            packet;
     AVPicture           picture;
     int                 videoStream;
     int                 audioStream;
@@ -156,7 +156,7 @@
     }
     
     // 分配视频帧
-    CYFrame = av_frame_alloc();
+    video_frame = av_frame_alloc();
     _outputWidth = CYVideoCodecCtx->width;
     _outputHeight = CYVideoCodecCtx->height;
     return YES;
@@ -177,43 +177,50 @@ initError:
 - (BOOL)stepFrame {
 
     int frameFinished = 0;
-    while (!frameFinished && av_read_frame(CYFormatCtx, &video_packet) >= 0)
+    while (!frameFinished && av_read_frame(CYFormatCtx, &packet) >= 0)
     {
-        if (video_packet.stream_index == videoStream)
+        
+        if (packet.stream_index == videoStream)
         {
-            avcodec_send_packet(CYVideoCodecCtx, &video_packet);
-            if (avcodec_receive_frame(CYVideoCodecCtx, CYFrame) == 0)
+            if (CYVideoCodecCtx)
             {
-                frameFinished = 1;
+                avcodec_send_packet(CYVideoCodecCtx, &packet);
+                if (avcodec_receive_frame(CYVideoCodecCtx, video_frame) == 0)
+                {
+                    frameFinished = 1;
+                }
+            }
+            
+            av_packet_unref(&packet);//解决内存av_read_frame泄露问题
+        }
+        else if (packet.stream_index == audioStream)
+        {
+            if (CYAudioCodecCtx)
+            {
+                avcodec_send_packet(CYAudioCodecCtx, &packet);
+                if (avcodec_receive_frame(CYAudioCodecCtx, audio_frame) == 0)
+                {
+                    frameFinished = 1;
+                }
+                
+                [audioPacketQueueLock lock];
+                
+                audioPacketQueueSize += packet.size;
+                [audioPacketQueue addObject:[NSMutableData dataWithBytes:&packet length:sizeof(packet)]];
+                
+                [audioPacketQueueLock unlock];
+                
+                if (!primed) {
+                    primed=YES;
+                    [_audioController _startAudio];
+                }
+                
+                if (emptyAudioBuffer) {
+                    [_audioController enqueueBuffer:emptyAudioBuffer];
+                }
             }
         }
         
-        if (audio_packet.stream_index == audioStream)
-        {
-            avcodec_send_packet(CYAudioCodecCtx, &audio_packet);
-            if (avcodec_receive_frame(CYAudioCodecCtx, CYFrame) == 0)
-            {
-                frameFinished = 1;
-            }
-            
-            [audioPacketQueueLock lock];
-            
-            audioPacketQueueSize += audio_packet.size;
-            [audioPacketQueue addObject:[NSMutableData dataWithBytes:&audio_packet length:sizeof(audio_packet)]];
-            
-            [audioPacketQueueLock unlock];
-            
-            if (!primed) {
-                primed=YES;
-                [_audioController _startAudio];
-            }
-            
-            if (emptyAudioBuffer) {
-                [_audioController enqueueBuffer:emptyAudioBuffer];
-            }
-        }
-        
-        av_packet_unref(&video_packet);//解决内存av_read_frame泄露问题
     }
     if (frameFinished == 0 && isReleaseResources == NO)
     {
@@ -253,7 +260,7 @@ initError:
     _outputHeight = newValue;
 }
 -(UIImage *)currentImage {
-    if (!CYFrame->data[0]) return nil;
+    if (!video_frame->data[0]) return nil;
     return [self imageFromAVPicture];
 }
 -(double)duration {
@@ -261,7 +268,7 @@ initError:
 }
 - (double)currentTime {
     AVRational timeBase = CYFormatCtx->streams[videoStream]->time_base;
-    return video_packet.pts * (double)timeBase.num / timeBase.den;
+    return packet.pts * (double)timeBase.num / timeBase.den;
 }
 - (int)sourceWidth {
     return CYVideoCodecCtx->width;
@@ -350,6 +357,7 @@ initError:
         _audioBufferSize = 192000;
         _audioBuffer = av_malloc(_audioBufferSize);
         _inBuffer = NO;
+        audio_frame = av_frame_alloc();
         
         // 获取音频流的编解码上下文的指针
         audio_Stream      = CYFormatCtx->streams[audioStream];
@@ -404,10 +412,10 @@ initError:
                                                        NULL);
     if(imgConvertCtx == nil) return nil;
     sws_scale(imgConvertCtx,
-              CYFrame->data,
-              CYFrame->linesize,
+              video_frame->data,
+              video_frame->linesize,
               0,
-              CYFrame->height,
+              video_frame->height,
               picture.data,
               picture.linesize);
     sws_freeContext(imgConvertCtx);
@@ -448,10 +456,11 @@ initError:
     // 释放RGB
     avpicture_free(&picture);
     // 释放frame
-    av_packet_unref(&video_packet);
-    av_packet_unref(&audio_packet);
+    av_packet_unref(&packet);
+    
     // 释放YUV frame
-    av_free(CYFrame);
+    av_free(video_frame);
+    av_free(audio_frame);
     // 关闭解码器
     if (CYVideoCodecCtx) avcodec_close(CYVideoCodecCtx);
     if (CYAudioCodecCtx) avcodec_close(CYAudioCodecCtx);

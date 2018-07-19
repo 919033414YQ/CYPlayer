@@ -17,15 +17,14 @@
 
 //Views
 #import "CYVideoPlayerControlView.h"
-#import "CYVideoPlayerMoreSettingsView.h"
-#import "CYVideoPlayerMoreSettingSecondaryView.h"
 #import "CYVideoPlayerView.h"
 #import "CYLoadingView.h"
 
 //Models
-#import "CYMoreSettingsFooterViewModel.h"
 #import "CYVolBrigControl.h"
 #import "CYPlayerGestureControl.h"
+#import "CYOrentationObserver.h"
+#import "CYTimerControl.h"
 
 //Others
 #import <objc/message.h>
@@ -36,6 +35,37 @@
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
 
 #define CYColorWithHEX(hex) [UIColor colorWithRed:(float)((hex & 0xFF0000) >> 16)/255.0 green:(float)((hex & 0xFF00) >> 8)/255.0 blue:(float)(hex & 0xFF)/255.0 alpha:1.0]
+
+inline static void _cyErrorLog(id msg) {
+    NSLog(@"__error__: %@", msg);
+}
+
+inline static void _cyHiddenViews(NSArray<UIView *> *views) {
+    [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.alpha = 0.001;
+    }];
+}
+
+inline static void _cyShowViews(NSArray<UIView *> *views) {
+    [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.alpha = 1;
+    }];
+}
+
+inline static void _cyAnima(void(^block)(void)) {
+    if ( block ) {
+        [UIView animateWithDuration:0.3 animations:^{
+            block();
+        }];
+    }
+}
+
+inline static NSString *_formatWithSec(NSInteger sec) {
+    NSInteger seconds = sec % 60;
+    NSInteger minutes = sec / 60;
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)minutes, (long)seconds];
+}
+
 
 //NSString * const CYMovieParameterMinBufferedDuration = @"CYMovieParameterMinBufferedDuration";
 //NSString * const CYMovieParameterMaxBufferedDuration = @"CYMovieParameterMaxBufferedDuration";
@@ -93,27 +123,26 @@ static NSMutableDictionary * gHistory;//播放历史记录
 
 @property (nonatomic, strong) UIView * presentView;
 @property (nonatomic, strong, readonly) CYVideoPlayerControlView *controlView;
-@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingsView *moreSettingView;
-@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingSecondaryView *moreSecondarySettingView;
 @property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
 @property (nonatomic, strong, readonly) CYLoadingView *loadingView;
+@property (nonatomic, strong, readonly) CYOrentationObserver *orentation;
 
-@property (nonatomic, assign, readwrite) BOOL hiddenMoreSettingView;
-@property (nonatomic, assign, readwrite) BOOL hiddenMoreSecondarySettingView;
+@property (nonatomic, assign, readwrite) CYFFmpegPlayerPlayState state;
+@property (nonatomic, assign, readwrite) BOOL hiddenLeftControlView;
 @property (nonatomic, assign, readwrite) BOOL userClickedPause;
+@property (nonatomic, assign, readwrite) BOOL stopped;
+@property (nonatomic, assign, readwrite) BOOL touchedScrollView;
 
 @end
 
 @implementation CYFFmpegPlayer
 {
     CYVideoPlayerControlView *_controlView;
-    CYVideoPlayerMoreSettingsView *_moreSettingView;
-    CYVideoPlayerMoreSettingSecondaryView *_moreSecondarySettingView;
-    CYMoreSettingsFooterViewModel *_moreSettingFooterViewModel;
     CYVolBrigControl *_volBrigControl;
     CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
     CYVideoPlayerView *_view;
+    CYOrentationObserver *_orentation;
 }
 
 + (void)initialize
@@ -232,6 +261,54 @@ static NSMutableDictionary * gHistory;//播放历史记录
 
 
 # pragma mark - UI处理
+- (UIView *)view {
+    if ( _view )
+    {
+        [_presentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.edges.equalTo(_presentView.superview);
+        }];
+        return _view;
+    }
+    _view = [CYVideoPlayerView new];
+    _view.backgroundColor = [UIColor blackColor];
+    [_view addSubview:self.presentView];
+//    [_presentView addSubview:self.controlView];
+    [_view addSubview:self.controlView];
+    [self gesturesHandleWithTargetView:_controlView];
+    _controlView.delegate = self;
+    _controlView.bottomControlView.progressSlider.delegate = self;
+
+    [_presentView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(_presentView.superview);
+    }];
+
+    [_controlView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(_controlView.superview);
+    }];
+
+    _loadingView = [CYLoadingView new];
+    [_controlView addSubview:_loadingView];
+    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.offset(0);
+    }];
+
+    __weak typeof(self) _self = self;
+    _view.setting = ^(CYVideoPlayerSettings * _Nonnull setting) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        self.loadingView.lineColor = setting.loadingLineColor;
+    };
+
+    return _view;
+}
+
+- (CYVideoPlayerControlView *)controlView {
+    if ( _controlView ) return _controlView;
+    _controlView = [CYVideoPlayerControlView new];
+    _controlView.clipsToBounds = YES;
+    return _controlView;
+}
+
 
 
 # pragma mark - 公开方法
@@ -429,6 +506,11 @@ static NSMutableDictionary * gHistory;//播放历史记录
     UIView *frameView = [self presentView];
     frameView.contentMode = UIViewContentModeScaleAspectFit;
     frameView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin;
+    
+    [self.view insertSubview:frameView atIndex:0];
+    [frameView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(@0);
+    }];
     
     if (_decoder.validVideo) {
         
@@ -1016,4 +1098,460 @@ static NSMutableDictionary * gHistory;//播放历史记录
     return NO;
 }
 
+# pragma mark controlview
+- (void)setHiddenLeftControlView:(BOOL)hiddenLeftControlView {
+    if ( hiddenLeftControlView == _hiddenLeftControlView ) return;
+    _hiddenLeftControlView = hiddenLeftControlView;
+    if ( _hiddenLeftControlView )
+    {
+        self.controlView.leftControlView.transform = CGAffineTransformMakeTranslation(-CYControlLeftH, 0);
+    }
+    else
+    {
+        self.controlView.leftControlView.transform =  CGAffineTransformIdentity;
+    }
+}
+
+- (CYOrentationObserver *)orentation
+{
+    if (_orentation)
+    {
+        return _orentation;
+    }
+    _orentation = [[CYOrentationObserver alloc] initWithTarget:self.presentView container:self.view];
+    __weak typeof(self) _self = self;
+    
+    _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return NO;
+        if ( self.stopped ) {
+            if ( observer.isFullScreen ) return YES;
+            else return NO;
+        }
+        if ( self.touchedScrollView ) return NO;
+        switch (self.state) {
+            case CYFFmpegPlayerPlayState_Unknown:
+            case CYFFmpegPlayerPlayState_Prepare:
+            case CYFFmpegPlayerPlayState_PlayFailed: return NO;
+            default: break;
+        }
+        if ( self.disableRotation ) return NO;
+        if ( self.isLockedScrren ) return NO;
+        return YES;
+    };
+    
+    _orentation.orientationChanged = ^(CYOrentationObserver * _Nonnull observer) {
+        __strong typeof(_self) self = _self;
+        if ( !self )
+        {
+            return;
+        }
+        self.hideControl = NO;
+        _cyAnima(^{
+            self.controlView.previewView.hidden = YES;
+            self.hiddenLeftControlView = !observer.isFullScreen;
+            if ( observer.isFullScreen ) {
+                _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
+//                if ( self.asset.hasBeenGeneratedPreviewImages ) {
+//                    _cyShowViews(@[self.controlView.topControlView.previewBtn]);
+//                }
+                
+                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    make.center.offset(0);
+                    make.height.equalTo(self.controlView.superview);
+                    make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
+                }];
+            }
+            else {
+                _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
+                                 self.controlView.topControlView.previewBtn,]);
+                
+                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    make.edges.equalTo(self.controlView.superview);
+                }];
+            }
+        });//_cyAnima(^{})
+        if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);
+    };//orientationChanged
+    
+    return _orentation;
+}
+
+- (void)setState:(CYFFmpegPlayerPlayState)state {
+    if ( state == _state ) return;
+    _state = state;
+    
+}
+
+- (void)gesturesHandleWithTargetView:(UIView *)targetView {
+    
+    _gestureControl = [[CYPlayerGestureControl alloc] initWithTargetView:targetView];
+    
+    __weak typeof(self) _self = self;
+    _gestureControl.triggerCondition = ^BOOL(CYPlayerGestureControl * _Nonnull control, UIGestureRecognizer *gesture) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return NO;
+        if ( self.isLockedScrren ) return NO;
+        CGPoint point = [gesture locationInView:gesture.view];
+        if (CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
+            return NO;
+        }
+        if ( [gesture isKindOfClass:[UIPanGestureRecognizer class]] &&
+            !self.orentation.fullScreen ) return NO;
+        else return YES;
+    };
+    
+    _gestureControl.singleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        _cyAnima(^{
+
+            {
+                self.hideControl = !self.isHiddenControl;
+            }
+        });
+    };
+    
+    _gestureControl.doubleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
+
+    };
+    
+    _gestureControl.beganPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        switch (direction) {
+            case CYPanDirection_H: {
+                [self pause];
+                _cyAnima(^{
+                    _cyShowViews(@[self.controlView.draggingProgressView]);
+                });
+                if ( self.orentation.fullScreen )
+                {
+                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+                }
+                else
+                {
+                    self.controlView.draggingProgressView.hiddenProgressSlider = YES;
+                }
+                
+//                self.controlView.draggingProgressView.progress = self.asset.progress;
+//                self setMoviePosition:
+                self.hideControl = YES;
+            }
+                break;
+            case CYPanDirection_V: {
+                switch (location) {
+                    case CYPanLocation_Right: break;
+                    case CYPanLocation_Left: {
+                        [[UIApplication sharedApplication].keyWindow addSubview:self.volBrigControl.brightnessView];
+                        [self.volBrigControl.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                            make.size.mas_offset(CGSizeMake(155, 155));
+                            make.center.equalTo([UIApplication sharedApplication].keyWindow);
+                        }];
+                        self.volBrigControl.brightnessView.transform = self.controlView.superview.transform;
+                        _cyAnima(^{
+                            _cyShowViews(@[self.volBrigControl.brightnessView]);
+                        });
+                    }
+                        break;
+                    case CYPanLocation_Unknown: break;
+                }
+            }
+                break;
+            case CYPanDirection_Unknown:
+                break;
+        }
+    };
+    
+    _gestureControl.changedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location, CGPoint translate) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        switch (direction) {
+            case CYPanDirection_H: {
+                self.controlView.draggingProgressView.progress += translate.x * 0.0003;
+            }
+                break;
+            case CYPanDirection_V: {
+                switch (location) {
+                    case CYPanLocation_Left: {
+                        CGFloat value = self.volBrigControl.brightness - translate.y * 0.006;
+                        if ( value < 1.0 / 16 ) value = 1.0 / 16;
+                        self.volBrigControl.brightness = value;
+                    }
+                        break;
+                    case CYPanLocation_Right: {
+                        CGFloat value = translate.y * 0.012;
+                        self.volBrigControl.volume -= value;
+                    }
+                        break;
+                    case CYPanLocation_Unknown: break;
+                }
+            }
+                break;
+            default:
+                break;
+        }
+    };
+    
+    _gestureControl.endedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
+        switch ( direction ) {
+            case CYPanDirection_H:{
+                _cyAnima(^{
+                    _cyHiddenViews(@[_self.controlView.draggingProgressView]);
+                });
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    _self.controlView.draggingProgressView.hiddenProgressSlider = NO;
+                });
+            }
+                break;
+            case CYPanDirection_V:{
+                if ( location == CYPanLocation_Left ) {
+                    _cyAnima(^{
+                        __strong typeof(_self) self = _self;
+                        if ( !self ) return;
+                        _cyHiddenViews(@[self.volBrigControl.brightnessView]);
+                    });
+                }
+            }
+                break;
+            case CYPanDirection_Unknown: break;
+        }
+    };
+}
+
+
 @end
+
+@implementation CYFFmpegPlayer (State)
+
+- (CYTimerControl *)timerControl {
+    CYTimerControl *timerControl = objc_getAssociatedObject(self, _cmd);
+    if ( timerControl ) return timerControl;
+    timerControl = [CYTimerControl new];
+    objc_setAssociatedObject(self, _cmd, timerControl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return timerControl;
+}
+
+- (void)_cancelDelayHiddenControl {
+    [self.timerControl reset];
+}
+
+- (void)_hideControlState {
+    
+    // show
+    _cyShowViews(@[self.controlView.bottomProgressSlider]);
+    
+    // hidden
+    self.controlView.previewView.hidden = YES;
+    
+    // transform hidden
+    self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, -CYControlTopH);
+    self.controlView.bottomControlView.transform = CGAffineTransformMakeTranslation(0, CYControlBottomH);
+    
+    if ( self.orentation.fullScreen ) {
+        if ( self.isLockedScrren ) self.hiddenLeftControlView = NO;
+        else self.hiddenLeftControlView = YES;
+    }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    if ( self.orentation.fullScreen ) {
+        [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
+    }
+    else {
+        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+    }
+#pragma clang diagnostic pop
+}
+
+- (void)_showControlState {
+    
+    // hidden
+    _cyHiddenViews(@[self.controlView.bottomProgressSlider]);
+    self.controlView.previewView.hidden = YES;
+    
+    // transform show
+    if (self.orentation.fullScreen ) {
+        self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, -CYControlTopH);
+    }
+    else {
+        self.controlView.topControlView.transform = CGAffineTransformIdentity;
+    }
+    self.controlView.bottomControlView.transform = CGAffineTransformIdentity;
+    
+    self.hiddenLeftControlView = !self.orentation.fullScreen;
+    
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+#pragma clang diagnostic pop
+}
+
+- (void)_delayHiddenControl {
+    __weak typeof(self) _self = self;
+    [self.timerControl start:^(CYTimerControl * _Nonnull control) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        if ( self.state == CYFFmpegPlayerPlayState_Pause ) return;
+        _cyAnima(^{
+            self.hideControl = YES;
+        });
+    }];
+}
+
+- (void)setHideControl:(BOOL)hideControl {
+    [self.timerControl reset];
+    if ( hideControl ) [self _hideControlState];
+    else {
+        [self _showControlState];
+        [self _delayHiddenControl];
+    }
+    
+    BOOL oldValue = self.isHiddenControl;
+    if ( oldValue != hideControl ) {
+        objc_setAssociatedObject(self, @selector(isHiddenControl), @(hideControl), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        if ( self.controlViewDisplayStatus ) self.controlViewDisplayStatus(self, !hideControl);
+    }
+}
+
+- (BOOL)isHiddenControl {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)_lockScreenState {
+    
+    // show
+    _cyShowViews(@[self.controlView.leftControlView.lockBtn]);
+    
+    // hidden
+    _cyHiddenViews(@[self.controlView.leftControlView.unlockBtn]);
+    self.hideControl = YES;
+}
+
+- (void)_unlockScreenState {
+    
+    // show
+    _cyShowViews(@[self.controlView.leftControlView.unlockBtn]);
+    self.hideControl = NO;
+    
+    // hidden
+    _cyHiddenViews(@[self.controlView.leftControlView.lockBtn]);
+    
+}
+
+- (void)setLockScreen:(BOOL)lockScreen {
+    if ( self.isLockedScrren == lockScreen )
+    {
+        return;
+    }
+    objc_setAssociatedObject(self, @selector(isLockedScrren), @(lockScreen), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    //外部调用
+    if (self.lockscreen)
+    {
+        self.lockscreen(lockScreen);
+    }
+    
+    [self _cancelDelayHiddenControl];
+    _cyAnima(^{
+        if ( lockScreen ) {
+            [self _lockScreenState];
+        }
+        else {
+            [self _unlockScreenState];
+        }
+    });
+}
+
+- (BOOL)isLockedScrren {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)_playState {
+    
+    // show
+    _cyShowViews(@[self.controlView.bottomControlView.pauseBtn]);
+    
+    // hidden
+    // hidden
+    _cyHiddenViews(@[
+                     self.controlView.bottomControlView.playBtn,
+                     self.controlView.centerControlView.replayBtn,
+                     ]);
+    
+    self.state = CYFFmpegPlayerPlayState_Playing;
+}
+@end
+
+@implementation CYFFmpegPlayer (Setting)
+- (float)rate {
+    return [objc_getAssociatedObject(self, _cmd) floatValue];
+}
+
+- (void)setRate:(float)rate {
+    if ( self.rate == rate ) return;
+    objc_setAssociatedObject(self, @selector(rate), @(rate), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+//    if ( !self.asset ) return;
+//    self.asset.player.rate = rate;
+    self.userClickedPause = NO;
+    _cyAnima(^{
+        [self _playState];
+    });
+    
+    if ( self.rateChanged ) self.rateChanged(self);
+}
+
+- (void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setRateChanged:(void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {
+    objc_setAssociatedObject(self, @selector(rateChanged), rateChanged, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void)setInternallyChangedRate:(void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
+    objc_setAssociatedObject(self, @selector(internallyChangedRate), internallyChangedRate, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (BOOL)disableRotation {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setRotatedScreen:(void (^)(CYFFmpegPlayer * _Nonnull, BOOL))rotatedScreen {
+    objc_setAssociatedObject(self, @selector(rotatedScreen), rotatedScreen, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYFFmpegPlayer * _Nonnull, BOOL))rotatedScreen {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setControlViewDisplayStatus:(void (^)(CYFFmpegPlayer * _Nonnull, BOOL))controlViewDisplayStatus {
+    objc_setAssociatedObject(self, @selector(controlViewDisplayStatus), controlViewDisplayStatus, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYFFmpegPlayer * _Nonnull, BOOL))controlViewDisplayStatus {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+@end
+
+
+@implementation CYFFmpegPlayer (Control)
+
+- (void)setLockscreen:(LockScreen)lockscreen
+{
+    objc_setAssociatedObject(self, @selector(lockscreen), lockscreen, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (LockScreen)lockscreen
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+@end
+
