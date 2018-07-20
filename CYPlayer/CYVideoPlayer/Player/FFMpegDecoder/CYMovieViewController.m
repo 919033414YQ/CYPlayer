@@ -17,9 +17,9 @@
 #import "CYMovieGLView.h"
 #import "CYLogger.h"
 
-NSString * const CYMovieParameterMinBufferedDuration = @"CYMovieParameterMinBufferedDuration";
-NSString * const CYMovieParameterMaxBufferedDuration = @"CYMovieParameterMaxBufferedDuration";
-NSString * const CYMovieParameterDisableDeinterlacing = @"CYMovieParameterDisableDeinterlacing";
+extern NSString * const CYMovieParameterMinBufferedDuration;
+extern NSString * const CYMovieParameterMaxBufferedDuration;
+extern NSString * const CYMovieParameterDisableDeinterlacing;
 
 ////////////////////////////////////////////////////////////////////////////////
 

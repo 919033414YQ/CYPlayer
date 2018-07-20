@@ -1145,6 +1145,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     });
     if ( self.autoplay && !self.userClickedPause && !self.suspend ) {
         [self play];
+    }else {
+        [self pause];
     }
 }
 

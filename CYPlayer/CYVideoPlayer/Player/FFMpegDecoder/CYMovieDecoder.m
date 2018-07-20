@@ -776,7 +776,12 @@ static int interrupt_callback(void *ctx);
         formatCtx->interrupt_callback = cb;
     }
     
-    if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, NULL) < 0) {
+    AVDictionary* options = NULL;
+    
+    av_dict_set(&options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+    av_dict_set(&options, "stimeout", "3000000", 0);//设置超时3秒
+    
+    if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &options) < 0) {
         
         if (formatCtx)
             avformat_free_context(formatCtx);

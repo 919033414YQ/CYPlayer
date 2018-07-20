@@ -40,6 +40,7 @@
     }];
     
     [contentView addSubview:Player.view];
+    Player.autoplay = NO;
     [Player.view mas_makeConstraints:^(MASConstraintMaker *make) {
         if (kiPad)
         {

@@ -59,7 +59,7 @@
         parameters[CYMovieParameterDisableDeinterlacing] = @(YES);
     
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
-    
+    vc.autoplay = YES;
     [self.view addSubview:vc.view];
     
     [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {

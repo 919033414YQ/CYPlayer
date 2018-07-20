@@ -21,7 +21,10 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
     CYFFmpegPlayerPlayState_PlayFailed,
 };
 
-@class CYMovieDecoder;
+@class
+CYMovieDecoder,
+CYVideoPlayerSettings,
+CYPrompt;
 
 extern NSString * const CYMovieParameterMinBufferedDuration;    // Float
 extern NSString * const CYMovieParameterMaxBufferedDuration;    // Float
@@ -64,17 +67,35 @@ extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
 
 @property (nonatomic, assign, readwrite, getter=isLockedScrren) BOOL lockScreen;
 
-- (void)_playState;
 
 - (void)_cancelDelayHiddenControl;
 
 - (void)_delayHiddenControl;
+
+- (void)_prepareState;
+
+- (void)_playState;
+
+- (void)_pauseState;
+
+- (void)_playEndState;
+
+- (void)_playFailedState;
+
+- (void)_unknownState;
 
 @end
 
 # pragma mark -
 
 @interface CYFFmpegPlayer (Setting)
+
+/*!
+ *  clicked back btn exe block.
+ *
+ *  点击返回按钮的回调.
+ */
+@property (nonatomic, copy, readwrite) void(^clickedBackEvent)(CYFFmpegPlayer *player);
 
 /*!
  *  Whether screen rotation is disabled. default is NO.
@@ -89,12 +110,27 @@ extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
 
 @property (nonatomic, copy, readwrite, nullable) void(^controlViewDisplayStatus)(CYFFmpegPlayer *player, BOOL displayed);
 
+
+/*!
+ *  配置播放器, 注意: 这个`block`在子线程运行.
+ **/
+- (void)settingPlayer:(void(^)(CYVideoPlayerSettings *settings))block;
+- (void)resetSetting;// 重置配置
+
+
 /*!
  *  Call when the rate changes.
  *
  *  调速时调用.
  **/
 @property (nonatomic, copy, readwrite, nullable) void(^rateChanged)(CYFFmpegPlayer *player);
+
+/*!
+ *  default is YES.
+ *
+ *  是否自动播放, 默认是 YES.
+ */
+@property (nonatomic, assign, readwrite, getter=isAutoplay) BOOL autoplay;
 
 @end
 
@@ -103,9 +139,33 @@ extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
 
 @interface CYFFmpegPlayer (Control)
 
+- (BOOL)play;
+
+- (BOOL)pause;
+
+- (void)stop;
 
 @property (nonatomic, copy) LockScreen lockscreen;
 
 
 @end
 
+#pragma mark -
+
+@interface CYFFmpegPlayer (Prompt)
+
+@property (nonatomic, strong, readonly) CYPrompt *prompt;
+
+/*!
+ *  duration default is 1.0
+ */
+- (void)showTitle:(NSString *)title;
+
+/*!
+ *  duration if value set -1, promptView will always show.
+ */
+- (void)showTitle:(NSString *)title duration:(NSTimeInterval)duration;
+
+- (void)hiddenTitle;
+
+@end
