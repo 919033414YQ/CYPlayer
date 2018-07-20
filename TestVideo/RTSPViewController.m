@@ -48,22 +48,22 @@
     });
 #else
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
-        NSURL * url = [NSURL fileURLWithPath:path];
-        NSString * video_str = [url absoluteString];
-//        weakSelf.video = [[RTSPPlayer alloc] initWithVideo:@"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov" usesTcp:YES];
-        weakSelf.video = [[RTSPPlayer alloc] initWithVideo:video_str usesTcp:YES];
-        weakSelf.video.outputWidth = 426;
-        weakSelf.video.outputHeight = 320;
-        
-        [weakSelf.nextFrameTimer invalidate];
-        weakSelf.nextFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1.0/weakSelf.video.fps
-                                                               target:self
-                                                             selector:@selector(displayNextFrame:)
-                                                             userInfo:nil
-                                                              repeats:YES];
-    });
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
+//        NSURL * url = [NSURL fileURLWithPath:path];
+//        NSString * video_str = [url absoluteString];
+////        weakSelf.video = [[RTSPPlayer alloc] initWithVideo:@"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov" usesTcp:YES];
+//        weakSelf.video = [[CYRtspPlayer alloc] initWithVideo:video_str usesTcp:YES];
+//        weakSelf.video.outputWidth = 426;
+//        weakSelf.video.outputHeight = 320;
+//        
+//        [weakSelf.nextFrameTimer invalidate];
+//        weakSelf.nextFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1.0/weakSelf.video.fps
+//                                                               target:self
+//                                                             selector:@selector(displayNextFrame:)
+//                                                             userInfo:nil
+//                                                              repeats:YES];
+//    });
 #endif
     
 }

@@ -802,6 +802,7 @@ CYSliderDelegate>
                         if (strongSelf)
                             good = [strongSelf addFrames:frames];
                     }
+                    frames = nil;
                 }
             }
         }
