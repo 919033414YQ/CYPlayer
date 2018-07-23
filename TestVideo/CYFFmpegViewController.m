@@ -9,6 +9,7 @@
 #import "CYFFmpegViewController.h"
 #import "CYFFmpegPlayer.h"
 #import <Masonry.h>
+#import "UIViewController+CYExtension.h"
 
 @interface CYFFmpegViewController ()
 {
@@ -25,6 +26,8 @@
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor blackColor];
+    
+    [self openLandscape];
     
     _remoteMovies = @[
                       
@@ -66,7 +69,9 @@
         make.width.equalTo(@375);
         make.height.equalTo(@250);
         make.center.equalTo(@0);
+//        make.edges.equalTo(@0);
     }];
+    [self.navigationController setNavigationBarHidden:YES];
 }
 
 - (void)didReceiveMemoryWarning {

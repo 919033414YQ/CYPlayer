@@ -121,6 +121,7 @@ typedef BOOL(^CYMovieDecoderInterruptCallback)();
 
 - (NSArray *) decodeFrames: (CGFloat) minDuration;
 
+
 @end
 
 @interface CYMovieSubtitleASSParser : NSObject

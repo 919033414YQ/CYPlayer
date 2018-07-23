@@ -461,13 +461,15 @@ static int interrupt_callback(void *ctx);
 	   
     if (_videoStream != -1) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
-        avformat_seek_file(_formatCtx, _videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+//        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
     if (_audioStream != -1) {
         int64_t ts = (int64_t)(seconds / _audioTimeBase);
-        avformat_seek_file(_formatCtx, _audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
+//        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
     }
 }
@@ -1016,6 +1018,8 @@ static int interrupt_callback(void *ctx);
         avformat_close_input(&_formatCtx);
         _formatCtx = NULL;
     }
+    
+    _isEOF = NO;
 }
 
 - (void) closeVideoStream

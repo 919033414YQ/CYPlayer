@@ -56,9 +56,6 @@
 		0E2407D320FE1631008BEAB5 /* CYOrentationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24076E20FE1630008BEAB5 /* CYOrentationObserver.m */; };
 		0E2407D420FE1631008BEAB5 /* UIViewController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077120FE1630008BEAB5 /* UIViewController+CYExtension.m */; };
 		0E2407D520FE1631008BEAB5 /* UIResponder+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077320FE1630008BEAB5 /* UIResponder+CYExtension.m */; };
-		0E2407D620FE1631008BEAB5 /* UITabBarController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077520FE1630008BEAB5 /* UITabBarController+CYExtension.m */; };
-		0E2407D720FE1631008BEAB5 /* UIViewController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077720FE1630008BEAB5 /* UIViewController+CYExtension.m */; };
-		0E2407D820FE1631008BEAB5 /* UINavigationController+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077820FE1630008BEAB5 /* UINavigationController+CYExtension.m */; };
 		0E2407D920FE1631008BEAB5 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E24077B20FE1630008BEAB5 /* README.md */; };
 		0E2407DA20FE1631008BEAB5 /* CYScreenshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E24077F20FE1630008BEAB5 /* CYScreenshotView.m */; };
 		0E2407DB20FE1631008BEAB5 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E24078120FE1630008BEAB5 /* README.md */; };
@@ -618,9 +615,9 @@
 		0E24076F20FE1630008BEAB5 /* UseNativeOrentation */ = {
 			isa = PBXGroup;
 			children = (
-				0E24077020FE1630008BEAB5 /* UIResponder+CYExtension.h */,
-				0E24077120FE1630008BEAB5 /* UIViewController+CYExtension.m */,
 				0E24077220FE1630008BEAB5 /* UIViewController+CYExtension.h */,
+				0E24077120FE1630008BEAB5 /* UIViewController+CYExtension.m */,
+				0E24077020FE1630008BEAB5 /* UIResponder+CYExtension.h */,
 				0E24077320FE1630008BEAB5 /* UIResponder+CYExtension.m */,
 			);
 			path = UseNativeOrentation;
@@ -629,12 +626,12 @@
 		0E24077420FE1630008BEAB5 /* UnuseNativeOrentation */ = {
 			isa = PBXGroup;
 			children = (
+				0E24077920FE1630008BEAB5 /* UITabBarController+CYExtension.h */,
 				0E24077520FE1630008BEAB5 /* UITabBarController+CYExtension.m */,
 				0E24077620FE1630008BEAB5 /* UINavigationController+CYExtension.h */,
-				0E24077720FE1630008BEAB5 /* UIViewController+CYExtension.m */,
 				0E24077820FE1630008BEAB5 /* UINavigationController+CYExtension.m */,
-				0E24077920FE1630008BEAB5 /* UITabBarController+CYExtension.h */,
 				0E24077A20FE1630008BEAB5 /* UIViewController+CYExtension.h */,
+				0E24077720FE1630008BEAB5 /* UIViewController+CYExtension.m */,
 			);
 			path = UnuseNativeOrentation;
 			sourceTree = "<group>";
@@ -967,7 +964,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0E2407D720FE1631008BEAB5 /* UIViewController+CYExtension.m in Sources */,
 				0E2407CE20FE1630008BEAB5 /* CYVideoPlayer.m in Sources */,
 				0E2407CC20FE1630008BEAB5 /* CYVideoPlayerBaseView.m in Sources */,
 				0E2407E620FE1631008BEAB5 /* CYCTFrameParserConfig.m in Sources */,
@@ -992,7 +988,6 @@
 				0E2407CD20FE1630008BEAB5 /* CYVideoPlayerView.m in Sources */,
 				0E2407CA20FE1630008BEAB5 /* CYVideoPlayerPreviewView.m in Sources */,
 				0E5FA23A210062C5002A7597 /* CYAudioManager.m in Sources */,
-				0E2407D620FE1631008BEAB5 /* UITabBarController+CYExtension.m in Sources */,
 				0E2407AF20FE1630008BEAB5 /* CYCommonSlider.m in Sources */,
 				0E2407B820FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.m in Sources */,
 				0E2407C420FE1630008BEAB5 /* CYVideoPlayerTipsView.m in Sources */,
@@ -1000,7 +995,6 @@
 				0E2407C520FE1630008BEAB5 /* CYVideoPlayerTopControlView.m in Sources */,
 				0E2407AE20FE1630008BEAB5 /* CYButtonSlider.m in Sources */,
 				0E2407FC20FF1D1C008BEAB5 /* CYRtspPlayer.m in Sources */,
-				0E2407D820FE1631008BEAB5 /* UINavigationController+CYExtension.m in Sources */,
 				0E2407D520FE1631008BEAB5 /* UIResponder+CYExtension.m in Sources */,
 				0E2407B120FE1630008BEAB5 /* CYVideoPlayerRegistrar.m in Sources */,
 				0E2407C220FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryView.m in Sources */,

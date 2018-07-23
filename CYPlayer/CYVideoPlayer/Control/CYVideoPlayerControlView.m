@@ -66,9 +66,9 @@
     [self.containerView addSubview:self.bottomProgressSlider];
     
     [_topControlView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.offset(0);
+        make.top.equalTo(@0);
         make.leading.trailing.offset(0);
-        make.height.offset(CYControlTopH);
+        make.height.equalTo(@(CYControlTopH));
     }];
     
     [_previewView mas_makeConstraints:^(MASConstraintMaker *make) {

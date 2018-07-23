@@ -12,6 +12,7 @@
 #import <Masonry.h>
 #import "MainViewController.h"
 #import "CYFFmpegViewController.h"
+#import "UIViewController+CYExtension.h"
 
 
 @implementation ViewController
@@ -23,6 +24,8 @@
     // Do any additional setup after loading the view, typically from a nib.
     
     self.view.backgroundColor = [UIColor whiteColor];
+    
+    [self closeLandscape];
     
     UIButton * btn1 = [UIButton buttonWithType:UIButtonTypeCustom];
     [btn1 addTarget:self action:@selector(onTouch:) forControlEvents:UIControlEventTouchUpInside];
@@ -65,7 +68,6 @@
     
 
 }
-
 
 
 - (void)didReceiveMemoryWarning {

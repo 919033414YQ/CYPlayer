@@ -9,6 +9,12 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@class
+CYMovieDecoder,
+CYVideoPlayerSettings,
+CYPrompt,
+CYVideoFrame;
+
 typedef void(^LockScreen)(BOOL isLock);
 
 typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
@@ -21,10 +27,9 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
     CYFFmpegPlayerPlayState_PlayFailed,
 };
 
-@class
-CYMovieDecoder,
-CYVideoPlayerSettings,
-CYPrompt;
+typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames);
+
+
 
 extern NSString * const CYMovieParameterMinBufferedDuration;    // Float
 extern NSString * const CYMovieParameterMaxBufferedDuration;    // Float
@@ -55,6 +60,8 @@ extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
 - (void) pause;
 - (void)viewDidAppear;
 - (void)viewWillDisappear;
+- (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
+
 
 @end
 
