@@ -93,6 +93,7 @@ CYSliderDelegate>
     BOOL                _interrupted;
     BOOL                _buffered;
     BOOL                _savedIdleTimer;
+    BOOL                _isDraging;
     
     
     CYMovieDecoder      *_decoder;
@@ -172,7 +173,7 @@ CYSliderDelegate>
 {
     id<CYAudioManager> audioManager = [CYAudioManager audioManager];
     [audioManager activateAudioSession];
-    return [[CYFFmpegPlayer alloc] initWithContentPath: path parameters: parameters];
+    return [[self alloc] initWithContentPath: path parameters: parameters];;
 }
 
 - (id) initWithContentPath: (NSString *) path
@@ -182,59 +183,66 @@ CYSliderDelegate>
     
     self = [super init];
     if (self) {
-        
-        [self view];
-        [self orentation];
-        [self volBrig];
-        __weak typeof(self) _self = self;
-        [self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
-            __strong typeof(_self) self = _self;
-            if ( !self ) return ;
-            [self resetSetting];
-        }];
-        [self registrar];
-        
-        [self _unknownState];
-        
-        [self _itemPrepareToPlay];
-        
-        _moviePosition = 0;
-        //        self.wantsFullScreenLayout = YES;
-        
-        _parameters = parameters;
-        
-        CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
-        
-        __weak __typeof(&*self)weakSelf = self;
-
-        decoder.interruptCallback = ^BOOL(){
-            __strong __typeof(&*self)strongSelf = weakSelf;
-            return strongSelf ? [strongSelf interruptDecoder] : YES;
-        };
-        
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            __strong __typeof(&*self)strongSelf = weakSelf;
-            
-            NSError *error = nil;
-            [decoder openFile:path error:&error];
-            
-            if (strongSelf) {
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    __strong __typeof(&*self)strongSelf2 = weakSelf;
-                    if (strongSelf2) {
-                        [strongSelf2 setMovieDecoder:decoder withError:error];
-                    }
-                });
-            }
-        });
+        [self setupPlayerWithPath:path parameters:parameters];
     }
     return self;
 }
 
+- (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters
+{
+    [self view];
+    [self orentation];
+    [self volBrig];
+    __weak typeof(self) _self = self;
+    [self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return ;
+        [self resetSetting];
+    }];
+    [self registrar];
+    
+    [self _unknownState];
+    
+    [self _itemPrepareToPlay];
+    
+    _moviePosition = 0;
+    //        self.wantsFullScreenLayout = YES;
+    
+    _parameters = parameters;
+    
+    CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+    
+    self.controlView.decoder = decoder;
+    
+    __weak __typeof(&*self)weakSelf = self;
+    
+    decoder.interruptCallback = ^BOOL(){
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        return strongSelf ? [strongSelf interruptDecoder] : YES;
+    };
+    
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        
+        NSError *error = nil;
+        [decoder openFile:path error:&error];
+        
+        if (strongSelf) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                __strong __typeof(&*self)strongSelf2 = weakSelf;
+                if (strongSelf2) {
+                    [strongSelf2 setMovieDecoder:decoder withError:error];
+                }
+            });
+        }
+    });
+}
+
 - (void) dealloc
 {
-    self.state = CYFFmpegPlayerPlayState_Pause;
-    [self pause];
+//    self.state = CYFFmpegPlayerPlayState_Pause;
+//    [self pause];
+    [self stop];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -365,7 +373,7 @@ CYSliderDelegate>
     
     if (_decoder) {
         
-        [self pause];
+        [self stop];
         
         NSMutableDictionary * gHis = [self getHistory];
         if (_moviePosition == 0 || _decoder.isEOF)
@@ -450,6 +458,19 @@ CYSliderDelegate>
     self.playing = NO;
     //_interrupted = YES;
     [self enableAudio:NO];
+    LoggerStream(1, @"pause movie");
+}
+
+- (void)_stop
+{
+    if (!self.playing)
+        return;
+    
+    self.playing = NO;
+    _interrupted = YES;
+    [self enableAudio:NO];
+    [_decoder closeFile];
+//    [_decoder openFile:nil error:nil];
     LoggerStream(1, @"pause movie");
 }
 
@@ -917,7 +938,7 @@ CYSliderDelegate>
         });
     }
     
-    if ((_tickCounter++ % 3) == 0) {
+    if ((_tickCounter++ % 3) == 0 && _isDraging == NO) {
         const CGFloat duration = _decoder.duration;
         const CGFloat position = _moviePosition -_decoder.startTime;
         [self _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
@@ -1112,6 +1133,7 @@ CYSliderDelegate>
                 if (strongSelf) {
                     [strongSelf setMoviePositionFromDecoder];
                     [strongSelf play];
+                    strongSelf->_isDraging = NO;
                 }
             });
             
@@ -1131,6 +1153,7 @@ CYSliderDelegate>
                     
                     [strongSelf setMoviePositionFromDecoder];
                     [strongSelf presentFrame];
+                    strongSelf->_isDraging = NO;
                 }
             });
         }
@@ -1149,7 +1172,7 @@ CYSliderDelegate>
 
 - (BOOL) decodeFrames
 {
-    //NSAssert(dispatch_get_current_queue() == _dispatchQueue, @"bugcheck");
+    NSAssert(dispatch_get_current_queue() == _dispatchQueue, @"bugcheck");
     
     NSArray *frames = nil;
     
@@ -1333,6 +1356,17 @@ CYSliderDelegate>
         __strong typeof(_self) self = _self;
         if ( !self ) return NO;
         if ( self.isLockedScrren ) return NO;
+        if ([gesture isKindOfClass:[UIPanGestureRecognizer class]])
+        {
+            if (self->_decoder.duration > 0)
+            {
+                return YES;
+            }
+            else
+            {
+                return NO;
+            }
+        }
         CGPoint point = [gesture locationInView:gesture.view];
         if (CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
             return NO;
@@ -1373,8 +1407,8 @@ CYSliderDelegate>
                     self.controlView.draggingProgressView.hiddenProgressSlider = YES;
                 }
                 
-//                self.controlView.draggingProgressView.progress = self.asset.progress;
-//                self setMoviePosition:
+                
+                self.controlView.draggingProgressView.progress = _decoder.position / _decoder.duration;
                 self.hideControl = YES;
             }
                 break;
@@ -1407,6 +1441,7 @@ CYSliderDelegate>
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
+                NSLog(@"%f", translate.x * 0.0003);
                 self.controlView.draggingProgressView.progress += translate.x * 0.0003;
             }
                 break;
@@ -1438,7 +1473,8 @@ CYSliderDelegate>
                 _cyAnima(^{
                     _cyHiddenViews(@[_self.controlView.draggingProgressView]);
                 });
-                
+                [_self setMoviePosition:_self.controlView.draggingProgressView.progress * _self.controlView.draggingProgressView.decoder.duration];
+                [_self play];
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     _self.controlView.draggingProgressView.hiddenProgressSlider = NO;
                 });
@@ -1503,21 +1539,13 @@ CYSliderDelegate>
 {
     switch (slider.tag) {
         case CYVideoPlaySliderTag_Progress: {
-            [self _pause];
-//            NSInteger currentTime = slider.value * self.asset.duration;
-            __weak typeof(self) _self = self;
-//            [self jumpedToTime:currentTime completionHandler:^(BOOL finished) {
-//                __strong typeof(_self) self = _self;
-//                if ( !self ) return;
-//                [self play];
-//                [self _delayHiddenControl];
-//                _cyAnima(^{
-//                    _cyHiddenViews(@[self.controlView.draggingProgressView]);
-//                });
-//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
-//                });
-//            }];
+            NSInteger currentTime = slider.value * _decoder.duration;
+            [self setMoviePosition:currentTime];
+            [self _delayHiddenControl];
+            _cyAnima(^{
+                _cyHiddenViews(@[self.controlView.draggingProgressView]);
+            });
+
         }
             break;
             
@@ -1529,9 +1557,9 @@ CYSliderDelegate>
 - (void)sliderWillBeginDragging:(CYSlider *)slider {
     switch (slider.tag) {
         case CYVideoPlaySliderTag_Progress: {
-            [self _pause];
-//            NSInteger currentTime = slider.value * self.asset.duration;
-//            [self _refreshingTimeLabelWithCurrentTime:currentTime duration:self.asset.duration];
+            _isDraging = YES;
+            NSInteger currentTime = slider.value * _decoder.duration;
+            [self _refreshingTimeLabelWithCurrentTime:currentTime duration:_decoder.duration];
             _cyAnima(^{
                 _cyShowViews(@[self.controlView.draggingProgressView]);
             });
@@ -1556,8 +1584,8 @@ CYSliderDelegate>
 - (void)sliderDidDrag:(CYSlider *)slider {
     switch (slider.tag) {
         case CYVideoPlaySliderTag_Progress: {
-//            NSInteger currentTime = slider.value * self.asset.duration;
-//            [self _refreshingTimeLabelWithCurrentTime:currentTime duration:self.asset.duration];
+            NSInteger currentTime = slider.value * _decoder.duration;
+            [self _refreshingTimeLabelWithCurrentTime:currentTime duration:_decoder.duration];
             self.controlView.draggingProgressView.progress = slider.value;
         }
             break;
@@ -1570,20 +1598,12 @@ CYSliderDelegate>
 - (void)sliderDidEndDragging:(CYSlider *)slider {
     switch (slider.tag) {
         case CYVideoPlaySliderTag_Progress: {
-//            NSInteger currentTime = slider.value * self.asset.duration;
-            __weak typeof(self) _self = self;
-//            [self jumpedToTime:currentTime completionHandler:^(BOOL finished) {
-//                __strong typeof(_self) self = _self;
-//                if ( !self ) return;
-//                [self play];
-//                [self _delayHiddenControl];
-//                _cyAnima(^{
-//                    _cyHiddenViews(@[self.controlView.draggingProgressView]);
-//                });
-//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//                    self.controlView.draggingProgressView.hiddenProgressSlider = NO;
-//                });
-//            }];
+            NSInteger currentTime = slider.value * _decoder.duration;
+            [self setMoviePosition:currentTime];
+            [self _delayHiddenControl];
+            _cyAnima(^{
+                _cyHiddenViews(@[self.controlView.draggingProgressView]);
+            });
         }
             break;
             
@@ -1837,7 +1857,6 @@ CYSliderDelegate>
 - (void)_unknownState {
     // hidden
     _cyHiddenViews(@[self.controlView]);
-    
     self.state = CYFFmpegPlayerPlayState_Unknown;
 }
 
@@ -2160,7 +2179,7 @@ CYSliderDelegate>
 - (void)stop {
     self.suspend = NO;
     self.stopped = YES;
-    
+    [self _stop];
 //    if ( !self.asset ) return;
     if ( self.state != CYFFmpegPlayerPlayState_Unknown ) {
         _cyAnima(^{

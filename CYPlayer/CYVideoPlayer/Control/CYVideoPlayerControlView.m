@@ -10,6 +10,7 @@
 #import "CYVideoPlayerAssetCarrier.h"
 #import <Masonry/Masonry.h>
 #import "CYVideoPlayerResources.h"
+#import "CYMovieDecoder.h"
 
 @interface CYVideoPlayerControlView()<CYVideoPlayerTopControlViewDelegate, CYVideoPlayerLeftControlViewDelegate, CYVideoPlayerCenterControlViewDelegate, CYVideoPlayerBottomControlViewDelegate, CYVideoPlayerPreviewViewDelegate>
 @end
@@ -45,6 +46,12 @@
 - (void)setAsset:(CYVideoPlayerAssetCarrier *)asset {
     _asset = asset;
     _draggingProgressView.asset = asset;
+}
+
+- (void)setDecoder:(CYMovieDecoder *)decoder
+{
+    _decoder = decoder;
+    _draggingProgressView.decoder = decoder;
 }
 
 #pragma mark

@@ -200,8 +200,7 @@ static NSMutableDictionary * gHistory;
 
 - (void) dealloc
 {
-    [self pause];
-    
+    [self pause];    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     if (_dispatchQueue) {

@@ -727,6 +727,7 @@ static int interrupt_callback(void *ctx);
         avformat_network_init();
     }
     
+    path = path.length > 0 ? path : @"";
     _path = path;
     
     kxMovieError errCode = [self openInput: path];
@@ -794,7 +795,11 @@ static int interrupt_callback(void *ctx);
         return kxMovieErrorStreamInfoNotFound;
     }
 
-    av_dump_format(formatCtx, 0, [path.lastPathComponent cStringUsingEncoding: NSUTF8StringEncoding], false);
+#if DEBUG
+    // 打印视频流的详细信息
+   av_dump_format(formatCtx, 0, [path.lastPathComponent cStringUsingEncoding: NSUTF8StringEncoding], false);
+#endif
+    
     
     _formatCtx = formatCtx;
     return kxMovieErrorNone;

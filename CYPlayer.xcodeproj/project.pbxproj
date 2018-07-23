@@ -528,10 +528,11 @@
 		0E24074B20FE1630008BEAB5 /* Control */ = {
 			isa = PBXGroup;
 			children = (
+				0E24075820FE1630008BEAB5 /* CYVideoPlayerControlView.h */,
+				0E24074F20FE1630008BEAB5 /* CYVideoPlayerControlView.m */,
 				0E24074C20FE1630008BEAB5 /* CYVideoPlayerBottomControlView.h */,
 				0E24074D20FE1630008BEAB5 /* CYVideoPlayerCenterControlView.h */,
 				0E24074E20FE1630008BEAB5 /* CYVideoPlayerTopControlView.m */,
-				0E24074F20FE1630008BEAB5 /* CYVideoPlayerControlView.m */,
 				0E24075020FE1630008BEAB5 /* CYVideoPlayerPreviewView.h */,
 				0E24075120FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.h */,
 				0E24075220FE1630008BEAB5 /* CYVideoPlayerLeftControlView.h */,
@@ -540,7 +541,6 @@
 				0E24075520FE1630008BEAB5 /* CYVideoPlayerBottomControlView.m */,
 				0E24075620FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m */,
 				0E24075720FE1630008BEAB5 /* CYVideoPlayerPreviewView.m */,
-				0E24075820FE1630008BEAB5 /* CYVideoPlayerControlView.h */,
 				0E24075920FE1630008BEAB5 /* CYVideoPlayerLeftControlView.m */,
 			);
 			path = Control;
@@ -1197,6 +1197,7 @@
 					"$(PROJECT_DIR)/TestVideo/CYPlayer/CYVideoPlayer/Player/FFMpegDecoder",
 					"$(PROJECT_DIR)/CYPlayer/CYVideoPlayer/Player/FFMpegDecoder",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS = NS_BLOCK_ASSERTIONS;
 				INFOPLIST_FILE = TestVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

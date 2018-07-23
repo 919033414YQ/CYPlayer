@@ -12,6 +12,7 @@
 #import <Masonry/Masonry.h>
 #import "CYSlider.h"
 #import "CYVideoPlayerAssetCarrier.h"
+#import "CYMovieDecoder.h"
 
 inline static NSString *_formatWithSec(NSInteger sec) {
     NSInteger seconds = sec % 60;
@@ -77,7 +78,15 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     else if ( progress > 1 ) progress = 1;
     _progress = progress;
     _progressSlider.value = progress;
-    _progressLabel.text = _formatWithSec(_asset.duration * progress);
+    if (_asset)
+    {
+        _progressLabel.text = _formatWithSec(_asset.duration * progress);
+    }
+    else if (_decoder)
+    {
+        _progressLabel.text = _formatWithSec(_decoder.duration * progress);
+    }
+    
     [self changeDragging];
 }
 
