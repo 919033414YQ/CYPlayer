@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CYVideoPreviewModel;
+@class CYVideoPreviewModel, CYVideoFrame;
 
 @protocol CYVideoPlayerPreviewViewDelegate;
 
@@ -20,12 +20,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readwrite) NSArray<CYVideoPreviewModel *> *previewImages;
 
+@property (nonatomic, strong, readwrite) NSArray<CYVideoFrame *> *previewFrames;
+
 @end
 
 @protocol CYVideoPlayerPreviewViewDelegate <NSObject>
 			
 @optional
 - (void)previewView:(CYVideoPlayerPreviewView *)view didSelectItem:(CYVideoPreviewModel *)item;
+
+- (void)previewView:(CYVideoPlayerPreviewView *)view didSelectFrame:(CYVideoFrame *)frame;
 
 @end
 

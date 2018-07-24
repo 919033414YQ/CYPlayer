@@ -22,9 +22,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 @interface CYVideoPlayerDraggingProgressView ()
 
-@property (nonatomic, strong, readonly) UILabel *progressLabel;
-@property (nonatomic, strong, readonly) UIImageView *imageView;
-@property (nonatomic, strong, readonly) CYSlider *progressSlider;
+
 
 @end
 

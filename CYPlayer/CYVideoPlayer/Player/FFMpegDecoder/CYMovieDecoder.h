@@ -85,6 +85,14 @@ typedef enum {
 
 typedef BOOL(^CYMovieDecoderInterruptCallback)();
 
+typedef enum {
+    
+    CYVideoDecodeTypeNone = 0,
+    CYVideoDecodeTypeVideo = 1 << 0,
+    CYVideoDecodeTypeAudio = 1 << 1
+    
+} CYVideoDecodeType;
+
 @interface CYMovieDecoder : NSObject
 
 @property (readonly, nonatomic, strong) NSString *path;
@@ -108,6 +116,7 @@ typedef BOOL(^CYMovieDecoderInterruptCallback)();
 @property (readonly, nonatomic) CGFloat startTime;
 @property (readwrite, nonatomic) BOOL disableDeinterlacing;
 @property (readwrite, nonatomic, strong) CYMovieDecoderInterruptCallback interruptCallback;
+@property (nonatomic, readwrite, assign) CYVideoDecodeType decodeType;
 
 + (id) movieDecoderWithContentPath: (NSString *) path
                              error: (NSError **) perror;

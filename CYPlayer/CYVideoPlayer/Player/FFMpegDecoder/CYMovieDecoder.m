@@ -459,14 +459,14 @@ static int interrupt_callback(void *ctx);
     _position = seconds;
     _isEOF = NO;
 	   
-    if (_videoStream != -1) {
+    if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
         av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
-    if (_audioStream != -1) {
+    if ([self validAudio]) {
         int64_t ts = (int64_t)(seconds / _audioTimeBase);
         avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
 //        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
@@ -544,12 +544,12 @@ static int interrupt_callback(void *ctx);
 
 - (BOOL) validAudio
 {
-    return _audioStream != -1;
+    return (_audioStream != -1) && (self.decodeType & CYVideoDecodeTypeAudio);
 }
 
 - (BOOL) validVideo
 {
-    return _videoStream != -1;
+    return (_videoStream != -1) && (self.decodeType & CYVideoDecodeTypeVideo);
 }
 
 - (BOOL) validSubtitles
@@ -670,7 +670,7 @@ static int interrupt_callback(void *ctx);
 
 - (CGFloat) startTime
 {
-    if (_videoStream != -1) {
+    if ([self validVideo]) {
         
         AVStream *st = _formatCtx->streams[_videoStream];
         if (AV_NOPTS_VALUE != st->start_time)
@@ -678,7 +678,7 @@ static int interrupt_callback(void *ctx);
         return 0;
     }
     
-    if (_audioStream != -1) {
+    if ([self validAudio]) {
         
         AVStream *st = _formatCtx->streams[_audioStream];
         if (AV_NOPTS_VALUE != st->start_time)
@@ -736,8 +736,18 @@ static int interrupt_callback(void *ctx);
     
     if (errCode == kxMovieErrorNone) {
         
-        kxMovieError videoErr = [self openVideoStream];
-        kxMovieError audioErr = [self openAudioStream];
+        kxMovieError videoErr = kxMovieErrorOpenCodec;
+        kxMovieError audioErr = kxMovieErrorOpenCodec;
+        
+        if (self.decodeType & CYVideoDecodeTypeVideo)
+        {
+            videoErr = [self openVideoStream];
+        }
+        
+        if (self.decodeType & CYVideoDecodeTypeAudio)
+        {
+            audioErr = [self openAudioStream];
+        }
         
         _subtitleStream = -1;
         

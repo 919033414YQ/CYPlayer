@@ -64,9 +64,12 @@
 
 //适用于系统自动横屏的app
 - (void)setFullScreen:(BOOL)fullScreen {
-    if ( self.rotationCondition ) {
-        if ( !self.rotationCondition(self) ) return;
-    }
+//    if ( self.rotationCondition ) {
+//        if ( !self.rotationCondition(self) )
+//        {
+//            return;
+//        }
+//    }
     
     if ( self.isTransitioning ) return;
     

@@ -160,6 +160,12 @@
     [_delegate controlView:self didSelectPreviewItem:item];
 }
 
+- (void)previewView:(CYVideoPlayerPreviewView *)view didSelectFrame:(CYVideoFrame *)frame
+{
+    if ( ![_delegate respondsToSelector:@selector(controlView:didSelectPreviewFrame:)] ) return;
+    [_delegate controlView:self didSelectPreviewFrame:frame];
+}
+
 - (CYVideoPlayerPreviewView *)previewView {
     if ( _previewView ) return _previewView;
     _previewView = [CYVideoPlayerPreviewView new];

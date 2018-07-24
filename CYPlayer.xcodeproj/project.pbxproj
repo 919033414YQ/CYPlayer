@@ -423,10 +423,10 @@
 		0E24071C20FE1630008BEAB5 /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				0E24071D20FE1630008BEAB5 /* CYVideoPlayerControlMaskView.h */,
 				0E24071E20FE1630008BEAB5 /* CYVideoPlayerDraggingProgressView.h */,
-				0E24071F20FE1630008BEAB5 /* CYVideoPlayerControlMaskView.m */,
 				0E24072020FE1630008BEAB5 /* CYVideoPlayerDraggingProgressView.m */,
+				0E24071D20FE1630008BEAB5 /* CYVideoPlayerControlMaskView.h */,
+				0E24071F20FE1630008BEAB5 /* CYVideoPlayerControlMaskView.m */,
 			);
 			path = Other;
 			sourceTree = "<group>";
@@ -527,18 +527,18 @@
 			children = (
 				0E24075820FE1630008BEAB5 /* CYVideoPlayerControlView.h */,
 				0E24074F20FE1630008BEAB5 /* CYVideoPlayerControlView.m */,
-				0E24074C20FE1630008BEAB5 /* CYVideoPlayerBottomControlView.h */,
-				0E24074D20FE1630008BEAB5 /* CYVideoPlayerCenterControlView.h */,
-				0E24074E20FE1630008BEAB5 /* CYVideoPlayerTopControlView.m */,
 				0E24075020FE1630008BEAB5 /* CYVideoPlayerPreviewView.h */,
-				0E24075120FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.h */,
-				0E24075220FE1630008BEAB5 /* CYVideoPlayerLeftControlView.h */,
-				0E24075320FE1630008BEAB5 /* CYVideoPlayerTopControlView.h */,
-				0E24075420FE1630008BEAB5 /* CYVideoPlayerCenterControlView.m */,
-				0E24075520FE1630008BEAB5 /* CYVideoPlayerBottomControlView.m */,
-				0E24075620FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m */,
 				0E24075720FE1630008BEAB5 /* CYVideoPlayerPreviewView.m */,
+				0E24075120FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.h */,
+				0E24075620FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m */,
+				0E24075220FE1630008BEAB5 /* CYVideoPlayerLeftControlView.h */,
 				0E24075920FE1630008BEAB5 /* CYVideoPlayerLeftControlView.m */,
+				0E24075320FE1630008BEAB5 /* CYVideoPlayerTopControlView.h */,
+				0E24074E20FE1630008BEAB5 /* CYVideoPlayerTopControlView.m */,
+				0E24074D20FE1630008BEAB5 /* CYVideoPlayerCenterControlView.h */,
+				0E24075420FE1630008BEAB5 /* CYVideoPlayerCenterControlView.m */,
+				0E24074C20FE1630008BEAB5 /* CYVideoPlayerBottomControlView.h */,
+				0E24075520FE1630008BEAB5 /* CYVideoPlayerBottomControlView.m */,
 			);
 			path = Control;
 			sourceTree = "<group>";
@@ -577,22 +577,15 @@
 			isa = PBXGroup;
 			children = (
 				0E24076720FE1630008BEAB5 /* FFmpeg.framework */,
-				0E2407FB20FF1D1C008BEAB5 /* CYRtspPlayer.h */,
-				0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */,
-				0E24076620FE1630008BEAB5 /* AudioStreamer.h */,
-				0E24076A20FE1630008BEAB5 /* AudioStreamer.m */,
-				0E24076820FE1630008BEAB5 /* Utilities.h */,
-				0E24076B20FE1630008BEAB5 /* Utilities.m */,
-				0E5FA238210062C5002A7597 /* CYAudioManager.h */,
-				0E5FA231210062C4002A7597 /* CYAudioManager.m */,
+				0E343E5F2106D96800DF4564 /* DEBUG */,
 				0E5FA22F210062C3002A7597 /* CYLogger.h */,
 				0E5FA233210062C4002A7597 /* CYmovie-Prefix.pch */,
+				0E5FA238210062C5002A7597 /* CYAudioManager.h */,
+				0E5FA231210062C4002A7597 /* CYAudioManager.m */,
 				0E5FA234210062C4002A7597 /* CYMovieDecoder.h */,
 				0E5FA232210062C4002A7597 /* CYMovieDecoder.m */,
 				0E5FA22E210062C3002A7597 /* CYMovieGLView.h */,
 				0E5FA230210062C4002A7597 /* CYMovieGLView.m */,
-				0E5FA235210062C5002A7597 /* CYMovieViewController.h */,
-				0E5FA236210062C5002A7597 /* CYMovieViewController.m */,
 				0E5FA23E210065B7002A7597 /* CYFFmpegPlayer.h */,
 				0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */,
 				0E5FA237210062C5002A7597 /* kxmovie.bundle */,
@@ -603,11 +596,11 @@
 		0E24076D20FE1630008BEAB5 /* CYOrentationObserver */ = {
 			isa = PBXGroup;
 			children = (
+				0E24077C20FE1630008BEAB5 /* CYOrentationObserver.h */,
 				0E24076E20FE1630008BEAB5 /* CYOrentationObserver.m */,
 				0E24076F20FE1630008BEAB5 /* UseNativeOrentation */,
 				0E24077420FE1630008BEAB5 /* UnuseNativeOrentation */,
 				0E24077B20FE1630008BEAB5 /* README.md */,
-				0E24077C20FE1630008BEAB5 /* CYOrentationObserver.h */,
 			);
 			path = CYOrentationObserver;
 			sourceTree = "<group>";
@@ -705,6 +698,21 @@
 				0E2407A520FE1630008BEAB5 /* CYBorderlineView.h */,
 			);
 			path = CYBorderLineView;
+			sourceTree = "<group>";
+		};
+		0E343E5F2106D96800DF4564 /* DEBUG */ = {
+			isa = PBXGroup;
+			children = (
+				0E24076820FE1630008BEAB5 /* Utilities.h */,
+				0E24076B20FE1630008BEAB5 /* Utilities.m */,
+				0E24076620FE1630008BEAB5 /* AudioStreamer.h */,
+				0E24076A20FE1630008BEAB5 /* AudioStreamer.m */,
+				0E2407FB20FF1D1C008BEAB5 /* CYRtspPlayer.h */,
+				0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */,
+				0E5FA235210062C5002A7597 /* CYMovieViewController.h */,
+				0E5FA236210062C5002A7597 /* CYMovieViewController.m */,
+			);
+			path = DEBUG;
 			sourceTree = "<group>";
 		};
 		84B261A41A46A0AE00C8CAA9 = {

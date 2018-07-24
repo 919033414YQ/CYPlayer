@@ -143,6 +143,7 @@ CYSliderDelegate>
 
 @property (nonatomic, assign, readwrite) CYFFmpegPlayerPlayState state;
 @property (nonatomic, assign, readwrite) BOOL hiddenLeftControlView;
+@property (nonatomic, assign, readwrite)  BOOL hasBeenGeneratedPreviewImages;
 @property (nonatomic, assign, readwrite) BOOL userClickedPause;
 @property (nonatomic, assign, readwrite) BOOL stopped;
 @property (nonatomic, assign, readwrite) BOOL touchedScrollView;
@@ -216,6 +217,7 @@ CYSliderDelegate>
     _parameters = parameters;
     
     __block CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+    [decoder setDecodeType:(CYVideoDecodeTypeVideo | CYVideoDecodeTypeAudio)];
     
     self.controlView.decoder = decoder;
     
@@ -496,6 +498,7 @@ CYSliderDelegate>
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
     __block CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+    [decoder setDecodeType:CYVideoDecodeTypeVideo];
     
     __weak __typeof(&*self)weakSelf = self;
     
@@ -549,6 +552,7 @@ CYSliderDelegate>
         dispatch_async(_generatedPreviewImagesDispatchQueue, ^{
             @autoreleasepool {
                 CGFloat timeInterval = weakDecoder.duration / imagesCount;
+                NSError * error = nil;
                 int i = 0;
                  __strong CYFFmpegPlayer *strongSelf = weakSelf;
                 while (i < imagesCount)
@@ -556,36 +560,50 @@ CYSliderDelegate>
                 {
                     __strong CYMovieDecoder *decoder = weakDecoder;
                     
-                    if (decoder && decoder.validVideo)
+                    if (decoder && decoder.validVideo && decoder.isEOF == NO)
                     {
                         NSArray *frames = [decoder decodeFrames:duration];
                         if (frames.count && [frames firstObject])
                         {
                            
                             if (strongSelf)
-                                if (decoder.validVideo)
+                            {
+                                @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
                                 {
-                                    @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
+                                    //                                        for (CYMovieFrame *frame in frames)
+                                    CYVideoFrame * frame = [frames firstObject];
                                     {
-//                                        for (CYMovieFrame *frame in frames)
-                                        CYVideoFrame * frame = [frames firstObject];
+                                        if (frame.type == CYMovieFrameTypeVideo)
                                         {
-                                            if (frame.type == CYMovieFrameTypeVideo)
-                                            {
-                                                [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
-                                                [decoder setPosition:(timeInterval * (i+1))];
-                                                i++;
-                                            }
+                                            [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
+                                            [decoder setPosition:(timeInterval * (i+1))];
+                                            i++;
                                         }
                                     }
                                 }
+                            }
                         }
                     }
+                    else
+                    {
+                        if (strongSelf->_generatedPreviewImagesVideoFrames.count < imagesCount) {
+                            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Generated Failed!" };
+
+                            error = [NSError errorWithDomain:kxmovieErrorDomain
+                                                               code:-1
+                                                           userInfo:userInfo];
+                        }
+                        break;
+                    }
                 }
-                if (strongSelf->_generatedPreviewImagesVideoFrames.count == imagesCount)
-                {
-                    handler(strongSelf->_generatedPreviewImagesVideoFrames);
-                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
+                    if (!strongSelf2) {
+                        return;
+                    }
+                    handler(strongSelf2->_generatedPreviewImagesVideoFrames, error);
+                });
+                
             }
         });
     }
@@ -684,8 +702,23 @@ CYSliderDelegate>
     }];
     
     if (_decoder.validVideo) {
-        
-        
+        __weak typeof(self) _self = self;
+        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            if (error)
+            {
+                _self.hasBeenGeneratedPreviewImages = NO;
+                return;
+            }
+            _self.hasBeenGeneratedPreviewImages = YES;
+            if ( _self.orentation.fullScreen ) {
+                _cyAnima(^{
+                    _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
+                });
+            }
+            _self.controlView.previewView.previewFrames = frames;
+        }];
         
     } else {
         
@@ -769,8 +802,8 @@ CYSliderDelegate>
                                 _debugAudioStatus = 1;
                                 _debugAudioStatusTS = [NSDate date];
 #endif
-                                [_audioFrames removeObjectAtIndex:0];
-                                break; // silence and exit
+//                                [_audioFrames removeObjectAtIndex:0];
+//                                break; // silence and exit
                             }
                             
                             [_audioFrames removeObjectAtIndex:0];
@@ -1402,7 +1435,7 @@ CYSliderDelegate>
             self.hiddenLeftControlView = !observer.isFullScreen;
             if ( observer.isFullScreen ) {
                 _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
-//                if ( _generatedPreviewImagesVideoFrames.count > 0 )
+                if ( self.hasBeenGeneratedPreviewImages )
                 {
                     _cyShowViews(@[self.controlView.topControlView.previewBtn]);
                 }
@@ -1477,6 +1510,7 @@ CYSliderDelegate>
         else return YES;
     };
     
+    
     _gestureControl.singleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
@@ -1489,14 +1523,9 @@ CYSliderDelegate>
     };
     
     _gestureControl.doubleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
-        [_self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames) {
-            for (CYVideoFrame * frame in frames)
-            {
-                CYVideoFrameRGB *rgbFrame = (CYVideoFrameRGB *)frame;
-                UIImage * image = [rgbFrame asImage];
-                NSLog(@"%@", image);
-            }
-        }];
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        
     };
     
     _gestureControl.beganPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
@@ -1518,7 +1547,7 @@ CYSliderDelegate>
                 }
                 
                 
-                self.controlView.draggingProgressView.progress = _decoder.position / _decoder.duration;
+                self.controlView.draggingProgressView.progress = self->_decoder.position / self->_decoder.duration;
                 self.hideControl = YES;
             }
                 break;
@@ -1578,6 +1607,8 @@ CYSliderDelegate>
     };
     
     _gestureControl.endedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
         switch ( direction ) {
             case CYPanDirection_H:{
                 _cyAnima(^{
@@ -1593,8 +1624,6 @@ CYSliderDelegate>
             case CYPanDirection_V:{
                 if ( location == CYPanLocation_Left ) {
                     _cyAnima(^{
-                        __strong typeof(_self) self = _self;
-                        if ( !self ) return;
                         _cyHiddenViews(@[self.volBrigControl.brightnessView]);
                     });
                 }
@@ -1892,15 +1921,15 @@ CYSliderDelegate>
     });
 }
 
-
-- (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewItem:(CYVideoPreviewModel *)item {
-    [self _pause];
-    __weak typeof(self) _self = self;
-//    [self seekToTime:item.localTime completionHandler:^(BOOL finished) {
-//        __strong typeof(_self) self = _self;
-//        if ( !self ) return;
-//        [self play];
-//    }];
+- (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewFrame:(CYVideoFrame *)frame
+{
+//    [self _pause];
+    NSInteger currentTime = frame.position;
+    [self setMoviePosition:currentTime];
+    [self _delayHiddenControl];
+    _cyAnima(^{
+        _cyHiddenViews(@[self.controlView.draggingProgressView]);
+    });
 }
 
 @end
@@ -2000,12 +2029,13 @@ CYSliderDelegate>
                      self.controlView.centerControlView.replayBtn,
                      self.controlView.bottomControlView.playBtn,
                      self.controlView.bottomProgressSlider,
+                     self.controlView.draggingProgressView.imageView,
                      ]);
     
     if ( self.orentation.fullScreen ) {
         _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
         self.hiddenLeftControlView = NO;
-//        if ( self.asset.hasBeenGeneratedPreviewImages )
+        if ( self.hasBeenGeneratedPreviewImages )
         {
             _cyShowViews(@[self.controlView.topControlView.previewBtn]);
         }
@@ -2125,7 +2155,7 @@ CYSliderDelegate>
     
     // transform show
     if (self.orentation.fullScreen ) {
-        self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, -CYControlTopH);
+        self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, 0);
     }
     else {
         self.controlView.topControlView.transform = CGAffineTransformIdentity;

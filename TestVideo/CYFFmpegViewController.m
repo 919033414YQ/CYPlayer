@@ -71,6 +71,19 @@
         make.center.equalTo(@0);
 //        make.edges.equalTo(@0);
     }];
+    
+     __weak __typeof(&*self)weakSelf = self;
+    vc.lockscreen = ^(BOOL isLock) {
+        if (isLock)
+        {
+            [weakSelf lockRotation];
+        }
+        else
+        {
+            [weakSelf unlockRotation];
+        }
+    };
+    
     [self.navigationController setNavigationBarHidden:YES];
 }
 

@@ -11,6 +11,7 @@
 #import "CYVideoPlayerResources.h"
 #import <Masonry/Masonry.h>
 #import "CYVideoPlayerAssetCarrier.h"
+#import "CYMovieDecoder.h"
 
 static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPreviewCollectionViewCell";
 
@@ -32,6 +33,12 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
 
 - (void)setPreviewImages:(NSArray<CYVideoPreviewModel *> *)previewImages {
     _previewImages = previewImages;
+    [_collectionView reloadData];
+}
+
+- (void)setPreviewFrames:(NSArray<CYVideoFrame *> *)previewFrames
+{
+    _previewFrames = previewFrames;
     [_collectionView reloadData];
 }
 
@@ -73,21 +80,46 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _previewImages.count;
+    if (_previewImages)
+    {
+        return _previewImages.count;
+    }
+    else
+    {
+        return _previewFrames.count;
+    }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CYVideoPlayerPreviewCollectionViewCellID forIndexPath:indexPath];
-    [cell setValue:_previewImages[indexPath.item] forKey:@"model"];
+    if (_previewImages.count)
+    {
+        [cell setValue:_previewImages[indexPath.item] forKey:@"model"];
+    }
+    else
+    {
+        [cell setValue:_previewFrames[indexPath.item] forKey:@"frame"];
+    }
     return cell;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    CGSize imageSize = _previewImages.firstObject.image.size;
-    CGFloat rate = imageSize.width / imageSize.height;
-    CGFloat height = _collectionView.frame.size.height - 16;
-    CGFloat width = rate * height;
-    return CGSizeMake(width, height);
+    if (_previewImages.count)
+    {
+        CGSize imageSize = _previewImages.firstObject.image.size;
+        CGFloat rate = imageSize.width / imageSize.height;
+        CGFloat height = _collectionView.frame.size.height - 16;
+        CGFloat width = rate * height;
+        return CGSizeMake(width, height);
+    }
+    else
+    {
+        CGSize imageSize = CGSizeMake(_previewFrames.firstObject.width, _previewFrames.firstObject.height);
+        CGFloat rate = imageSize.width / imageSize.height;
+        CGFloat height = _collectionView.frame.size.height - 16;
+        CGFloat width = rate * height;
+        return CGSizeMake(width, height);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -103,8 +135,17 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ( ![self.delegate respondsToSelector:@selector(previewView:didSelectItem:)] ) return;
-    [self.delegate previewView:self didSelectItem:_previewImages[indexPath.item]];
+    if (_previewImages.count)
+    {
+        if ( ![self.delegate respondsToSelector:@selector(previewView:didSelectItem:)] ) return;
+        [self.delegate previewView:self didSelectItem:_previewImages[indexPath.item]];
+    }
+    else
+    {
+        if ( ![self.delegate respondsToSelector:@selector(previewView:didSelectFrame:)] ) return;
+        [self.delegate previewView:self didSelectFrame:_previewFrames[indexPath.item]];
+    }
+    
 }
 
 @end

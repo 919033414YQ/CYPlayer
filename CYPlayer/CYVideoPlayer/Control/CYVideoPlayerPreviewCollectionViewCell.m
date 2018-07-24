@@ -11,6 +11,7 @@
 #import "CYVideoPlayerResources.h"
 #import <Masonry/Masonry.h>
 #import "CYVideoPlayerAssetCarrier.h"
+#import "CYMovieDecoder.h"
 
 @interface CYVideoPlayerPreviewCollectionViewCell ()
 
@@ -32,6 +33,15 @@
 - (void)setModel:(CYVideoPreviewModel *)model {
     _model = model;
     _imageView.image = model.image;
+}
+
+- (void)setFrame:(CYVideoFrame *)frame
+{
+    _frame = frame;
+    if ([frame isKindOfClass:[CYVideoFrameRGB class]])
+    {
+        _imageView.image = [((CYVideoFrameRGB *)frame) asImage];
+    }
 }
 
 - (void)_collectionSetupView {
