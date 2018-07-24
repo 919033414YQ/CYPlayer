@@ -13,7 +13,7 @@ s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "
 s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
 s.frameworks  = "UIKit", "AVFoundation"
 s.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
-#s.libraries = 'libbz', 'libiconv', 'libbz2'
+s.libraries = 'bz', 'iconv', 'bz2'
 s.requires_arc = true
 s.dependency 'Masonry'
 
