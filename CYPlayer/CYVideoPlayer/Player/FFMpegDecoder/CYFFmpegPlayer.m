@@ -1525,6 +1525,25 @@ CYSliderDelegate>
     _gestureControl.doubleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        switch (self.state) {
+            case CYFFmpegPlayerPlayState_Unknown:
+            case CYFFmpegPlayerPlayState_Prepare:
+                break;
+            case CYFFmpegPlayerPlayState_Buffing:
+            case CYFFmpegPlayerPlayState_Playing: {
+                [self pause];
+                self.userClickedPause = YES;
+            }
+                break;
+            case CYFFmpegPlayerPlayState_Pause:
+            case CYFFmpegPlayerPlayState_PlayEnd: {
+                [self play];
+                self.userClickedPause = NO;
+            }
+                break;
+            case CYFFmpegPlayerPlayState_PlayFailed:
+                break;
+        }
         
     };
     
@@ -2162,7 +2181,7 @@ CYSliderDelegate>
     }
     self.controlView.bottomControlView.transform = CGAffineTransformIdentity;
     
-    self.hiddenLeftControlView = !self.orentation.fullScreen;
+    self.hiddenLeftControlView = !self.orentation.fullScreen && !self.isLockedScrren;
     
     
 #pragma clang diagnostic push
@@ -2328,7 +2347,10 @@ CYSliderDelegate>
         });
     }
     [self _pause];
-    if ( self.orentation.fullScreen ) [self showTitle:@"已暂停"];
+    if ( self.orentation.fullScreen )
+    {
+        [self showTitle:@"已暂停"];
+    }
     return YES;
 }
 

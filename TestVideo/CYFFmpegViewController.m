@@ -11,12 +11,16 @@
 #import <Masonry.h>
 #import "UIViewController+CYExtension.h"
 
+#define kiPad  ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) //ipad
+
 @interface CYFFmpegViewController ()
 {
     NSArray *_localMovies;
     NSArray *_remoteMovies;
     CYFFmpegPlayer *vc;
 }
+
+@property (nonatomic, strong) UIView * contentView;
 
 @end
 
@@ -61,16 +65,36 @@
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
         parameters[CYMovieParameterDisableDeinterlacing] = @(YES);
     
+    
+    UIView * contentView = [UIView new];
+    contentView.backgroundColor = [UIColor blackColor];
+    self.contentView = contentView;
+    [self.view addSubview:contentView];
+    [contentView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.offset(0);
+        make.leading.trailing.offset(0);
+        make.height.equalTo(contentView.mas_width).multipliedBy(9.0 / 16.0);
+    }];
+    
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     vc.autoplay = YES;
-    [self.view addSubview:vc.view];
+    [contentView addSubview:vc.view];
     
     [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.equalTo(@375);
-        make.height.equalTo(@250);
-        make.center.equalTo(@0);
-//        make.edges.equalTo(@0);
+        if (kiPad)
+        {
+            make.center.offset(0);
+            make.leading.trailing.offset(0);
+            make.height.equalTo(vc.view.mas_width).multipliedBy(9.0 / 16.0);
+        }
+        else
+        {
+            make.center.offset(0);
+            make.top.bottom.offset(0);
+            make.width.equalTo(vc.view.mas_height).multipliedBy(16.0 / 9.0);
+        }
     }];
+    
     
      __weak __typeof(&*self)weakSelf = self;
     vc.lockscreen = ^(BOOL isLock) {
@@ -106,5 +130,28 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+
+# pragma mark - 系统横竖屏切换调用
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    if (size.width > size.height)
+    {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.bottom.equalTo(@(0));
+            make.left.equalTo(@(0));
+            make.right.equalTo(@(0));
+        }];
+    }
+    else
+    {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.center.offset(0);
+            make.leading.trailing.offset(0);
+            make.height.equalTo(self.contentView.mas_width).multipliedBy(9.0 / 16.0);
+        }];
+    }
+}
 
 @end
