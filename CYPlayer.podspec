@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.3.2"
+s.version      = "1.4.0"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -10,10 +10,10 @@ s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
 s.author             = { "yellowei" => "hw0521@vip.qq.com" }
 s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
-s.resource     = 'CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle'
+s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
 s.frameworks  = "UIKit", "AVFoundation"
-#s.vendored_frameworks = "CYPlayer/CYVideoPlayer/framework/*.framework"
-#s.libraries = 'libbz2.1.0', 'libc++.1', 'libz.1.1.3'
+s.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
+#s.libraries = 'libbz', 'libiconv', 'libbz2'
 s.requires_arc = true
 s.dependency 'Masonry'
 
@@ -132,6 +132,11 @@ sss.dependency 'CYPlayer/CYVideoPlayer/GestureControl'
 # sss.dependency 'CYPlayer/CYSlider'
 # sss.dependency 'CYPlayer/CYAttributesFactory'
 # sss.dependency 'CYPlayer/CYOrentationObserver'
+
+sss.subspec 'FFMpegDecoder' do |ssss|
+ssss.source_files = 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.{h,m}'
+end
+
 end
 
 

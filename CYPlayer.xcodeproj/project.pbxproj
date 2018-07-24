@@ -79,18 +79,18 @@
 		0E2407ED20FE1631008BEAB5 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E2407A420FE1630008BEAB5 /* README.md */; };
 		0E2407F920FF1C97008BEAB5 /* RTSPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E2407F820FF1C97008BEAB5 /* RTSPViewController.m */; };
 		0E2407FC20FF1D1C008BEAB5 /* CYRtspPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */; };
+		0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E602107132D00DF4564 /* libiconv.tbd */; };
+		0E343E632107133A00DF4564 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E622107133A00DF4564 /* libbz2.tbd */; };
+		0E343E652107134900DF4564 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E642107134900DF4564 /* libz.tbd */; };
 		0E5FA22D21003E24002A7597 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA22B21003E23002A7597 /* MainViewController.m */; };
 		0E5FA239210062C5002A7597 /* CYMovieGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA230210062C4002A7597 /* CYMovieGLView.m */; };
 		0E5FA23A210062C5002A7597 /* CYAudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA231210062C4002A7597 /* CYAudioManager.m */; };
 		0E5FA23B210062C5002A7597 /* CYMovieDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA232210062C4002A7597 /* CYMovieDecoder.m */; };
 		0E5FA23C210062C5002A7597 /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
-		0E5FA23D210062C5002A7597 /* kxmovie.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0E5FA237210062C5002A7597 /* kxmovie.bundle */; };
+		0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0E5FA237210062C5002A7597 /* cyplayer.bundle */; };
 		0E5FA240210065B7002A7597 /* CYFFmpegPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */; };
 		0E5FA24321007479002A7597 /* CYFFmpegViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA24221007479002A7597 /* CYFFmpegViewController.m */; };
 		2A6AD4A2C0516D1E913FE4FE /* libPods-TestVideo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F82A6770E16FD3C855878832 /* libPods-TestVideo.a */; };
-		843207C71A4B05F900FC9BAA /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 843207C61A4B05F900FC9BAA /* libz.dylib */; };
-		843207C91A4B060200FC9BAA /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 843207C81A4B060200FC9BAA /* libbz2.dylib */; };
-		843207CB1A4B060700FC9BAA /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 843207CA1A4B060700FC9BAA /* libiconv.dylib */; };
 		84B261B31A46A0AF00C8CAA9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B21A46A0AF00C8CAA9 /* main.m */; };
 		84B261B61A46A0AF00C8CAA9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B51A46A0AF00C8CAA9 /* AppDelegate.m */; };
 		84B261B91A46A0AF00C8CAA9 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B81A46A0AF00C8CAA9 /* ViewController.m */; };
@@ -256,6 +256,9 @@
 		0E2407F820FF1C97008BEAB5 /* RTSPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTSPViewController.m; sourceTree = "<group>"; };
 		0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYRtspPlayer.m; sourceTree = "<group>"; };
 		0E2407FB20FF1D1C008BEAB5 /* CYRtspPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYRtspPlayer.h; sourceTree = "<group>"; };
+		0E343E602107132D00DF4564 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		0E343E622107133A00DF4564 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		0E343E642107134900DF4564 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		0E5FA22B21003E23002A7597 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		0E5FA22C21003E23002A7597 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		0E5FA22E210062C3002A7597 /* CYMovieGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYMovieGLView.h; sourceTree = "<group>"; };
@@ -267,7 +270,7 @@
 		0E5FA234210062C4002A7597 /* CYMovieDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYMovieDecoder.h; sourceTree = "<group>"; };
 		0E5FA235210062C5002A7597 /* CYMovieViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYMovieViewController.h; sourceTree = "<group>"; };
 		0E5FA236210062C5002A7597 /* CYMovieViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYMovieViewController.m; sourceTree = "<group>"; };
-		0E5FA237210062C5002A7597 /* kxmovie.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = kxmovie.bundle; sourceTree = "<group>"; };
+		0E5FA237210062C5002A7597 /* cyplayer.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = cyplayer.bundle; sourceTree = "<group>"; };
 		0E5FA238210062C5002A7597 /* CYAudioManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYAudioManager.h; sourceTree = "<group>"; };
 		0E5FA23E210065B7002A7597 /* CYFFmpegPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegPlayer.h; sourceTree = "<group>"; };
 		0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegPlayer.m; sourceTree = "<group>"; };
@@ -298,10 +301,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E343E652107134900DF4564 /* libz.tbd in Frameworks */,
+				0E343E632107133A00DF4564 /* libbz2.tbd in Frameworks */,
+				0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */,
 				0E2407CF20FE1630008BEAB5 /* FFmpeg.framework in Frameworks */,
-				843207CB1A4B060700FC9BAA /* libiconv.dylib in Frameworks */,
-				843207C91A4B060200FC9BAA /* libbz2.dylib in Frameworks */,
-				843207C71A4B05F900FC9BAA /* libz.dylib in Frameworks */,
 				2A6AD4A2C0516D1E913FE4FE /* libPods-TestVideo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -588,7 +591,7 @@
 				0E5FA230210062C4002A7597 /* CYMovieGLView.m */,
 				0E5FA23E210065B7002A7597 /* CYFFmpegPlayer.h */,
 				0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */,
-				0E5FA237210062C5002A7597 /* kxmovie.bundle */,
+				0E5FA237210062C5002A7597 /* cyplayer.bundle */,
 			);
 			path = FFMpegDecoder;
 			sourceTree = "<group>";
@@ -789,6 +792,9 @@
 		AA3CD3F92BA184082CBCD8BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0E343E642107134900DF4564 /* libz.tbd */,
+				0E343E622107133A00DF4564 /* libbz2.tbd */,
+				0E343E602107132D00DF4564 /* libiconv.tbd */,
 				843207CA1A4B060700FC9BAA /* libiconv.dylib */,
 				843207C81A4B060200FC9BAA /* libbz2.dylib */,
 				843207C61A4B05F900FC9BAA /* libz.dylib */,
@@ -897,7 +903,7 @@
 				0E2407ED20FE1631008BEAB5 /* README.md in Resources */,
 				84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */,
 				0E2407A820FE1630008BEAB5 /* README.md in Resources */,
-				0E5FA23D210062C5002A7597 /* kxmovie.bundle in Resources */,
+				0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */,
 				0E2407E520FE1631008BEAB5 /* README.md in Resources */,
 				0E2406FC20FE15D8008BEAB5 /* CYPlayer.podspec in Resources */,
 				0E2407DB20FE1631008BEAB5 /* README.md in Resources */,

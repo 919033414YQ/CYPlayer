@@ -287,7 +287,7 @@ _messageLabel.hidden = YES;
     _progressSlider.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _progressSlider.continuous = NO;
     _progressSlider.value = 0;
-//    [_progressSlider setThumbImage:[UIImage imageNamed:@"kxmovie.bundle/sliderthumb"]
+//    [_progressSlider setThumbImage:[UIImage imageNamed:@"cyplayer.bundle/sliderthumb"]
 //                          forState:UIControlStateNormal];
 
     _leftLabel = [[UILabel alloc] initWithFrame:CGRectMake(width-92, 1, 60, topH)];
@@ -736,7 +736,7 @@ _messageLabel.hidden = YES;
     
     } else {
        
-        _imageView.image = [UIImage imageNamed:@"kxmovie.bundle/music_icon.png"];
+        _imageView.image = [UIImage imageNamed:@"cyplayer.bundle/music_icon.png"];
         _imageView.contentMode = UIViewContentModeCenter;
     }
     

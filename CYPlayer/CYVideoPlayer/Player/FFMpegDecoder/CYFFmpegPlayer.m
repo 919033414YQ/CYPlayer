@@ -728,7 +728,7 @@ CYSliderDelegate>
         
     } else {
         
-        _imageView.image = [UIImage imageNamed:@"kxmovie.bundle/music_icon.png"];
+        _imageView.image = [UIImage imageNamed:@"cyplayer.bundle/music_icon.png"];
         _imageView.contentMode = UIViewContentModeCenter;
     }
     
