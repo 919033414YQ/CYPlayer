@@ -10,4 +10,6 @@
 
 @interface CYFFmpegViewController : UIViewController
 
+@property (nonatomic, copy) NSString * path;
+
 @end

@@ -1387,7 +1387,7 @@ static int interrupt_callback(void *ctx);
     
     BOOL finished = NO;
     
-    while (!finished) {
+    while (!finished && _formatCtx) {
         
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;
@@ -1398,7 +1398,7 @@ static int interrupt_callback(void *ctx);
            
             int pktSize = packet.size;
             
-            while (pktSize > 0) {
+            while (pktSize > 0 && _videoCodecCtx) {
                             
                 int gotframe = 0;
 //                int len = avcodec_decode_video2(_videoCodecCtx,
@@ -1447,7 +1447,7 @@ static int interrupt_callback(void *ctx);
                         
             int pktSize = packet.size;
             
-            while (pktSize > 0) {
+            while (pktSize > 0 && _audioCodecCtx) {
                 
                 int gotframe = 0;
 //                int len = avcodec_decode_audio4(_audioCodecCtx,

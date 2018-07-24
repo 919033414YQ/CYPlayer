@@ -32,7 +32,7 @@
     self.view.backgroundColor = [UIColor blackColor];
     
     [self openLandscape];
-    
+
     _remoteMovies = @[
                       
                       //            @"http://eric.cast.ro/stream2.flv",
@@ -55,7 +55,8 @@
     NSString *path;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     
-    path = _remoteMovies[4];
+//    path = _remoteMovies[4];
+    path = self.path.length > 0 ? self.path :  _remoteMovies[5];
     
     // increase buffering for .wmv, it solves problem with delaying audio frames
     if ([path.pathExtension isEqualToString:@"wmv"])

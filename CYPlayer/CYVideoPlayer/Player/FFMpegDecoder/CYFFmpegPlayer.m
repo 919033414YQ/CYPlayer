@@ -115,6 +115,7 @@ CYSliderDelegate>
     CYMovieDecoder      *_generatedPreviewImagesDecoder;
     dispatch_queue_t    _generatedPreviewImagesDispatchQueue;
     NSMutableArray      *_generatedPreviewImagesVideoFrames;
+    BOOL                _generatedPreviewImageInterrupted;
     
     //UI
     CYMovieGLView       *_glView;
@@ -475,9 +476,11 @@ CYSliderDelegate>
     
     self.playing = NO;
     _interrupted = YES;
+    _generatedPreviewImageInterrupted = YES;
     [self enableAudio:NO];
-    [_decoder closeFile];
-//    [_decoder openFile:nil error:nil];
+//    [_decoder closeFile];
+//    [_generatedPreviewImagesDecoder closeFile];
+
     LoggerStream(1, @"pause movie");
 }
 
@@ -536,9 +539,10 @@ CYSliderDelegate>
                        completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
     LoggerStream(2, @"setMovieDecoder");
-    if (!error && decoder)
+    if (!error && decoder && !self.stopped)
     {
         _generatedPreviewImagesDecoder        = decoder;
+        _generatedPreviewImageInterrupted     = NO;
         _generatedPreviewImagesDispatchQueue  = dispatch_queue_create("CYPlayer_GeneratedPreviewImagesDispatchQueue", DISPATCH_QUEUE_SERIAL);
         _generatedPreviewImagesVideoFrames   = [NSMutableArray array];
         [decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
@@ -555,7 +559,7 @@ CYSliderDelegate>
                 NSError * error = nil;
                 int i = 0;
                  __strong CYFFmpegPlayer *strongSelf = weakSelf;
-                while (i < imagesCount)
+                while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted)
 //                for (int i = 0; i < imagesCount; i++)
                 {
                     __strong CYMovieDecoder *decoder = weakDecoder;
@@ -593,6 +597,7 @@ CYSliderDelegate>
                                                                code:-1
                                                            userInfo:userInfo];
                         }
+                        strongSelf->_generatedPreviewImageInterrupted = YES;
                         break;
                     }
                 }
@@ -601,6 +606,7 @@ CYSliderDelegate>
                     if (!strongSelf2) {
                         return;
                     }
+                    strongSelf2->_generatedPreviewImageInterrupted = YES;
                     handler(strongSelf2->_generatedPreviewImagesVideoFrames, error);
                 });
                 

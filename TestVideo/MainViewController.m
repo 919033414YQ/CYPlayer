@@ -11,6 +11,7 @@
 
 #import "MainViewController.h"
 #import "CYMovieViewController.h"
+#import "CYFFmpegViewController.h"
 
 @interface MainViewController () {
     NSArray *_localMovies;
@@ -29,23 +30,32 @@
         self.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag: 0];
         
         _remoteMovies = @[
-
-//            @"http://eric.cast.ro/stream2.flv",
-//            @"http://liveipad.wasu.cn/cctv2_ipad/z.m3u8",
-            @"http://www.wowza.com/_h264/BigBuckBunny_175k.mov",
-            // @"http://www.wowza.com/_h264/BigBuckBunny_115k.mov",
-            @"rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov",
-            @"http://santai.tv/vod/test/test_format_1.3gp",
-            @"http://santai.tv/vod/test/test_format_1.mp4",
-        @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
-            @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
-            //@"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
-            //@"http://santai.tv/vod/test/BigBuckBunny_175k.mov",
-        
-//            @"rtmp://aragontvlivefs.fplive.net/aragontvlive-live/stream_normal_abt",
-//            @"rtmp://ucaster.eu:1935/live/_definst_/discoverylacajatv",
-//            @"rtmp://edge01.fms.dutchview.nl/botr/bunny.flv"
-        ];
+                          
+                          //            @"http://eric.cast.ro/stream2.flv",
+                          //            @"http://liveipad.wasu.cn/cctv2_ipad/z.m3u8",
+                          @"rtsp://218.204.223.237:554/live/1/0547424F573B085C/gsfp90ef4k0a6iap.sdp",
+                          @"rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp",
+                          @"rtsp://211.139.194.251:554/live/2/13E6330A31193128/5iLd2iNl5nQ2s8r8.sdp",
+                          @"rtsp://218.204.223.237:554/live/1/67A7572844E51A64/f68g2mj7wjua3la7.sdp",
+                          @"rtsp://46.249.213.87:554/playlists/brit-asia_hvga.hpl.3gp",
+                          @"rtsp://46.249.213.87:554/playlists/ftv_hvga.hpl.3gp",
+                          @"rtsp://217.146.95.166:554/live/ch11yqvga.3gp",
+                          @"rtsp://217.146.95.166:554/live/ch12bqvga.3gp",
+                          @"rtsp://217.146.95.166:554/live/ch14bqvga.3gp",
+                          @"http://www.wowza.com/_h264/BigBuckBunny_175k.mov",
+                          // @"http://www.wowza.com/_h264/BigBuckBunny_115k.mov",
+                          @"rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov",
+                          @"http://santai.tv/vod/test/test_format_1.3gp",
+                          @"http://santai.tv/vod/test/test_format_1.mp4",
+                          @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
+                          @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
+                          //@"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
+                          //@"http://santai.tv/vod/test/BigBuckBunny_175k.mov",
+                          
+                          //            @"rtmp://aragontvlivefs.fplive.net/aragontvlive-live/stream_normal_abt",
+                          //            @"rtmp://ucaster.eu:1935/live/_definst_/discoverylacajatv",
+                          //            @"rtmp://edge01.fms.dutchview.nl/botr/bunny.flv"
+                          ];
         
     }
     return self;
@@ -240,11 +250,13 @@
     //parameters[CYMovieParameterMinBufferedDuration] = @(0.0f);
     //parameters[CYMovieParameterMaxBufferedDuration] = @(0.0f);
     
-    CYMovieViewController *vc = [CYMovieViewController movieViewControllerWithContentPath:path
-                                                                               parameters:parameters];
-//    [self.navigationController pushViewController:vc animated:YES]
-    [self presentViewController:vc animated:YES completion:nil];
-    //[self.navigationController pushViewController:vc animated:YES];    
+//    CYMovieViewController *vc = [CYMovieViewController movieViewControllerWithContentPath:path
+//                                                                               parameters:parameters];
+    CYFFmpegViewController * vc = [[CYFFmpegViewController alloc] init];
+    vc.path = path;
+    [self.navigationController pushViewController:vc animated:YES];
+//    [self presentViewController:vc animated:YES completion:nil];
+    //[self.navigationController pushViewController:vc animated:YES];
 
 //    LoggerApp(1, @"Playing a movie: %@", path);
 }
