@@ -1394,7 +1394,7 @@ static int interrupt_callback(void *ctx);
             break;
         }
         
-        if (packet.stream_index ==_videoStream) {
+        if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
            
             int pktSize = packet.size;
             
@@ -1443,7 +1443,7 @@ static int interrupt_callback(void *ctx);
                 pktSize -= len;
             }
             
-        } else if (packet.stream_index == _audioStream) {
+        } else if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
                         
             int pktSize = packet.size;
             

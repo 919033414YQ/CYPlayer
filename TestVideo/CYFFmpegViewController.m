@@ -55,7 +55,7 @@
     NSString *path;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     
-    path = @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4";
+    path = _remoteMovies[4];
     
     // increase buffering for .wmv, it solves problem with delaying audio frames
     if ([path.pathExtension isEqualToString:@"wmv"])
