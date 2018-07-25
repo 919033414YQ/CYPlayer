@@ -962,7 +962,7 @@ CYSliderDelegate>
         }
         
         BOOL good = YES;
-        while (good && !self.stopped) {
+        while (good && !weakSelf.stopped) {
             
             good = NO;
             
