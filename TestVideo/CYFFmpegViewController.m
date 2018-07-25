@@ -119,7 +119,7 @@
 
 - (void)dealloc
 {
-    [vc viewWillDisappear];
+    [vc stop];
 }
 
 /*

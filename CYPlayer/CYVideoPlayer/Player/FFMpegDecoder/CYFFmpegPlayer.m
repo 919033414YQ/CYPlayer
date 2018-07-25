@@ -250,8 +250,31 @@ CYSliderDelegate>
 {
 //    self.state = CYFFmpegPlayerPlayState_Pause;
 //    [self pause];
-    [self stop];
+//    [self stop];
     
+//     @synchronized(_audioFrames) {
+//         [_audioFrames removeAllObjects];
+//     }
+//     @synchronized(_videoFrames) {
+//         [_videoFrames removeAllObjects];
+//     }
+//    NSUInteger leftFrames = (_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0);
+//
+//    if (leftFrames > 0)
+//    {
+//        [self enableAudio:YES];
+//    }
+    while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
+//        [self presentFrame];
+//        leftFrames = (_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0);
+        @synchronized(_audioFrames) {
+            [_audioFrames removeAllObjects];
+        }
+        LoggerStream(1, @"%@ waiting dealloc", self);
+    }
+    
+    [self enableAudio:NO];
+    self.playing = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     if (_dispatchQueue) {
@@ -474,12 +497,10 @@ CYSliderDelegate>
     if (!self.playing)
         return;
     
-    self.playing = NO;
+//    self.playing = NO;//停止之前不能暂停播放, 会导致内存泄露
     _interrupted = YES;
     _generatedPreviewImageInterrupted = YES;
     [self enableAudio:NO];
-//    [_decoder closeFile];
-//    [_generatedPreviewImagesDecoder closeFile];
 
     LoggerStream(1, @"pause movie");
 }
@@ -709,22 +730,22 @@ CYSliderDelegate>
     
     if (_decoder.validVideo) {
         __weak typeof(self) _self = self;
-        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
-            __strong typeof(_self) self = _self;
-            if ( !self ) return;
-            if (error)
-            {
-                _self.hasBeenGeneratedPreviewImages = NO;
-                return;
-            }
-            _self.hasBeenGeneratedPreviewImages = YES;
-            if ( _self.orentation.fullScreen ) {
-                _cyAnima(^{
-                    _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
-                });
-            }
-            _self.controlView.previewView.previewFrames = frames;
-        }];
+//        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
+//            __strong typeof(_self) self = _self;
+//            if ( !self ) return;
+//            if (error)
+//            {
+//                _self.hasBeenGeneratedPreviewImages = NO;
+//                return;
+//            }
+//            _self.hasBeenGeneratedPreviewImages = YES;
+//            if ( _self.orentation.fullScreen ) {
+//                _cyAnima(^{
+//                    _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
+//                });
+//            }
+//            _self.controlView.previewView.previewFrames = frames;
+//        }];
         
     } else {
         
@@ -941,17 +962,17 @@ CYSliderDelegate>
         }
         
         BOOL good = YES;
-        while (good) {
+        while (good && !self.stopped) {
             
             good = NO;
             
             @autoreleasepool {
                 
-                __strong CYMovieDecoder *decoder = weakDecoder;
+//                __strong CYMovieDecoder *decoder = weakDecoder;
                 
-                if (decoder && (decoder.validVideo || decoder.validAudio)) {
+                if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
                     
-                    NSArray *frames = [decoder decodeFrames:duration];
+                    NSArray *frames = [weakDecoder decodeFrames:duration];
                     if (frames.count) {
                         
                         __strong CYFFmpegPlayer *strongSelf = weakSelf;
@@ -1037,8 +1058,8 @@ CYSliderDelegate>
         (_decoder.validVideo ? _videoFrames.count : 0) +
         (_decoder.validAudio ? _audioFrames.count : 0);
         
-        if (0 == leftFrames) {
-            
+        if (0 == leftFrames)
+        {
             if (_decoder.duration - _decoder.position <= 0.5)
             {
                 [self _itemPlayEnd];
@@ -1047,6 +1068,7 @@ CYSliderDelegate>
             
             if (_decoder.isEOF) {
                 [self _itemPlayFailed];
+//                [self enableAudio:NO];
                 return;
             }
             
@@ -1061,6 +1083,15 @@ CYSliderDelegate>
                     [self _buffering];
                 }
                 
+            }
+        }
+        else if (_videoFrames.count == 0 &&
+                 _audioFrames.count != 0 &&
+                 _decoder.validVideo == YES)//资源是一个视频, 视频没了, 但是还有音频
+        {
+            if (_decoder.isEOF) {
+                [self _itemPlayFailed];
+                return;
             }
         }
         
