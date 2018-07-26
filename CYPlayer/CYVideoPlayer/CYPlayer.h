@@ -10,5 +10,6 @@
 #define CYPlayer_h
 
 #import "CYVideoPlayer.h"
+#import "CYFFmpegPlayer.h"
 
 #endif /* CYPlayer_h */
