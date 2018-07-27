@@ -52,6 +52,9 @@
                           @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
                           @"rtmp://rtmp.yayiguanjia.com/dentalshow/1231244_lld?auth_key=1532686852-0-0-d5bc9fd0b5f48950464b48d7f3b37afd",
                           @"rtmp://rtmp.yayiguanjia.com/dentalshow/1231244_lhd?auth_key=1532686852-0-0-5cc30a82e20a98c10878a9d2ff83749f",
+                          @"http://rtmp.yayiguanjia.com/dentalshow/412312323_lld.flv?auth_key=1532691592-0-0-b8224c6e7f6b4eb10e2e6b97194a1a44",
+                          @"rtmp://rtmp.yayiguanjia.com/dentalshow/412312323_lld?auth_key=1532691592-0-0-2ebe3603fae07a896332ed534238359f",
+                          @"http://rtmp.yayiguanjia.com/dentalshow/412312323.m3u8?auth_key=1532691592-0-0-490e8fcc960de51063bd93a39cbf47a6",
                           //@"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
                           //@"http://santai.tv/vod/test/BigBuckBunny_175k.mov",
                           

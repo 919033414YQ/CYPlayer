@@ -1520,17 +1520,6 @@ CYSliderDelegate>
         __strong typeof(_self) self = _self;
         if ( !self ) return NO;
         if ( self.isLockedScrren ) return NO;
-        if ([gesture isKindOfClass:[UIPanGestureRecognizer class]])
-        {
-            if (self->_decoder.duration > 0)
-            {
-                return YES;
-            }
-            else
-            {
-                return NO;
-            }
-        }
         CGPoint point = [gesture locationInView:gesture.view];
         if (CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
             return NO;
@@ -1580,6 +1569,11 @@ CYSliderDelegate>
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
+                if (self->_decoder.duration <= 0)//没有进度信息
+                {
+                    return;
+                }
+            
                 [self _pause];
                 _cyAnima(^{
                     _cyShowViews(@[self.controlView.draggingProgressView]);
@@ -1627,6 +1621,10 @@ CYSliderDelegate>
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
+                if (self->_decoder.duration <= 0)//没有进度信息
+                {
+                    return;
+                }
                 NSLog(@"%f", translate.x * 0.0003);
                 self.controlView.draggingProgressView.progress += translate.x * 0.0003;
             }
@@ -1658,6 +1656,10 @@ CYSliderDelegate>
         if ( !self ) return;
         switch ( direction ) {
             case CYPanDirection_H:{
+                if (self->_decoder.duration <= 0)//没有进度信息
+                {
+                    return;
+                }
                 _cyAnima(^{
                     _cyHiddenViews(@[_self.controlView.draggingProgressView]);
                 });
@@ -1890,7 +1892,13 @@ CYSliderDelegate>
     }
     [self _itemPrepareToPlay];
     [decoder closeFile];
+    
     __weak __typeof(&*self)weakSelf = self;
+    decoder.interruptCallback = ^BOOL(){
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        return strongSelf ? [strongSelf interruptDecoder] : YES;
+    };
+    
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(&*self)strongSelf = weakSelf;
         
