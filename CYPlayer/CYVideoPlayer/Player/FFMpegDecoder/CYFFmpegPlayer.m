@@ -17,7 +17,6 @@
 
 //Views
 #import "CYVideoPlayerControlView.h"
-#import "CYVideoPlayerView.h"
 #import "CYLoadingView.h"
 
 
@@ -159,7 +158,7 @@ CYSliderDelegate>
     CYVolBrigControl *_volBrigControl;
     CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
-    CYVideoPlayerView *_view;
+    CYVideoPlayerBaseView *_view;
     CYOrentationObserver *_orentation;
     dispatch_queue_t _workQueue;
     CYVideoPlayerRegistrar *_registrar;
@@ -328,7 +327,7 @@ CYSliderDelegate>
         }];
         return _view;
     }
-    _view = [CYVideoPlayerView new];
+    _view = [CYVideoPlayerBaseView new];
     _view.backgroundColor = [UIColor blackColor];
     [_view addSubview:self.presentView];
 //    [_presentView addSubview:self.controlView];
