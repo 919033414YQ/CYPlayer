@@ -44,6 +44,8 @@
                       @"http://santai.tv/vod/test/test_format_1.mp4",
                       @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
                       @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
+                      @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
+                      @"rtmp://rtmp.yayiguanjia.com/dentalshow/1231244_lld?auth_key=1532686852-0-0-d5bc9fd0b5f48950464b48d7f3b37afd",
                       //@"rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov",
                       //@"http://santai.tv/vod/test/BigBuckBunny_175k.mov",
                       
@@ -56,7 +58,7 @@
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     
 //    path = _remoteMovies[4];
-    path = self.path.length > 0 ? self.path :  _remoteMovies[5];
+    path = self.path.length > 0 ? self.path :  _remoteMovies[6];
     
     // increase buffering for .wmv, it solves problem with delaying audio frames
     if ([path.pathExtension isEqualToString:@"wmv"])

@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.1"
+s.version      = "1.4.2"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -12,8 +12,7 @@ s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
 s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
 s.frameworks  = "UIKit", "AVFoundation"
-s.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
-s.libraries = 'bz', 'iconv', 'bz2'
+s.libraries = 'z', 'iconv', 'bz2'
 s.requires_arc = true
 s.dependency 'Masonry'
 
@@ -92,6 +91,8 @@ end
 
 ss.subspec 'Model' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
+sss.dependency 'CYPlayer/CYVideoPlayer/Header'
+sss.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
 end
 
 ss.subspec 'Resource' do |sss|

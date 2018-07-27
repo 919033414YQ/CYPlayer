@@ -43,7 +43,7 @@
     UIButton * btn2 = [UIButton buttonWithType:UIButtonTypeCustom];
     [btn2 addTarget:self action:@selector(onTouch:) forControlEvents:UIControlEventTouchUpInside];
     btn2.backgroundColor = [UIColor blackColor];
-    [btn2 setTitle:@"播放本地" forState:UIControlStateNormal];
+    [btn2 setTitle:@"播放列表" forState:UIControlStateNormal];
     btn2.tag = 200;
     btn2.layer.cornerRadius = 5.0;
     [self.view addSubview:btn2];

@@ -13,7 +13,7 @@
 #import "CYMovieGLView.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
-#import <Masonry.h>
+#import <Masonry/Masonry.h>
 
 //Views
 #import "CYVideoPlayerControlView.h"
