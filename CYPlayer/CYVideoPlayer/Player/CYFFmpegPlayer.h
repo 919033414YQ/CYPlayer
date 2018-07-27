@@ -56,6 +56,7 @@ extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
 
 @property (nonatomic, assign, readonly) CYFFmpegPlayerPlayState state;
 
+@property (nonatomic, assign, readwrite) BOOL generatPreviewImages;
 
 - (void)viewDidAppear;
 - (void)viewWillDisappear;

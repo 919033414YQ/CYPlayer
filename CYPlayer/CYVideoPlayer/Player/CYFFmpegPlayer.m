@@ -718,6 +718,9 @@ CYSliderDelegate>
     
     if (_decoder.validVideo) {
         __weak typeof(self) _self = self;
+        if (!self.generatPreviewImages) {
+            return;
+        }
         [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
             __strong typeof(_self) self = _self;
             if ( !self ) return;
