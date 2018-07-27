@@ -251,16 +251,8 @@ static NSArray *collectStreams(AVFormatContext *formatCtx, enum AVMediaType code
 {
     NSMutableArray *ma = [NSMutableArray array];
     for (NSInteger i = 0; i < formatCtx->nb_streams; ++i)
-    {
-        AVCodecContext *codecCtx_tmp = avcodec_alloc_context3(NULL);
-        avcodec_parameters_to_context(codecCtx_tmp, formatCtx->streams[i]->codecpar);
-    
-        if (codecType == codecCtx_tmp->codec_type)
-        {
+        if (codecType == formatCtx->streams[i]->codec->codec_type)
             [ma addObject: [NSNumber numberWithInteger: i]];
-        }
-        avcodec_free_context(&codecCtx_tmp);
-    }
     return [ma copy];
 }
 
@@ -586,7 +578,7 @@ static int interrupt_callback(void *ctx);
             
             if (_formatCtx->bit_rate) {
                 
-                [md setValue: [NSNumber numberWithInt:(int)(_formatCtx->bit_rate)]
+                [md setValue: [NSNumber numberWithInt:_formatCtx->bit_rate]
                       forKey: @"bitrate"];
             }
             
@@ -932,24 +924,7 @@ static int interrupt_callback(void *ctx);
         errCode = [self openAudioStream: n.integerValue];
         if (errCode == kxMovieErrorNone)
             break;
-    }
-    //仅有audio的时候, 调用video获取artStream
-    if (  !(self.decodeType & CYMovieFrameTypeVideo) )
-    {
-        _videoStream = -1;
-        _artworkStream = -1;
-        _videoStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_VIDEO);
-        for (NSNumber *n in _videoStreams) {
-            
-            const NSUInteger iStream = n.integerValue;
-            
-            if (0 != (_formatCtx->streams[iStream]->disposition & AV_DISPOSITION_ATTACHED_PIC))
-            {
-                _artworkStream = iStream;
-            }
-        }
-        [self closeVideoStream];
-    }
+    }    
     return errCode;
 }
 
@@ -961,16 +936,10 @@ static int interrupt_callback(void *ctx);
                    
     AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id);
     if(!codec)
-    {
-        avcodec_free_context(&codecCtx);
         return kxMovieErrorCodecNotFound;
-    }
         
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
-    {
-        avcodec_free_context(&codecCtx);
          return kxMovieErrorOpenCodec;
-    }
     
     if (!audioCodecIsSupported(codecCtx)) {
 
@@ -985,8 +954,8 @@ static int interrupt_callback(void *ctx);
                                         0,
                                         NULL);
         
-        if (!swrContext || swr_init(swrContext))
-        {
+        if (!swrContext ||
+            swr_init(swrContext)) {
             
             if (swrContext)
             {
@@ -1306,7 +1275,7 @@ static int interrupt_callback(void *ctx);
         
         const int bufSize = av_samples_get_buffer_size(NULL,
                                                        audioManager.numOutputChannels,
-                                                       (int)(_audioFrame->nb_samples * ratio),
+                                                       _audioFrame->nb_samples * ratio,
                                                        AV_SAMPLE_FMT_S16,
                                                        1);
         
@@ -1319,7 +1288,7 @@ static int interrupt_callback(void *ctx);
         
         numFrames = swr_convert(_swrContext,
                                 outbuf,
-                                (int)(_audioFrame->nb_samples * ratio),
+                                _audioFrame->nb_samples * ratio,
                                 (const uint8_t **)_audioFrame->data,
                                 _audioFrame->nb_samples);
         
@@ -1523,7 +1492,11 @@ static int interrupt_callback(void *ctx);
             while (pktSize > 0 && _audioCodecCtx) {
                 
                 int gotframe = 0;
-
+//                int len = avcodec_decode_audio4(_audioCodecCtx,
+//                                                _audioFrame,
+//                                                &gotframe,
+//                                                &packet);
+                
                 int len = avcodec_send_packet(_audioCodecCtx, &packet);
                 gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
                 
@@ -1600,7 +1573,8 @@ static int interrupt_callback(void *ctx);
         av_packet_unref(&packet);
 //        av_free_packet(&packet);
 	}
-
+    av_packet_unref(&packet);
+    
     return result;
 }
 

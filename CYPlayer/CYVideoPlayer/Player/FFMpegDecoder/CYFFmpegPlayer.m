@@ -218,7 +218,7 @@ CYSliderDelegate>
     _parameters = parameters;
     
     __block CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
-    [decoder setDecodeType:(CYVideoDecodeTypeAudio | CYVideoDecodeTypeVideo)];//
+    [decoder setDecodeType:(CYVideoDecodeTypeVideo | CYVideoDecodeTypeAudio)];//
     
     self.controlView.decoder = decoder;
     
@@ -238,7 +238,7 @@ CYSliderDelegate>
         if (strongSelf) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
-                if (strongSelf2) {
+                if (strongSelf2 && !strongSelf.stopped) {
                     [strongSelf2 setMovieDecoder:decoder withError:error];
                 }
             });
@@ -248,16 +248,20 @@ CYSliderDelegate>
 
 - (void) dealloc
 {
-    NSInteger leftFrames = (_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0);
-    while (leftFrames) {
-//        [self presentFrame];
-        leftFrames = (_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0);
+    while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
+        [self presentFrame];
+        const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
+        [_decoder decodeFrames:duration];
         @synchronized(_audioFrames) {
-            [_audioFrames removeAllObjects];
+            if (_audioFrames.count > 0)
+            {
+                [_audioFrames removeObjectAtIndex:0];
+            }
         }
         LoggerStream(1, @"%@ waiting dealloc", self);
     }
     
+    [self enableAudio:NO];
     self.playing = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -479,14 +483,9 @@ CYSliderDelegate>
 - (void)_stop
 {
     if (!self.playing)
-    {
-        self.playing = YES;//停止之前不能暂停播放, 会导致内存泄露
-        [self asyncDecodeFrames];
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self tick];
-        });
-    }
+        return;
+
+    self.playing = NO;
     _interrupted = YES;
     _generatedPreviewImageInterrupted = YES;
     [self enableAudio:NO];
@@ -885,10 +884,9 @@ CYSliderDelegate>
     
     if (on && _decoder.validAudio) {
         
-        __weak typeof(&*self)weakSelf = self;
         audioManager.outputBlock = ^(float *outData, UInt32 numFrames, UInt32 numChannels) {
             
-            [weakSelf audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
+            [self audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
         };
         
         [audioManager play];
@@ -953,7 +951,7 @@ CYSliderDelegate>
         }
         
         BOOL good = YES;
-        while (good) {
+        while (good && !weakSelf.stopped) {
             
             good = NO;
             
@@ -1059,6 +1057,7 @@ CYSliderDelegate>
             
             if (_decoder.isEOF) {
                 [self _itemPlayFailed];
+//                [self enableAudio:NO];
                 return;
             }
             
@@ -1074,43 +1073,29 @@ CYSliderDelegate>
                 }
                 
             }
-            
-            if (!_decoder.isEOF)
-            {
-                [self asyncDecodeFrames];
-            }
-            
         }
-        else//还有剩余帧
+        else if (_videoFrames.count == 0 &&
+                 _audioFrames.count != 0 &&
+                 _decoder.validVideo == YES)//资源是一个视频, 视频没了, 但是还有音频
         {
-            if (_videoFrames.count == 0 && self.stopped)
-            {
-                @synchronized(_audioFrames) {
-                    [_audioFrames removeAllObjects];
-                }
+            if (_decoder.isEOF) {
+                [self _itemPlayFailed];
                 return;
-            }
-            if (!_decoder.isEOF)//没结束
-            {
-                if (_bufferedDuration <= _minBufferedDuration)
-                {
-                    [self asyncDecodeFrames];
-                }
-            }
-            else
-            {
-                
             }
         }
         
-        //递归循环
+        if (!leftFrames ||
+            !(_bufferedDuration > _minBufferedDuration)) {
+            
+            [self asyncDecodeFrames];
+        }
+        
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self tick];
         });
-        
     }
     
     if ((_tickCounter++ % 3) == 0 && _isDraging == NO) {
