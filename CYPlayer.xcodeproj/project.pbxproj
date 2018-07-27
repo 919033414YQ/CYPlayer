@@ -113,6 +113,7 @@
 
 /* Begin PBXFileReference section */
 		058233B53935F018D9DA834F /* Pods-TestVideo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TestVideo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TestVideo/Pods-TestVideo.debug.xcconfig"; sourceTree = "<group>"; };
+		0E190AE8210ADCF2007DE6CB /* CYPlayer.mindnode */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CYPlayer.mindnode; sourceTree = "<group>"; };
 		0E2406C320FE0EDC008BEAB5 /* PlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerViewController.m; sourceTree = "<group>"; };
 		0E2406C420FE0EDD008BEAB5 /* PlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerViewController.h; sourceTree = "<group>"; };
 		0E2406FB20FE15D7008BEAB5 /* CYPlayer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CYPlayer.podspec; sourceTree = "<group>"; };
@@ -393,6 +394,7 @@
 			isa = PBXGroup;
 			children = (
 				0E24072120FE1630008BEAB5 /* CYPlayer.h */,
+				0E190AE8210ADCF2007DE6CB /* CYPlayer.mindnode */,
 				0E24071620FE1630008BEAB5 /* Present */,
 				0E24071920FE1630008BEAB5 /* Registrar */,
 				0E24071C20FE1630008BEAB5 /* Other */,
@@ -470,6 +472,10 @@
 				0E24073020FE1630008BEAB5 /* CYVideoPlayerMoreSetting.m */,
 				0E24073120FE1630008BEAB5 /* CYVideoPlayerAssetCarrier.h */,
 				0E24073220FE1630008BEAB5 /* CYVideoPlayerSettings.m */,
+				0E5FA238210062C5002A7597 /* CYAudioManager.h */,
+				0E5FA231210062C4002A7597 /* CYAudioManager.m */,
+				0E5FA234210062C4002A7597 /* CYMovieDecoder.h */,
+				0E5FA232210062C4002A7597 /* CYMovieDecoder.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -556,6 +562,8 @@
 			children = (
 				0E24075B20FE1630008BEAB5 /* CYVideoPlayerState.h */,
 				0E24075C20FE1630008BEAB5 /* CYVideoPlayerControlViewEnumHeader.h */,
+				0E5FA22F210062C3002A7597 /* CYLogger.h */,
+				0E5FA233210062C4002A7597 /* CYmovie-Prefix.pch */,
 			);
 			path = Header;
 			sourceTree = "<group>";
@@ -577,6 +585,10 @@
 				0E24076120FE1630008BEAB5 /* CYVideoPlayerView.m */,
 				0E24076C20FE1630008BEAB5 /* CYVideoPlayer.h */,
 				0E24076220FE1630008BEAB5 /* CYVideoPlayer.m */,
+				0E5FA23E210065B7002A7597 /* CYFFmpegPlayer.h */,
+				0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */,
+				0E5FA22E210062C3002A7597 /* CYMovieGLView.h */,
+				0E5FA230210062C4002A7597 /* CYMovieGLView.m */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -586,16 +598,6 @@
 			children = (
 				0E24076720FE1630008BEAB5 /* FFmpeg.framework */,
 				0E343E5F2106D96800DF4564 /* DEBUG */,
-				0E5FA22F210062C3002A7597 /* CYLogger.h */,
-				0E5FA233210062C4002A7597 /* CYmovie-Prefix.pch */,
-				0E5FA238210062C5002A7597 /* CYAudioManager.h */,
-				0E5FA231210062C4002A7597 /* CYAudioManager.m */,
-				0E5FA234210062C4002A7597 /* CYMovieDecoder.h */,
-				0E5FA232210062C4002A7597 /* CYMovieDecoder.m */,
-				0E5FA22E210062C3002A7597 /* CYMovieGLView.h */,
-				0E5FA230210062C4002A7597 /* CYMovieGLView.m */,
-				0E5FA23E210065B7002A7597 /* CYFFmpegPlayer.h */,
-				0E5FA23F210065B7002A7597 /* CYFFmpegPlayer.m */,
 				0E5FA237210062C5002A7597 /* cyplayer.bundle */,
 			);
 			path = FFMpegDecoder;

@@ -133,12 +133,6 @@ sss.dependency 'CYPlayer/CYVideoPlayer/GestureControl'
 # sss.dependency 'CYPlayer/CYAttributesFactory'
 # sss.dependency 'CYPlayer/CYOrentationObserver'
 
-sss.subspec 'FFMpegDecoder' do |ssss|
-ssss.source_files = 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.{h,m}'
-ssss.dependency 'CYPlayer/CYVideoPlayer/Control'
-#ssss.dependency 'CYPlayer/CYVideoPlayer/Player'
-end
-
 end
 
 
