@@ -2,8 +2,8 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.3"
-s.summary      = 'A video player.'
+s.version      = "1.4.0"
+s.summary      = 'A iOS video player, using AVFoundation&FFmpeg'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
 s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
