@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.0"
+s.version      = "1.4.3"
 s.summary      = 'A video player.'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -92,8 +92,7 @@ end
 ss.subspec 'Model' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
-#sss.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
-sss.vendored_frameworks = "https://www.baidu.com"
+sss.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
 end
 
 ss.subspec 'Resource' do |sss|
