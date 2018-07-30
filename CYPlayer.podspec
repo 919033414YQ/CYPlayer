@@ -2,14 +2,14 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.3"
+s.version      = "1.4.0"
 s.summary      = 'A video player.'
-s.description  = 'https://github.com/yellowei/CYPlayer'
-s.homepage     = 'https://github.com/yellowei/CYPlayer'
+s.description  = 'https://gitee.com/cyellowei/CYPlayer'
+s.homepage     = 'https://gitee.com/cyellowei/CYPlayer'
 s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
 s.author             = { "yellowei" => "hw0521@vip.qq.com" }
 s.platform     = :ios, "8.0"
-s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
+s.source       = { :git => 'https://gitee.com/cyellowei/CYPlayer.git', :tag => "#{s.version}" }
 s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
 s.frameworks  = "UIKit", "AVFoundation"
 s.libraries = 'z', 'iconv', 'bz2'
