@@ -1,23 +1,23 @@
 //
 //  ESGLView.h
-//  kxmovie
+//  cyplayer
 //
 //  Created by Kolyvan on 22.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
 #import <UIKit/UIKit.h>
 
 @class CYVideoFrame;
-@class CYMovieDecoder;
+@class CYPlayerDecoder;
 
-@interface CYMovieGLView : UIView
+@interface CYPlayerGLView : UIView
 
 - (id) initWithFrame:(CGRect)frame
-             decoder: (CYMovieDecoder *) decoder;
+             decoder: (CYPlayerDecoder *) decoder;
 
 - (void) render: (CYVideoFrame *) frame;
 

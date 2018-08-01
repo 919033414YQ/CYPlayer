@@ -1,20 +1,26 @@
 
+$dir = File.dirname(__FILE__)
+$dir = $dir + "/CYPlayer/CYPlayer/**" 
+
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
 s.version      = "1.4.0"
-s.summary      = 'A iOS video player, using AVFoundation&FFmpeg'
+s.summary      = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
-s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
+s.license      = { :type => "MIT", :file => "LICENSE" }
 s.author             = { "yellowei" => "hw0521@vip.qq.com" }
 s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }
 s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
-s.frameworks  = "UIKit", "AVFoundation"
-s.libraries = 'z', 'iconv', 'bz2'
+s.frameworks  = "UIKit", "Foundation"
 s.requires_arc = true
+
+s.libraries = 'z', 'iconv', 'bz2'
 s.dependency 'Masonry'
+s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
+s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'YES' }
 
 
 s.subspec 'CYAttributesFactory' do |ss|
@@ -92,7 +98,7 @@ end
 ss.subspec 'Model' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
-sss.vendored_frameworks = "CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/*.framework"
+sss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
 end
 
 ss.subspec 'Resource' do |sss|
@@ -101,7 +107,7 @@ end
 
 ss.subspec 'Base' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Base/*.{h,m}'
-sss.dependency 'CYPlayer/CYVideoPlayer/Header'
+#sss.dependency 'CYPlayer/CYVideoPlayer/Header'
 sss.dependency 'CYPlayer/CYVideoPlayer/Model'
 sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
 # sss.dependency 'CYPlayer/CYUIFactory'

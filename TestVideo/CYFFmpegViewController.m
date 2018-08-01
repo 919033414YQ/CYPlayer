@@ -62,11 +62,11 @@
     
     // increase buffering for .wmv, it solves problem with delaying audio frames
     if ([path.pathExtension isEqualToString:@"wmv"])
-        parameters[CYMovieParameterMinBufferedDuration] = @(5.0);
+        parameters[CYPlayerParameterMinBufferedDuration] = @(5.0);
     
     // disable deinterlacing for iPhone, because it's complex operation can cause stuttering
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-        parameters[CYMovieParameterDisableDeinterlacing] = @(YES);
+        parameters[CYPlayerParameterDisableDeinterlacing] = @(YES);
     
     
     UIView * contentView = [UIView new];

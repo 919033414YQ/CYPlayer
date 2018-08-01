@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CYVideoPreviewModel, CYVideoPlayerAssetCarrier, CYMovieDecoder;
+@class CYVideoPreviewModel, CYVideoPlayerAssetCarrier, CYPlayerDecoder;
 
 @protocol CYVideoPlayerControlViewDelegate;
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, readwrite, nullable) id<CYVideoPlayerControlViewDelegate> delegate;
 @property (nonatomic, weak, readwrite, nullable) CYVideoPlayerAssetCarrier *asset;
-@property (nonatomic, weak, readwrite, nullable) CYMovieDecoder *decoder;
+@property (nonatomic, weak, readwrite, nullable) CYPlayerDecoder *decoder;
 
 @property (nonatomic, strong, readonly) CYVideoPlayerTopControlView *topControlView;
 @property (nonatomic, strong, readonly) CYVideoPlayerPreviewView *previewView;

@@ -1,21 +1,21 @@
 //
-//  CYMovieGLView.m
-//  kxmovie
+//  CYPlayerGLView.m
+//  cyplayer
 //
 //  Created by Kolyvan on 22.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
-#import "CYMovieGLView.h"
+#import "CYPlayerGLView.h"
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
-#import "CYMovieDecoder.h"
+#import "CYPlayerDecoder.h"
 #import "CYLogger.h"
 
 //////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
 
 #pragma mark - frame renderers
 
-@protocol CYMovieGLRenderer
+@protocol CYPlayerGLRenderer
 - (BOOL) isValid;
 - (NSString *) fragmentShader;
 - (void) resolveUniforms: (GLuint) program;
@@ -177,14 +177,14 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
 - (BOOL) prepareRender;
 @end
 
-@interface CYMovieGLRenderer_RGB : NSObject<CYMovieGLRenderer> {
+@interface CYPlayerGLRenderer_RGB : NSObject<CYPlayerGLRenderer> {
     
     GLint _uniformSampler;
     GLuint _texture;
 }
 @end
 
-@implementation CYMovieGLRenderer_RGB
+@implementation CYPlayerGLRenderer_RGB
 
 - (BOOL) isValid
 {
@@ -252,14 +252,14 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
 
 @end
 
-@interface CYMovieGLRenderer_YUV : NSObject<CYMovieGLRenderer> {
+@interface CYPlayerGLRenderer_YUV : NSObject<CYPlayerGLRenderer> {
     
     GLint _uniformSamplers[3];
     GLuint _textures[3];
 }
 @end
 
-@implementation CYMovieGLRenderer_YUV
+@implementation CYPlayerGLRenderer_YUV
 
 - (BOOL) isValid
 {
@@ -350,9 +350,9 @@ enum {
    	ATTRIBUTE_TEXCOORD,
 };
 
-@implementation CYMovieGLView {
+@implementation CYPlayerGLView {
     
-    CYMovieDecoder  *_decoder;
+    CYPlayerDecoder  *_decoder;
     EAGLContext     *_context;
     GLuint          _framebuffer;
     GLuint          _renderbuffer;
@@ -362,7 +362,7 @@ enum {
     GLint           _uniformMatrix;
     GLfloat         _vertices[8];
     
-    id<CYMovieGLRenderer> _renderer;
+    id<CYPlayerGLRenderer> _renderer;
 }
 
 + (Class) layerClass
@@ -371,7 +371,7 @@ enum {
 }
 
 - (id) initWithFrame:(CGRect)frame
-             decoder: (CYMovieDecoder *) decoder
+             decoder: (CYPlayerDecoder *) decoder
 {
     self = [super initWithFrame:frame];
     if (self) {
@@ -380,12 +380,12 @@ enum {
         
         if ([decoder setupVideoFrameFormat:CYVideoFrameFormatYUV]) {
             
-            _renderer = [[CYMovieGLRenderer_YUV alloc] init];
+            _renderer = [[CYPlayerGLRenderer_YUV alloc] init];
             LoggerVideo(1, @"OK use YUV GL renderer");
             
         } else {
             
-            _renderer = [[CYMovieGLRenderer_RGB alloc] init];
+            _renderer = [[CYPlayerGLRenderer_RGB alloc] init];
             LoggerVideo(1, @"OK use RGB GL renderer");
         }
                 

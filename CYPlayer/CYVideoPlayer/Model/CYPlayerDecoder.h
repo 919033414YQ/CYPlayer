@@ -1,43 +1,44 @@
 //
-//  CYMovieDecoder.h
-//  kxmovie
+//  CYPlayerDecoder.h
+//  cyplayer
 //
 //  Created by Kolyvan on 15.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
 #import <Foundation/Foundation.h>
-#import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
-extern NSString * kxmovieErrorDomain;
+extern NSString * cyplayerErrorDomain;
+
+typedef BOOL(^CYPlayerDecoderInterruptCallback)(void);
 
 typedef enum {
     
-    kxMovieErrorNone,
-    kxMovieErrorOpenFile,
-    kxMovieErrorStreamInfoNotFound,
-    kxMovieErrorStreamNotFound,
-    kxMovieErrorCodecNotFound,
-    kxMovieErrorOpenCodec,
-    kxMovieErrorAllocateFrame,
-    kxMovieErroSetupScaler,
-    kxMovieErroReSampler,
-    kxMovieErroUnsupported,
+    cyPlayerErrorNone,
+    cyPlayerErrorOpenFile,
+    cyPlayerErrorStreamInfoNotFound,
+    cyPlayerErrorStreamNotFound,
+    cyPlayerErrorCodecNotFound,
+    cyPlayerErrorOpenCodec,
+    cyPlayerErrorAllocateFrame,
+    cyPlayerErroSetupScaler,
+    cyPlayerErroReSampler,
+    cyPlayerErroUnsupported,
     
-} kxMovieError;
+} cyPlayerError;
 
 typedef enum {
     
-    CYMovieFrameTypeAudio,
-    CYMovieFrameTypeVideo,
-    CYMovieFrameTypeArtwork,
-    CYMovieFrameTypeSubtitle,
+    CYPlayerFrameTypeAudio,
+    CYPlayerFrameTypeVideo,
+    CYPlayerFrameTypeArtwork,
+    CYPlayerFrameTypeSubtitle,
     
-} CYMovieFrameType;
+} CYPlayerFrameType;
 
 typedef enum {
         
@@ -46,17 +47,17 @@ typedef enum {
     
 } CYVideoFrameFormat;
 
-@interface CYMovieFrame : NSObject
-@property (readonly, nonatomic) CYMovieFrameType type;
+@interface CYPlayerFrame : NSObject
+@property (readonly, nonatomic) CYPlayerFrameType type;
 @property (readonly, nonatomic) CGFloat position;
 @property (readonly, nonatomic) CGFloat duration;
 @end
 
-@interface CYAudioFrame : CYMovieFrame
+@interface CYAudioFrame : CYPlayerFrame
 @property (readonly, nonatomic, strong) NSData *samples;
 @end
 
-@interface CYVideoFrame : CYMovieFrame
+@interface CYVideoFrame : CYPlayerFrame
 @property (readonly, nonatomic) CYVideoFrameFormat format;
 @property (readonly, nonatomic) NSUInteger width;
 @property (readonly, nonatomic) NSUInteger height;
@@ -74,16 +75,15 @@ typedef enum {
 @property (readonly, nonatomic, strong) NSData *chromaR;
 @end
 
-@interface CYArtworkFrame : CYMovieFrame
+@interface CYArtworkFrame : CYPlayerFrame
 @property (readonly, nonatomic, strong) NSData *picture;
 - (UIImage *) asImage;
 @end
 
-@interface CYSubtitleFrame : CYMovieFrame
+@interface CYSubtitleFrame : CYPlayerFrame
 @property (readonly, nonatomic, strong) NSString *text;
 @end
 
-typedef BOOL(^CYMovieDecoderInterruptCallback)();
 
 typedef enum {
     
@@ -93,7 +93,7 @@ typedef enum {
     
 } CYVideoDecodeType;
 
-@interface CYMovieDecoder : NSObject
+@interface CYPlayerDecoder : NSObject
 
 @property (readonly, nonatomic, strong) NSString *path;
 @property (readonly, nonatomic) BOOL isEOF;
@@ -115,7 +115,7 @@ typedef enum {
 @property (readonly, nonatomic) BOOL isNetwork;
 @property (readonly, nonatomic) CGFloat startTime;
 @property (readwrite, nonatomic) BOOL disableDeinterlacing;
-@property (readwrite, nonatomic, strong) CYMovieDecoderInterruptCallback interruptCallback;
+@property (readwrite, nonatomic, strong) CYPlayerDecoderInterruptCallback interruptCallback;
 @property (nonatomic, readwrite, assign) CYVideoDecodeType decodeType;
 
 + (id) movieDecoderWithContentPath: (NSString *) path
@@ -133,7 +133,7 @@ typedef enum {
 
 @end
 
-@interface CYMovieSubtitleASSParser : NSObject
+@interface CYPlayerSubtitleASSParser : NSObject
 
 + (NSArray *) parseEvents: (NSString *) events;
 + (NSArray *) parseDialogue: (NSString *) dialogue

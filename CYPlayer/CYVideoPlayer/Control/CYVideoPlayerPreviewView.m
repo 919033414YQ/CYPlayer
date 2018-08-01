@@ -11,7 +11,7 @@
 #import "CYVideoPlayerResources.h"
 #import <Masonry/Masonry.h>
 #import "CYVideoPlayerAssetCarrier.h"
-#import "CYMovieDecoder.h"
+#import "CYPlayerDecoder.h"
 
 static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPreviewCollectionViewCell";
 

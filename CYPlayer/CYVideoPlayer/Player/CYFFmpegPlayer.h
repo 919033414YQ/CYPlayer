@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 
 @class
-CYMovieDecoder,
+CYPlayerDecoder,
 CYVideoPlayerSettings,
 CYPrompt,
 CYVideoFrame;
@@ -31,9 +31,9 @@ typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFr
 
 
 
-extern NSString * const CYMovieParameterMinBufferedDuration;    // Float
-extern NSString * const CYMovieParameterMaxBufferedDuration;    // Float
-extern NSString * const CYMovieParameterDisableDeinterlacing;   // BOOL
+extern NSString * const CYPlayerParameterMinBufferedDuration;    // Float
+extern NSString * const CYPlayerParameterMaxBufferedDuration;    // Float
+extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 @interface CYFFmpegPlayer : NSObject
 

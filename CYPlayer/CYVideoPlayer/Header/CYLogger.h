@@ -1,13 +1,13 @@
 //
 //  CYLogger.h
-//  kxmovie
+//  cyplayer
 //
 //  Created by Mathieu Godart on 01/05/2014.
 //
 //
 
-#ifndef kxmovie_CYLogger_h
-#define kxmovie_CYLogger_h
+#ifndef cyplayer_CYLogger_h
+#define cyplayer_CYLogger_h
 
 //#define DUMP_AUDIO_DATA
 

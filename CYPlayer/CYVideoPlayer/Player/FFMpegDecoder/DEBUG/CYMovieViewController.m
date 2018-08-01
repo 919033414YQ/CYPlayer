@@ -1,25 +1,25 @@
 //
 //  ViewController.m
-//  kxmovieapp
+//  cyplayerapp
 //
 //  Created by Kolyvan on 11.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
 #import "CYMovieViewController.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
-#import "CYMovieDecoder.h"
-#import "CYAudioManager.h"
-#import "CYMovieGLView.h"
+#import "CYPlayerDecoder.h"
+#import <FFmpeg-Decoder/CYAudioManager.h>
+#import "CYPlayerGLView.h"
 #import "CYLogger.h"
 
-extern NSString * const CYMovieParameterMinBufferedDuration;
-extern NSString * const CYMovieParameterMaxBufferedDuration;
-extern NSString * const CYMovieParameterDisableDeinterlacing;
+extern NSString * const CYPlayerParameterMinBufferedDuration;
+extern NSString * const CYPlayerParameterMaxBufferedDuration;
+extern NSString * const CYPlayerParameterDisableDeinterlacing;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,19 +46,19 @@ static NSString * formatTimeInterval(CGFloat seconds, BOOL isLeft)
 
 enum {
 
-    CYMovieInfoSectionGeneral,
-    CYMovieInfoSectionVideo,
-    CYMovieInfoSectionAudio,
-    CYMovieInfoSectionSubtitles,
-    CYMovieInfoSectionMetadata,    
-    CYMovieInfoSectionCount,
+    CYPlayerInfoSectionGeneral,
+    CYPlayerInfoSectionVideo,
+    CYPlayerInfoSectionAudio,
+    CYPlayerInfoSectionSubtitles,
+    CYPlayerInfoSectionMetadata,    
+    CYPlayerInfoSectionCount,
 };
 
 enum {
 
-    CYMovieInfoGeneralFormat,
-    CYMovieInfoGeneralBitrate,
-    CYMovieInfoGeneralCount,
+    CYPlayerInfoGeneralFormat,
+    CYPlayerInfoGeneralBitrate,
+    CYPlayerInfoGeneralCount,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,9 +70,9 @@ static NSMutableDictionary * gHistory;
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 4.0
 
-@interface CYMovieViewController () {
+@interface CYPlayerViewController () {
 
-    CYMovieDecoder      *_decoder;
+    CYPlayerDecoder      *_decoder;
     dispatch_queue_t    _dispatchQueue;
     NSMutableArray      *_videoFrames;
     NSMutableArray      *_audioFrames;
@@ -91,7 +91,7 @@ static NSMutableDictionary * gHistory;
     BOOL                _restoreIdleTimer;
     BOOL                _interrupted;
 
-    CYMovieGLView       *_glView;
+    CYPlayerGLView       *_glView;
     UIImageView         *_imageView;
     UIView              *_topHUD;
     UIToolbar           *_topBar;
@@ -139,7 +139,7 @@ static NSMutableDictionary * gHistory;
 @property (readwrite, strong) CYArtworkFrame *artworkFrame;
 @end
 
-@implementation CYMovieViewController
+@implementation CYPlayerViewController
 
 + (void)initialize
 {
@@ -154,7 +154,7 @@ static NSMutableDictionary * gHistory;
 {    
     id<CYAudioManager> audioManager = [CYAudioManager audioManager];
     [audioManager activateAudioSession];    
-    return [[CYMovieViewController alloc] initWithContentPath: path parameters: parameters];
+    return [[CYPlayerViewController alloc] initWithContentPath: path parameters: parameters];
 }
 
 - (id) initWithContentPath: (NSString *) path
@@ -170,13 +170,13 @@ static NSMutableDictionary * gHistory;
 
         _parameters = parameters;
         
-        __weak CYMovieViewController *weakSelf = self;
+        __weak CYPlayerViewController *weakSelf = self;
         
-        CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+        CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
         
         decoder.interruptCallback = ^BOOL(){
             
-            __strong CYMovieViewController *strongSelf = weakSelf;
+            __strong CYPlayerViewController *strongSelf = weakSelf;
             return strongSelf ? [strongSelf interruptDecoder] : YES;
         };
         
@@ -185,7 +185,7 @@ static NSMutableDictionary * gHistory;
             NSError *error = nil;
             [decoder openFile:path error:&error];
                         
-            __strong CYMovieViewController *strongSelf = weakSelf;
+            __strong CYPlayerViewController *strongSelf = weakSelf;
             if (strongSelf) {
                 
                 dispatch_sync(dispatch_get_main_queue(), ^{
@@ -618,7 +618,7 @@ _messageLabel.hidden = YES;
 
 #pragma mark - private
 
-- (void) setMovieDecoder: (CYMovieDecoder *) decoder
+- (void) setMovieDecoder: (CYPlayerDecoder *) decoder
                withError: (NSError *) error
 {
     LoggerStream(2, @"setMovieDecoder");
@@ -626,7 +626,7 @@ _messageLabel.hidden = YES;
     if (!error && decoder) {
         
         _decoder        = decoder;
-        _dispatchQueue  = dispatch_queue_create("CYMovie", DISPATCH_QUEUE_SERIAL);
+        _dispatchQueue  = dispatch_queue_create("CYPlayer", DISPATCH_QUEUE_SERIAL);
         _videoFrames    = [NSMutableArray array];
         _audioFrames    = [NSMutableArray array];
         
@@ -653,15 +653,15 @@ _messageLabel.hidden = YES;
             
             id val;
             
-            val = [_parameters valueForKey: CYMovieParameterMinBufferedDuration];
+            val = [_parameters valueForKey: CYPlayerParameterMinBufferedDuration];
             if ([val isKindOfClass:[NSNumber class]])
                 _minBufferedDuration = [val floatValue];
             
-            val = [_parameters valueForKey: CYMovieParameterMaxBufferedDuration];
+            val = [_parameters valueForKey: CYPlayerParameterMaxBufferedDuration];
             if ([val isKindOfClass:[NSNumber class]])
                 _maxBufferedDuration = [val floatValue];
             
-            val = [_parameters valueForKey: CYMovieParameterDisableDeinterlacing];
+            val = [_parameters valueForKey: CYPlayerParameterDisableDeinterlacing];
             if ([val isKindOfClass:[NSNumber class]])
                 _decoder.disableDeinterlacing = [val boolValue];
             
@@ -713,7 +713,7 @@ _messageLabel.hidden = YES;
     CGRect bounds = self.view.bounds;
     
     if (_decoder.validVideo) {
-        _glView = [[CYMovieGLView alloc] initWithFrame:bounds decoder:_decoder];
+        _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
     }
     
     if (!_glView) {
@@ -942,8 +942,8 @@ _messageLabel.hidden = YES;
         
         @synchronized(_videoFrames) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeVideo) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeVideo) {
                     [_videoFrames addObject:frame];
                     _bufferedDuration += frame.duration;
                 }
@@ -954,8 +954,8 @@ _messageLabel.hidden = YES;
         
         @synchronized(_audioFrames) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeAudio) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeAudio) {
                     [_audioFrames addObject:frame];
                     if (!_decoder.validVideo)
                         _bufferedDuration += frame.duration;
@@ -964,8 +964,8 @@ _messageLabel.hidden = YES;
         
         if (!_decoder.validVideo) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeArtwork)
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeArtwork)
                     self.artworkFrame = (CYArtworkFrame *)frame;
         }
     }
@@ -974,8 +974,8 @@ _messageLabel.hidden = YES;
         
         @synchronized(_subtitles) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeSubtitle) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeSubtitle) {
                     [_subtitles addObject:frame];
                 }
         }
@@ -1007,8 +1007,8 @@ _messageLabel.hidden = YES;
     if (self.decoding)
         return;
     
-    __weak CYMovieViewController *weakSelf = self;
-    __weak CYMovieDecoder *weakDecoder = _decoder;
+    __weak CYPlayerViewController *weakSelf = self;
+    __weak CYPlayerDecoder *weakDecoder = _decoder;
     
     const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
     
@@ -1016,7 +1016,7 @@ _messageLabel.hidden = YES;
     dispatch_async(_dispatchQueue, ^{
         
         {
-            __strong CYMovieViewController *strongSelf = weakSelf;
+            __strong CYPlayerViewController *strongSelf = weakSelf;
             if (!strongSelf.playing)
                 return;
         }
@@ -1028,14 +1028,14 @@ _messageLabel.hidden = YES;
             
             @autoreleasepool {
                 
-                __strong CYMovieDecoder *decoder = weakDecoder;
+                __strong CYPlayerDecoder *decoder = weakDecoder;
                 
                 if (decoder && (decoder.validVideo || decoder.validAudio)) {
                     
                     NSArray *frames = [decoder decodeFrames:duration];
                     if (frames.count) {
                         
-                        __strong CYMovieViewController *strongSelf = weakSelf;
+                        __strong CYPlayerViewController *strongSelf = weakSelf;
                         if (strongSelf)
                             good = [strongSelf addFrames:frames];
                     }
@@ -1044,7 +1044,7 @@ _messageLabel.hidden = YES;
         }
                 
         {
-            __strong CYMovieViewController *strongSelf = weakSelf;
+            __strong CYPlayerViewController *strongSelf = weakSelf;
             if (strongSelf) strongSelf.decoding = NO;
         }
     });
@@ -1389,21 +1389,21 @@ _messageLabel.hidden = YES;
     
     position = MIN(_decoder.duration - 1, MAX(0, position));
     
-    __weak CYMovieViewController *weakSelf = self;
+    __weak CYPlayerViewController *weakSelf = self;
 
     dispatch_async(_dispatchQueue, ^{
         
         if (playMode) {
         
             {
-                __strong CYMovieViewController *strongSelf = weakSelf;
+                __strong CYPlayerViewController *strongSelf = weakSelf;
                 if (!strongSelf) return;
                 [strongSelf setDecoderPosition: position];
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
         
-                __strong CYMovieViewController *strongSelf = weakSelf;
+                __strong CYPlayerViewController *strongSelf = weakSelf;
                 if (strongSelf) {
                     [strongSelf setMoviePositionFromDecoder];
                     [strongSelf play];
@@ -1413,7 +1413,7 @@ _messageLabel.hidden = YES;
         } else {
 
             {
-                __strong CYMovieViewController *strongSelf = weakSelf;
+                __strong CYPlayerViewController *strongSelf = weakSelf;
                 if (!strongSelf) return;
                 [strongSelf setDecoderPosition: position];
                 [strongSelf decodeFrames];
@@ -1421,7 +1421,7 @@ _messageLabel.hidden = YES;
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 
-                __strong CYMovieViewController *strongSelf = weakSelf;
+                __strong CYPlayerViewController *strongSelf = weakSelf;
                 if (strongSelf) {
                 
                     [strongSelf enableUpdateHUD];
@@ -1550,25 +1550,25 @@ _messageLabel.hidden = YES;
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return CYMovieInfoSectionCount;
+    return CYPlayerInfoSectionCount;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     switch (section) {
-        case CYMovieInfoSectionGeneral:
+        case CYPlayerInfoSectionGeneral:
             return NSLocalizedString(@"General", nil);
-        case CYMovieInfoSectionMetadata:
+        case CYPlayerInfoSectionMetadata:
             return NSLocalizedString(@"Metadata", nil);
-        case CYMovieInfoSectionVideo: {
+        case CYPlayerInfoSectionVideo: {
             NSArray *a = _decoder.info[@"video"];
             return a.count ? NSLocalizedString(@"Video", nil) : nil;
         }
-        case CYMovieInfoSectionAudio: {
+        case CYPlayerInfoSectionAudio: {
             NSArray *a = _decoder.info[@"audio"];
             return a.count ?  NSLocalizedString(@"Audio", nil) : nil;
         }
-        case CYMovieInfoSectionSubtitles: {
+        case CYPlayerInfoSectionSubtitles: {
             NSArray *a = _decoder.info[@"subtitles"];
             return a.count ? NSLocalizedString(@"Subtitles", nil) : nil;
         }
@@ -1579,25 +1579,25 @@ _messageLabel.hidden = YES;
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     switch (section) {
-        case CYMovieInfoSectionGeneral:
-            return CYMovieInfoGeneralCount;
+        case CYPlayerInfoSectionGeneral:
+            return CYPlayerInfoGeneralCount;
             
-        case CYMovieInfoSectionMetadata: {
+        case CYPlayerInfoSectionMetadata: {
             NSDictionary *d = [_decoder.info valueForKey:@"metadata"];
             return d.count;
         }
             
-        case CYMovieInfoSectionVideo: {
+        case CYPlayerInfoSectionVideo: {
             NSArray *a = _decoder.info[@"video"];
             return a.count;
         }
             
-        case CYMovieInfoSectionAudio: {
+        case CYPlayerInfoSectionAudio: {
             NSArray *a = _decoder.info[@"audio"];
             return a.count;
         }
             
-        case CYMovieInfoSectionSubtitles: {
+        case CYPlayerInfoSectionSubtitles: {
             NSArray *a = _decoder.info[@"subtitles"];
             return a.count ? a.count + 1 : 0;
         }
@@ -1621,16 +1621,16 @@ _messageLabel.hidden = YES;
 {
     UITableViewCell *cell;
     
-    if (indexPath.section == CYMovieInfoSectionGeneral) {
+    if (indexPath.section == CYPlayerInfoSectionGeneral) {
     
-        if (indexPath.row == CYMovieInfoGeneralBitrate) {
+        if (indexPath.row == CYPlayerInfoGeneralBitrate) {
             
             int bitrate = [_decoder.info[@"bitrate"] intValue];
             cell = [self mkCell:@"ValueCell" withStyle:UITableViewCellStyleValue1];
             cell.textLabel.text = NSLocalizedString(@"Bitrate", nil);
             cell.detailTextLabel.text = [NSString stringWithFormat:@"%d kb/s",bitrate / 1000];
             
-        } else if (indexPath.row == CYMovieInfoGeneralFormat) {
+        } else if (indexPath.row == CYPlayerInfoGeneralFormat) {
 
             NSString *format = _decoder.info[@"format"];
             cell = [self mkCell:@"ValueCell" withStyle:UITableViewCellStyleValue1];
@@ -1638,7 +1638,7 @@ _messageLabel.hidden = YES;
             cell.detailTextLabel.text = format ? format : @"-";
         }
         
-    } else if (indexPath.section == CYMovieInfoSectionMetadata) {
+    } else if (indexPath.section == CYPlayerInfoSectionMetadata) {
       
         NSDictionary *d = _decoder.info[@"metadata"];
         NSString *key = d.allKeys[indexPath.row];
@@ -1646,7 +1646,7 @@ _messageLabel.hidden = YES;
         cell.textLabel.text = key.capitalizedString;
         cell.detailTextLabel.text = [d valueForKey:key];
         
-    } else if (indexPath.section == CYMovieInfoSectionVideo) {
+    } else if (indexPath.section == CYPlayerInfoSectionVideo) {
         
         NSArray *a = _decoder.info[@"video"];
         cell = [self mkCell:@"VideoCell" withStyle:UITableViewCellStyleValue1];
@@ -1654,7 +1654,7 @@ _messageLabel.hidden = YES;
         cell.textLabel.font = [UIFont systemFontOfSize:14];
         cell.textLabel.numberOfLines = 2;
         
-    } else if (indexPath.section == CYMovieInfoSectionAudio) {
+    } else if (indexPath.section == CYPlayerInfoSectionAudio) {
         
         NSArray *a = _decoder.info[@"audio"];
         cell = [self mkCell:@"AudioCell" withStyle:UITableViewCellStyleValue1];
@@ -1664,7 +1664,7 @@ _messageLabel.hidden = YES;
         BOOL selected = _decoder.selectedAudioStream == indexPath.row;
         cell.accessoryType = selected ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
         
-    } else if (indexPath.section == CYMovieInfoSectionSubtitles) {
+    } else if (indexPath.section == CYPlayerInfoSectionSubtitles) {
         
         NSArray *a = _decoder.info[@"subtitles"];
         
@@ -1690,7 +1690,7 @@ _messageLabel.hidden = YES;
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == CYMovieInfoSectionAudio) {
+    if (indexPath.section == CYPlayerInfoSectionAudio) {
         
         NSInteger selected = _decoder.selectedAudioStream;
         
@@ -1706,13 +1706,13 @@ _messageLabel.hidden = YES;
                 cell = [_tableView cellForRowAtIndexPath:indexPath];
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
                 
-                indexPath = [NSIndexPath indexPathForRow:selected inSection:CYMovieInfoSectionAudio];
+                indexPath = [NSIndexPath indexPathForRow:selected inSection:CYPlayerInfoSectionAudio];
                 cell = [_tableView cellForRowAtIndexPath:indexPath];
                 cell.accessoryType = UITableViewCellAccessoryNone;
             }
         }
         
-    } else if (indexPath.section == CYMovieInfoSectionSubtitles) {
+    } else if (indexPath.section == CYPlayerInfoSectionSubtitles) {
         
         NSInteger selected = _decoder.selectedSubtitleStream;
         
@@ -1728,7 +1728,7 @@ _messageLabel.hidden = YES;
                 cell = [_tableView cellForRowAtIndexPath:indexPath];
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
                 
-                indexPath = [NSIndexPath indexPathForRow:selected + 1 inSection:CYMovieInfoSectionSubtitles];
+                indexPath = [NSIndexPath indexPathForRow:selected + 1 inSection:CYPlayerInfoSectionSubtitles];
                 cell = [_tableView cellForRowAtIndexPath:indexPath];
                 cell.accessoryType = UITableViewCellAccessoryNone;
             }

@@ -7,10 +7,10 @@
 //
 
 #import "CYFFmpegPlayer.h"
-#import "CYMovieDecoder.h"
+#import "CYPlayerDecoder.h"
 #import "CYAudioManager.h"
 #import "CYLogger.h"
-#import "CYMovieGLView.h"
+#import "CYPlayerGLView.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
 #import <Masonry/Masonry.h>
@@ -71,9 +71,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 
-NSString * const CYMovieParameterMinBufferedDuration = @"CYMovieParameterMinBufferedDuration";
-NSString * const CYMovieParameterMaxBufferedDuration = @"CYMovieParameterMaxBufferedDuration";
-NSString * const CYMovieParameterDisableDeinterlacing = @"CYMovieParameterDisableDeinterlacing";
+NSString * const CYPlayerParameterMinBufferedDuration = @"CYPlayerParameterMinBufferedDuration";
+NSString * const CYPlayerParameterMaxBufferedDuration = @"CYPlayerParameterMaxBufferedDuration";
+NSString * const CYPlayerParameterDisableDeinterlacing = @"CYPlayerParameterDisableDeinterlacing";
 
 static NSMutableDictionary * gHistory = nil;//播放记录
 
@@ -95,7 +95,7 @@ CYSliderDelegate>
     BOOL                _isDraging;
     
     
-    CYMovieDecoder      *_decoder;
+    CYPlayerDecoder      *_decoder;
     dispatch_queue_t    _dispatchQueue;
     NSMutableArray      *_videoFrames;
     NSMutableArray      *_audioFrames;
@@ -111,13 +111,13 @@ CYSliderDelegate>
     NSUInteger          _tickCounter;
     
     //生成预览图
-    CYMovieDecoder      *_generatedPreviewImagesDecoder;
+    CYPlayerDecoder      *_generatedPreviewImagesDecoder;
     dispatch_queue_t    _generatedPreviewImagesDispatchQueue;
     NSMutableArray      *_generatedPreviewImagesVideoFrames;
     BOOL                _generatedPreviewImageInterrupted;
     
     //UI
-    CYMovieGLView       *_glView;
+    CYPlayerGLView       *_glView;
     UIImageView         *_imageView;
     
 #ifdef DEBUG
@@ -216,7 +216,7 @@ CYSliderDelegate>
     
     _parameters = parameters;
     
-    __block CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
     [decoder setDecodeType:(CYVideoDecodeTypeVideo | CYVideoDecodeTypeAudio)];//
     
     self.controlView.decoder = decoder;
@@ -508,7 +508,7 @@ CYSliderDelegate>
 
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
-    __block CYMovieDecoder *decoder = [[CYMovieDecoder alloc] init];
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
     [decoder setDecodeType:CYVideoDecodeTypeVideo];
     
     __weak __typeof(&*self)weakSelf = self;
@@ -541,7 +541,7 @@ CYSliderDelegate>
         [self play];
 }
 
-- (void)setGeneratedPreviewImagesDecoder: (CYMovieDecoder *) decoder
+- (void)setGeneratedPreviewImagesDecoder: (CYPlayerDecoder *) decoder
                               imagesCount:(NSInteger)imagesCount
                                 withError: (NSError *) error
                        completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
@@ -557,7 +557,7 @@ CYSliderDelegate>
         
         
             __weak CYFFmpegPlayer *weakSelf = self;
-            __weak CYMovieDecoder *weakDecoder = decoder;
+            __weak CYPlayerDecoder *weakDecoder = decoder;
             
             const CGFloat duration = decoder.isNetwork ? .0f : 0.1f;
             
@@ -570,7 +570,7 @@ CYSliderDelegate>
                 while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted)
 //                for (int i = 0; i < imagesCount; i++)
                 {
-                    __strong CYMovieDecoder *decoder = weakDecoder;
+                    __strong CYPlayerDecoder *decoder = weakDecoder;
                     
                     if (decoder && decoder.validVideo && decoder.isEOF == NO)
                     {
@@ -582,10 +582,10 @@ CYSliderDelegate>
                             {
                                 @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
                                 {
-                                    //                                        for (CYMovieFrame *frame in frames)
+                                    //                                        for (CYPlayerFrame *frame in frames)
                                     CYVideoFrame * frame = [frames firstObject];
                                     {
-                                        if (frame.type == CYMovieFrameTypeVideo)
+                                        if (frame.type == CYPlayerFrameTypeVideo)
                                         {
                                             [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
                                             [decoder setPosition:(timeInterval * (i+1))];
@@ -601,7 +601,7 @@ CYSliderDelegate>
                         if (strongSelf->_generatedPreviewImagesVideoFrames.count < imagesCount) {
                             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Generated Failed!" };
 
-                            error = [NSError errorWithDomain:kxmovieErrorDomain
+                            error = [NSError errorWithDomain:cyplayerErrorDomain
                                                                code:-1
                                                            userInfo:userInfo];
                         }
@@ -628,7 +628,7 @@ CYSliderDelegate>
     }
 }
 
-- (void) setMovieDecoder: (CYMovieDecoder *) decoder
+- (void) setMovieDecoder: (CYPlayerDecoder *) decoder
                withError: (NSError *) error
 {
     LoggerStream(2, @"setMovieDecoder");
@@ -662,15 +662,15 @@ CYSliderDelegate>
             
             id val;
             
-            val = [_parameters valueForKey: CYMovieParameterMinBufferedDuration];
+            val = [_parameters valueForKey: CYPlayerParameterMinBufferedDuration];
             if ([val isKindOfClass:[NSNumber class]])
                 _minBufferedDuration = [val floatValue];
             
-            val = [_parameters valueForKey: CYMovieParameterMaxBufferedDuration];
+            val = [_parameters valueForKey: CYPlayerParameterMaxBufferedDuration];
             if ([val isKindOfClass:[NSNumber class]])
                 _maxBufferedDuration = [val floatValue];
             
-            val = [_parameters valueForKey: CYMovieParameterDisableDeinterlacing];
+            val = [_parameters valueForKey: CYPlayerParameterDisableDeinterlacing];
             if ([val isKindOfClass:[NSNumber class]])
                 _decoder.disableDeinterlacing = [val boolValue];
             
@@ -696,7 +696,7 @@ CYSliderDelegate>
     CGRect bounds = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height * 9/16);
     
     if (_decoder.validVideo) {
-        _glView = [[CYMovieGLView alloc] initWithFrame:bounds decoder:_decoder];
+        _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
     }
     
     if (!_glView) {
@@ -939,7 +939,7 @@ CYSliderDelegate>
         return;
     
     __weak CYFFmpegPlayer *weakSelf = self;
-    __weak CYMovieDecoder *weakDecoder = _decoder;
+    __weak CYPlayerDecoder *weakDecoder = _decoder;
     
     const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
     
@@ -959,7 +959,7 @@ CYSliderDelegate>
             
             @autoreleasepool {
                 
-//                __strong CYMovieDecoder *decoder = weakDecoder;
+//                __strong CYPlayerDecoder *decoder = weakDecoder;
                 
                 if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
                     
@@ -988,8 +988,8 @@ CYSliderDelegate>
         
         @synchronized(_videoFrames) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeVideo) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeVideo) {
                     [_videoFrames addObject:frame];
                     _bufferedDuration += frame.duration;
                 }
@@ -1000,8 +1000,8 @@ CYSliderDelegate>
         
         @synchronized(_audioFrames) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeAudio) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeAudio) {
                     [_audioFrames addObject:frame];
                     if (!_decoder.validVideo)
                         _bufferedDuration += frame.duration;
@@ -1010,8 +1010,8 @@ CYSliderDelegate>
         
         if (!_decoder.validVideo) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeArtwork)
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeArtwork)
                     self.artworkFrame = (CYArtworkFrame *)frame;
         }
     }
@@ -1020,8 +1020,8 @@ CYSliderDelegate>
         
         @synchronized(_subtitles) {
             
-            for (CYMovieFrame *frame in frames)
-                if (frame.type == CYMovieFrameTypeSubtitle) {
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeSubtitle) {
                     [_subtitles addObject:frame];
                 }
         }
@@ -1884,7 +1884,7 @@ CYSliderDelegate>
     }
 }
 
-- (void)replayFromInterruptWithDecoder:(CYMovieDecoder *)decoder
+- (void)replayFromInterruptWithDecoder:(CYPlayerDecoder *)decoder
 {
     if (self.state == CYFFmpegPlayerPlayState_Prepare)
     {
@@ -1941,15 +1941,15 @@ CYSliderDelegate>
                             
                             id val;
                             
-                            val = [strongSelf2->_parameters valueForKey: CYMovieParameterMinBufferedDuration];
+                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMinBufferedDuration];
                             if ([val isKindOfClass:[NSNumber class]])
                                 strongSelf2->_minBufferedDuration = [val floatValue];
                             
-                            val = [strongSelf2->_parameters valueForKey: CYMovieParameterMaxBufferedDuration];
+                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMaxBufferedDuration];
                             if ([val isKindOfClass:[NSNumber class]])
                                 strongSelf2->_maxBufferedDuration = [val floatValue];
                             
-                            val = [strongSelf2->_parameters valueForKey: CYMovieParameterDisableDeinterlacing];
+                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterDisableDeinterlacing];
                             if ([val isKindOfClass:[NSNumber class]])
                                 strongSelf2->_decoder.disableDeinterlacing = [val boolValue];
                             

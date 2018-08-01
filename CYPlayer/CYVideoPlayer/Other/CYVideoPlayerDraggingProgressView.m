@@ -12,7 +12,7 @@
 #import <Masonry/Masonry.h>
 #import "CYSlider.h"
 #import "CYVideoPlayerAssetCarrier.h"
-#import "CYMovieDecoder.h"
+#import "CYPlayerDecoder.h"
 
 inline static NSString *_formatWithSec(NSInteger sec) {
     NSInteger seconds = sec % 60;

@@ -1,25 +1,26 @@
 //
-//  CYMovieDecoder.m
-//  kxmovie
+//  CYPlayerDecoder.m
+//  cyplayer
 //
 //  Created by Kolyvan on 15.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
-#import "CYMovieDecoder.h"
+#import "CYPlayerDecoder.h"
 #import <Accelerate/Accelerate.h>
 #import <FFmpeg/FFmpeg.h>
 #import "CYAudioManager.h"
 #import "CYLogger.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////
-NSString * kxmovieErrorDomain = @"com.yellowei.www.CYPlayer";
+NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
 static void FFLog(void* context, int level, const char* format, va_list args);
 
-static NSError * kxmovieError (NSInteger code, id info)
+static NSError * cyplayerError (NSInteger code, id info)
 {
     NSDictionary *userInfo = nil;
     
@@ -32,42 +33,42 @@ static NSError * kxmovieError (NSInteger code, id info)
         userInfo = @{ NSLocalizedDescriptionKey : info };
     }
     
-    return [NSError errorWithDomain:kxmovieErrorDomain
+    return [NSError errorWithDomain:cyplayerErrorDomain
                                code:code
                            userInfo:userInfo];
 }
 
-static NSString * errorMessage (kxMovieError errorCode)
+static NSString * errorMessage (cyPlayerError errorCode)
 {
     switch (errorCode) {
-        case kxMovieErrorNone:
+        case cyPlayerErrorNone:
             return @"";
             
-        case kxMovieErrorOpenFile:
+        case cyPlayerErrorOpenFile:
             return NSLocalizedString(@"Unable to open file", nil);
             
-        case kxMovieErrorStreamInfoNotFound:
+        case cyPlayerErrorStreamInfoNotFound:
             return NSLocalizedString(@"Unable to find stream information", nil);
             
-        case kxMovieErrorStreamNotFound:
+        case cyPlayerErrorStreamNotFound:
             return NSLocalizedString(@"Unable to find stream", nil);
             
-        case kxMovieErrorCodecNotFound:
+        case cyPlayerErrorCodecNotFound:
             return NSLocalizedString(@"Unable to find codec", nil);
             
-        case kxMovieErrorOpenCodec:
+        case cyPlayerErrorOpenCodec:
             return NSLocalizedString(@"Unable to open codec", nil);
             
-        case kxMovieErrorAllocateFrame:
+        case cyPlayerErrorAllocateFrame:
             return NSLocalizedString(@"Unable to allocate frame", nil);
             
-        case kxMovieErroSetupScaler:
+        case cyPlayerErroSetupScaler:
             return NSLocalizedString(@"Unable to setup scaler", nil);
             
-        case kxMovieErroReSampler:
+        case cyPlayerErroReSampler:
             return NSLocalizedString(@"Unable to setup resampler", nil);
             
-        case kxMovieErroUnsupported:
+        case cyPlayerErroUnsupported:
             return NSLocalizedString(@"The ability is not supported", nil);
     }
 }
@@ -284,12 +285,12 @@ static int interrupt_callback(void *ctx);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@interface CYMovieFrame()
+@interface CYPlayerFrame()
 @property (readwrite, nonatomic) CGFloat position;
 @property (readwrite, nonatomic) CGFloat duration;
 @end
 
-@implementation CYMovieFrame
+@implementation CYPlayerFrame
 @end
 
 @interface CYAudioFrame()
@@ -297,7 +298,7 @@ static int interrupt_callback(void *ctx);
 @end
 
 @implementation CYAudioFrame
-- (CYMovieFrameType) type { return CYMovieFrameTypeAudio; }
+- (CYPlayerFrameType) type { return CYPlayerFrameTypeAudio; }
 @end
 
 @interface CYVideoFrame()
@@ -306,7 +307,7 @@ static int interrupt_callback(void *ctx);
 @end
 
 @implementation CYVideoFrame
-- (CYMovieFrameType) type { return CYMovieFrameTypeVideo; }
+- (CYPlayerFrameType) type { return CYPlayerFrameTypeVideo; }
 @end
 
 @interface CYVideoFrameRGB ()
@@ -364,7 +365,7 @@ static int interrupt_callback(void *ctx);
 @end
 
 @implementation CYArtworkFrame
-- (CYMovieFrameType) type { return CYMovieFrameTypeArtwork; }
+- (CYPlayerFrameType) type { return CYPlayerFrameTypeArtwork; }
 - (UIImage *) asImage
 {
     UIImage *image = nil;
@@ -394,12 +395,12 @@ static int interrupt_callback(void *ctx);
 @end
 
 @implementation CYSubtitleFrame
-- (CYMovieFrameType) type { return CYMovieFrameTypeSubtitle; }
+- (CYPlayerFrameType) type { return CYPlayerFrameTypeSubtitle; }
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@interface CYMovieDecoder () {
+@interface CYPlayerDecoder () {
     
     AVFormatContext     *_formatCtx;
 	AVCodecContext      *_videoCodecCtx;
@@ -429,7 +430,7 @@ static int interrupt_callback(void *ctx);
 }
 @end
 
-@implementation CYMovieDecoder
+@implementation CYPlayerDecoder
 
 @dynamic duration;
 @dynamic position;
@@ -518,8 +519,8 @@ static int interrupt_callback(void *ctx);
 {
     NSInteger audioStream = [_audioStreams[selectedAudioStream] integerValue];
     [self closeAudioStream];
-    kxMovieError errCode = [self openAudioStream: audioStream];
-    if (kxMovieErrorNone != errCode) {
+    cyPlayerError errCode = [self openAudioStream: audioStream];
+    if (cyPlayerErrorNone != errCode) {
         LoggerAudio(0, @"%@", errorMessage(errCode));
     }
 }
@@ -542,8 +543,8 @@ static int interrupt_callback(void *ctx);
     } else {
         
         NSInteger subtitleStream = [_subtitleStreams[selected] integerValue];
-        kxMovieError errCode = [self openSubtitleStream:subtitleStream];
-        if (kxMovieErrorNone != errCode) {
+        cyPlayerError errCode = [self openSubtitleStream:subtitleStream];
+        if (cyPlayerErrorNone != errCode) {
             LoggerStream(0, @"%@", errorMessage(errCode));
         }
     }
@@ -715,7 +716,7 @@ static int interrupt_callback(void *ctx);
 + (id) movieDecoderWithContentPath: (NSString *) path
                              error: (NSError **) perror
 {
-    CYMovieDecoder *mp = [[CYMovieDecoder alloc] init];
+    CYPlayerDecoder *mp = [[CYPlayerDecoder alloc] init];
     if (mp) {
         [mp openFile:path error:perror];
     }
@@ -748,12 +749,12 @@ static int interrupt_callback(void *ctx);
     path = path.length > 0 ? path : @"";
     _path = path;
     
-    kxMovieError errCode = [self openInput: path];
+    cyPlayerError errCode = [self openInput: path];
     
-    if (errCode == kxMovieErrorNone) {
+    if (errCode == cyPlayerErrorNone) {
         
-        kxMovieError videoErr = kxMovieErrorOpenCodec;
-        kxMovieError audioErr = kxMovieErrorOpenCodec;
+        cyPlayerError videoErr = cyPlayerErrorOpenCodec;
+        cyPlayerError audioErr = cyPlayerErrorOpenCodec;
         
         if (self.decodeType & CYVideoDecodeTypeVideo)
         {
@@ -767,8 +768,8 @@ static int interrupt_callback(void *ctx);
         
         _subtitleStream = -1;
         
-        if (videoErr != kxMovieErrorNone &&
-            audioErr != kxMovieErrorNone) {
+        if (videoErr != cyPlayerErrorNone &&
+            audioErr != cyPlayerErrorNone) {
          
             errCode = videoErr; // both fails
             
@@ -778,20 +779,20 @@ static int interrupt_callback(void *ctx);
         }
     }
     
-    if (errCode != kxMovieErrorNone) {
+    if (errCode != cyPlayerErrorNone) {
         
         [self closeFile];
         NSString *errMsg = errorMessage(errCode);
         LoggerStream(0, @"%@, %@", errMsg, path.lastPathComponent);
         if (perror)
-            *perror = kxmovieError(errCode, errMsg);
+            *perror = cyplayerError(errCode, errMsg);
         return NO;
     }
         
     return YES;
 }
 
-- (kxMovieError) openInput: (NSString *) path
+- (cyPlayerError) openInput: (NSString *) path
 {
     AVFormatContext *formatCtx = NULL;
     
@@ -799,7 +800,7 @@ static int interrupt_callback(void *ctx);
         
         formatCtx = avformat_alloc_context();
         if (!formatCtx)
-            return kxMovieErrorOpenFile;
+            return cyPlayerErrorOpenFile;
         
         __weak typeof(&*self)weakSelf = self;
         AVIOInterruptCB cb = {
@@ -818,13 +819,13 @@ static int interrupt_callback(void *ctx);
         
         if (formatCtx)
             avformat_free_context(formatCtx);
-        return kxMovieErrorOpenFile;
+        return cyPlayerErrorOpenFile;
     }
     
     if (avformat_find_stream_info(formatCtx, NULL) < 0) {
         
         avformat_close_input(&formatCtx);
-        return kxMovieErrorStreamInfoNotFound;
+        return cyPlayerErrorStreamInfoNotFound;
     }
 
 #if DEBUG
@@ -834,12 +835,12 @@ static int interrupt_callback(void *ctx);
     
     
     _formatCtx = formatCtx;
-    return kxMovieErrorNone;
+    return cyPlayerErrorNone;
 }
 
-- (kxMovieError) openVideoStream
+- (cyPlayerError) openVideoStream
 {
-    kxMovieError errCode = kxMovieErrorStreamNotFound;
+    cyPlayerError errCode = cyPlayerErrorStreamNotFound;
     _videoStream = -1;
     _artworkStream = -1;
     _videoStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_VIDEO);
@@ -850,7 +851,7 @@ static int interrupt_callback(void *ctx);
         if (0 == (_formatCtx->streams[iStream]->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
         
             errCode = [self openVideoStream: iStream];
-            if (errCode == kxMovieErrorNone)
+            if (errCode == cyPlayerErrorNone)
                 break;
             
         } else {
@@ -862,7 +863,7 @@ static int interrupt_callback(void *ctx);
     return errCode;
 }
 
-- (kxMovieError) openVideoStream: (NSInteger) videoStream
+- (cyPlayerError) openVideoStream: (NSInteger) videoStream
 {    
     // get a pointer to the codec context for the video stream
     
@@ -875,7 +876,7 @@ static int interrupt_callback(void *ctx);
     // find the decoder for the video stream
     AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id);
     if (!codec)
-        return kxMovieErrorCodecNotFound;
+        return cyPlayerErrorCodecNotFound;
     
     // inform the codec that we can handle truncated bitstreams -- i.e.,
     // bitstreams where frame boundaries can fall in the middle of packets
@@ -884,13 +885,13 @@ static int interrupt_callback(void *ctx);
     
     // open codec
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
-        return kxMovieErrorOpenCodec;
+        return cyPlayerErrorOpenCodec;
         
     _videoFrame = av_frame_alloc();
 
     if (!_videoFrame) {
         avcodec_free_context(&codecCtx);
-        return kxMovieErrorAllocateFrame;
+        return cyPlayerErrorAllocateFrame;
     }
     
     _videoStream = videoStream;
@@ -911,24 +912,24 @@ static int interrupt_callback(void *ctx);
     LoggerVideo(1, @"video disposition %d", st->disposition);
     
     st = NULL;
-    return kxMovieErrorNone;
+    return cyPlayerErrorNone;
 }
 
-- (kxMovieError) openAudioStream
+- (cyPlayerError) openAudioStream
 {
-    kxMovieError errCode = kxMovieErrorStreamNotFound;
+    cyPlayerError errCode = cyPlayerErrorStreamNotFound;
     _audioStream = -1;
     _audioStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_AUDIO);
     for (NSNumber *n in _audioStreams) {
     
         errCode = [self openAudioStream: n.integerValue];
-        if (errCode == kxMovieErrorNone)
+        if (errCode == cyPlayerErrorNone)
             break;
     }    
     return errCode;
 }
 
-- (kxMovieError) openAudioStream: (NSInteger) audioStream
+- (cyPlayerError) openAudioStream: (NSInteger) audioStream
 {
     AVCodecContext *codecCtx = avcodec_alloc_context3(NULL);
     avcodec_parameters_to_context(codecCtx, _formatCtx->streams[audioStream]->codecpar);
@@ -936,10 +937,10 @@ static int interrupt_callback(void *ctx);
                    
     AVCodec *codec = avcodec_find_decoder(codecCtx->codec_id);
     if(!codec)
-        return kxMovieErrorCodecNotFound;
+        return cyPlayerErrorCodecNotFound;
         
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
-         return kxMovieErrorOpenCodec;
+         return cyPlayerErrorOpenCodec;
     
     if (!audioCodecIsSupported(codecCtx)) {
 
@@ -963,7 +964,7 @@ static int interrupt_callback(void *ctx);
             }
              avcodec_free_context(&codecCtx);
 
-            return kxMovieErroReSampler;
+            return cyPlayerErroReSampler;
         }
     }
     
@@ -975,7 +976,7 @@ static int interrupt_callback(void *ctx);
             swr_free(&swrContext);
         }
         avcodec_free_context(&codecCtx);
-        return kxMovieErrorAllocateFrame;
+        return cyPlayerErrorAllocateFrame;
     }
     
     _audioStream = audioStream;
@@ -993,10 +994,10 @@ static int interrupt_callback(void *ctx);
                 _swrContext ? @"resample" : @"");
     
     st = NULL;
-    return kxMovieErrorNone; 
+    return cyPlayerErrorNone; 
 }
 
-- (kxMovieError) openSubtitleStream: (NSInteger) subtitleStream
+- (cyPlayerError) openSubtitleStream: (NSInteger) subtitleStream
 {
     AVCodecContext *codecCtx = avcodec_alloc_context3(NULL);
     avcodec_parameters_to_context(codecCtx, _formatCtx->streams[subtitleStream]->codecpar);
@@ -1005,20 +1006,20 @@ static int interrupt_callback(void *ctx);
     if(!codec)
     {
         avcodec_free_context(&codecCtx);
-        return kxMovieErrorCodecNotFound;
+        return cyPlayerErrorCodecNotFound;
     }
     
     const AVCodecDescriptor *codecDesc = avcodec_descriptor_get(codecCtx->codec_id);
     if (codecDesc && (codecDesc->props & AV_CODEC_PROP_BITMAP_SUB)) {
         // Only text based subtitles supported
         avcodec_free_context(&codecCtx);
-        return kxMovieErroUnsupported;
+        return cyPlayerErroUnsupported;
     }
     
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
     {
         avcodec_free_context(&codecCtx);
-        return kxMovieErrorOpenCodec;
+        return cyPlayerErrorOpenCodec;
     }
     
     _subtitleStream = subtitleStream;
@@ -1039,7 +1040,7 @@ static int interrupt_callback(void *ctx);
         
         if (s.length) {
             
-            NSArray *fields = [CYMovieSubtitleASSParser parseEvents:s];
+            NSArray *fields = [CYPlayerSubtitleASSParser parseEvents:s];
             if (fields.count && [fields.lastObject isEqualToString:@"Text"]) {
                 _subtitleASSEvents = fields.count;
                 LoggerStream(2, @"subtitle ass events: %@", [fields componentsJoinedByString:@","]);
@@ -1047,7 +1048,7 @@ static int interrupt_callback(void *ctx);
         }
     }
     
-    return kxMovieErrorNone;
+    return cyPlayerErrorNone;
 }
 
 -(void) closeFile
@@ -1362,10 +1363,10 @@ static int interrupt_callback(void *ctx);
                 NSString *s = [NSString stringWithUTF8String:rect->ass];
                 if (s.length) {
                     
-                    NSArray *fields = [CYMovieSubtitleASSParser parseDialogue:s numFields:_subtitleASSEvents];
+                    NSArray *fields = [CYPlayerSubtitleASSParser parseDialogue:s numFields:_subtitleASSEvents];
                     if (fields.count && [fields.lastObject length]) {
                         
-                        s = [CYMovieSubtitleASSParser removeCommandsFromEventText: fields.lastObject];
+                        s = [CYPlayerSubtitleASSParser removeCommandsFromEventText: fields.lastObject];
                         if (s.length) [ms appendString:s];
                     }                    
                 }
@@ -1587,7 +1588,7 @@ static int interrupt_callback(void *ctx)
 {
     if (!ctx)
         return 0;
-    __unsafe_unretained CYMovieDecoder *p = (__bridge CYMovieDecoder *)ctx;
+    __unsafe_unretained CYPlayerDecoder *p = (__bridge CYPlayerDecoder *)ctx;
     const BOOL r = [p interruptDecoder];
     if (r) LoggerStream(1, @"DEBUG: INTERRUPT_CALLBACK!");
     return r;
@@ -1596,7 +1597,7 @@ static int interrupt_callback(void *ctx)
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-@implementation CYMovieSubtitleASSParser
+@implementation CYPlayerSubtitleASSParser
 
 + (NSArray *) parseEvents: (NSString *) events
 {
@@ -1689,6 +1690,7 @@ static int interrupt_callback(void *ctx)
     
     return ms;
 }
+    
 
 @end
 

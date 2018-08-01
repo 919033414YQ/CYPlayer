@@ -1,13 +1,13 @@
 //
 //  MainViewController.m
-//  kxmovie
+//  cyplayer
 //
 //  Created by Kolyvan on 18.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/kxmovie
-//  this file is part of CYMovie
-//  CYMovie is licenced under the LGPL v3, see lgpl-3.0.txt
+//  https://github.com/kolyvan/cyplayer
+//  this file is part of CYPlayer
+//  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
 #import "MainViewController.h"
 #import "CYMovieViewController.h"
@@ -246,17 +246,17 @@
     
     // increase buffering for .wmv, it solves problem with delaying audio frames
     if ([path.pathExtension isEqualToString:@"wmv"])
-        parameters[CYMovieParameterMinBufferedDuration] = @(5.0);
+        parameters[CYPlayerParameterMinBufferedDuration] = @(5.0);
     
     // disable deinterlacing for iPhone, because it's complex operation can cause stuttering
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-        parameters[CYMovieParameterDisableDeinterlacing] = @(YES);
+        parameters[CYPlayerParameterDisableDeinterlacing] = @(YES);
     
     // disable buffering
-    //parameters[CYMovieParameterMinBufferedDuration] = @(0.0f);
-    //parameters[CYMovieParameterMaxBufferedDuration] = @(0.0f);
+    //parameters[CYPlayerParameterMinBufferedDuration] = @(0.0f);
+    //parameters[CYPlayerParameterMaxBufferedDuration] = @(0.0f);
     
-//    CYMovieViewController *vc = [CYMovieViewController movieViewControllerWithContentPath:path
+//    CYPlayerViewController *vc = [CYPlayerViewController movieViewControllerWithContentPath:path
 //                                                                               parameters:parameters];
     CYFFmpegViewController * vc = [[CYFFmpegViewController alloc] init];
     vc.path = path;
