@@ -20,9 +20,11 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 @property (nonatomic, strong, readwrite) UIImage *replayBtnImage;
 @property (nonatomic, strong, readwrite) NSString *replayBtnTitle;
 @property (nonatomic, assign, readwrite) float replayBtnFontSize;
-@property (nonatomic, strong, readwrite) UIImage *fullBtnImage;
+@property (nonatomic, strong, readwrite) UIImage *fullBtnImage_nor;
+@property (nonatomic, strong, readwrite) UIImage *fullBtnImage_sel;
 @property (nonatomic, strong, readwrite) UIImage *previewBtnImage;
 @property (nonatomic, strong, readwrite) UIImage *moreBtnImage;
+@property (nonatomic, copy, readwrite)   NSString *title;
 @property (nonatomic, strong, readwrite) UIImage *lockBtnImage;
 @property (nonatomic, strong, readwrite) UIImage *unlockBtnImage;
 
@@ -50,6 +52,9 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 
 // MARK: Loading
 @property (nonatomic, strong, readwrite) UIColor *loadingLineColor;
+
+// MARK: Control
+@property (nonatomic, assign, readwrite) BOOL enableProgressControl;
 
 
 + (instancetype)sharedVideoPlayerSettings;

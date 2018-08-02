@@ -9,7 +9,7 @@ s.version      = "1.4.0"
 s.summary      = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS'
 s.description  = 'https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
-s.license      = { :type => "MIT", :file => "LICENSE" }
+s.license      = { :type => "MIT", :file => "LICENSE" }å
 s.author             = { "yellowei" => "hw0521@vip.qq.com" }
 s.platform     = :ios, "8.0"
 s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "#{s.version}" }

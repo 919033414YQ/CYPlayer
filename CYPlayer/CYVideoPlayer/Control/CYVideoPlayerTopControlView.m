@@ -24,6 +24,7 @@
 @synthesize backBtn = _backBtn;
 @synthesize previewBtn = _previewBtn;
 @synthesize moreBtn = _moreBtn;
+@synthesize titleBtn = _titleBtn;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -35,6 +36,7 @@
         if ( !self ) return;
         [self.backBtn setImage:setting.backBtnImage forState:UIControlStateNormal];
         [self.moreBtn setImage:setting.moreBtnImage forState:UIControlStateNormal];
+        [self.titleBtn setTitle:setting.title forState:UIControlStateNormal];
         if ( setting.previewBtnImage ) {
             [self.previewBtn setImage:setting.previewBtnImage forState:UIControlStateNormal];
         }
@@ -55,31 +57,47 @@
     [self.containerView addSubview:self.backBtn];
     [self.containerView addSubview:self.previewBtn];
     [self.containerView addSubview:self.moreBtn];
+    [self.containerView addSubview:self.titleBtn];
     
     [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_controlMaskView.superview);
     }];
     
     [_backBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.offset(20);
-        make.size.offset(49);
-        make.leading.offset(0);
-    }];
-    
-    [_previewBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.size.bottom.equalTo(_backBtn);
-        make.trailing.equalTo(_moreBtn.mas_leading).offset(-8);
+        make.top.equalTo(@0);
+        //        make.centerY.equalTo(@0);
+        make.width.height.offset(49);
+        make.left.offset(0);
     }];
     
     [_moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.size.bottom.equalTo(_backBtn);
-        make.trailing.offset(-8);
+        make.width.height.equalTo(@49);
+        make.top.equalTo(@0);
+        //        make.centerY.equalTo(@0);
+        make.right.equalTo(@(-8));
+    }];
+    
+    [_previewBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.height.equalTo(@49);
+        make.top.equalTo(@0);
+        //        make.centerY.equalTo(@0);
+        make.right.equalTo(_moreBtn.mas_left).offset(-8);
+    }];
+    
+    [_titleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        //        make.centerX.equalTo(_titleBtn.superview.mas_centerX);
+        make.height.equalTo(@49);
+        make.top.equalTo(@0);
+        //        make.centerY.equalTo(@0);
+        make.left.equalTo(@100);
+        make.right.equalTo(@(-100));
     }];
 }
 
 - (UIButton *)backBtn {
     if ( _backBtn ) return _backBtn;
     _backBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Back];
+    [_backBtn setImageEdgeInsets:UIEdgeInsetsMake(16.5, 14.5, 16.5, 14.5)];
     return _backBtn;
 }
 
@@ -92,7 +110,19 @@
 - (UIButton *)moreBtn {
     if ( _moreBtn ) return _moreBtn;
     _moreBtn = [CYUIButtonFactory buttonWithImageName:[CYVideoPlayerResources bundleComponentWithImageName:@"cy_video_player_more"] target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_More];
+    [_moreBtn setImageEdgeInsets:UIEdgeInsetsMake(14.5, 9.5, 14.5, 9.5)];
     return _moreBtn;
+}
+
+- (UIButton *)titleBtn
+{
+    if (_titleBtn){
+        return _titleBtn;
+    }
+    
+    _titleBtn = [CYUIButtonFactory buttonWithTitle:@"" titleColor:[UIColor whiteColor]];
+    
+    return _titleBtn;
 }
 
 

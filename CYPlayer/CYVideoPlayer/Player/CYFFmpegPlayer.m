@@ -2279,12 +2279,15 @@ CYSliderDelegate>
 
 - (void)resetSetting {
     CYVideoPlayerSettings *setting = self.settings;
-    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
-    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
+    //    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
+    //    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
+    setting.backBtnImage = [UIImage imageNamed:@"btn_navi_return_title1"];
+    setting.moreBtnImage = [UIImage imageNamed:@"btn_navi_share"];
     setting.previewBtnImage = [CYVideoPlayerResources imageNamed:@""];
     setting.playBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_play"];
     setting.pauseBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_pause"];
-    setting.fullBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
+    setting.fullBtnImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
+    setting.fullBtnImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
     setting.lockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_lock"];
     setting.unlockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_unlock"];
     setting.replayBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_replay"];
@@ -2292,14 +2295,16 @@ CYSliderDelegate>
     setting.progress_traceColor = CYColorWithHEX(0x00c5b5);
     setting.progress_bufferColor = [UIColor colorWithWhite:0 alpha:0.2];
     setting.progress_trackColor =  [UIColor whiteColor];
-    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
-    setting.progress_thumbImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
-    setting.progress_thumbImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_sel"];
+    //    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail"];
+    setting.progress_thumbImage_nor = [UIImage imageNamed:@"cy_video_player_thumbnail_nor"];
+    setting.progress_thumbImage_sel = [UIImage imageNamed:@"cy_video_player_thumbnail_sel"];
     setting.progress_traceHeight = 3;
     setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];
     setting.more_trackHeight = 5;
     setting.loadingLineColor = [UIColor whiteColor];
+    setting.title = @"";
+    setting.enableProgressControl = YES;
 }
 
 - (void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {

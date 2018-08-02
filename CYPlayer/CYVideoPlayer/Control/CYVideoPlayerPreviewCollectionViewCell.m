@@ -35,12 +35,12 @@
     _imageView.image = model.image;
 }
 
-- (void)setFrame:(CYVideoFrame *)frame
+- (void)setVideoFrame:(CYVideoFrame *)videoFrame
 {
-    _frame = frame;
-    if ([frame isKindOfClass:[CYVideoFrameRGB class]])
+    _videoFrame = videoFrame;
+    if ([videoFrame isKindOfClass:[CYVideoFrameRGB class]])
     {
-        _imageView.image = [((CYVideoFrameRGB *)frame) asImage];
+        _imageView.image = [((CYVideoFrameRGB *)videoFrame) asImage];
     }
 }
 

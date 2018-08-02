@@ -37,15 +37,12 @@
 }
 
 - (void)_addGestureToControlView {
-    [self.singleTap requireGestureRecognizerToFail:self.doubleTap];
+    //    [self.singleTap requireGestureRecognizerToFail:self.doubleTap];
     [self.doubleTap requireGestureRecognizerToFail:self.panGR];
     
-    [_targetView addGestureRecognizer:_singleTap];
-    [_targetView addGestureRecognizer:_doubleTap];
-    [_targetView addGestureRecognizer:_panGR];
-    
-    [_singleTap requireGestureRecognizerToFail:_doubleTap];
-    [_doubleTap requireGestureRecognizerToFail:_panGR];
+    [_targetView addGestureRecognizer:self.singleTap];
+    [_targetView addGestureRecognizer:self.doubleTap];
+    [_targetView addGestureRecognizer:self.panGR];
     
 }
 

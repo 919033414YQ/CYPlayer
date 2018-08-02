@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readwrite, nullable) CYVideoPreviewModel *model;
 
-@property (nonatomic, strong, readwrite, nullable) CYVideoFrame *frame;
+@property (nonatomic, strong, readwrite, nullable) CYVideoFrame *videoFrame;
 
 @end
 

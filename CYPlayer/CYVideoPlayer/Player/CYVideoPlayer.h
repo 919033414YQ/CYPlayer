@@ -13,8 +13,22 @@
 #import "CYVideoPlayerMoreSettingSecondary.h"
 #import "CYVideoPlayerSettings.h"
 #import "CYPrompt.h"
+#import "CYPlayerGestureControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class CYVideoPlayer;
+
+@protocol CYVideoPlayerDelegate <NSObject>
+
+- (void)CYVideoPlayer:(CYVideoPlayer *)player onShareBtnCick:(UIButton *)btn;
+
+- (void)CYVideoPlayerStartAutoPlaying:(CYVideoPlayer *)player;
+
+- (void)CYVideoPlayer:(CYVideoPlayer *)player ChangeStatus:(CYVideoPlayerPlayState)state;
+
+
+@end
 
 typedef void(^LockScreen)(BOOL isLock);
 
@@ -26,6 +40,9 @@ typedef void(^LockScreen)(BOOL isLock);
 
 - (instancetype)init;
 
+@property (nonatomic, strong) CYPlayerGestureControl * gestureControl;
+
+@property (nonatomic, weak) id<CYVideoPlayerDelegate> delegate;
 /*!
  *  present View. support autoLayout.
  *

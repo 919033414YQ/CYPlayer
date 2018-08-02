@@ -74,7 +74,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 @property (nonatomic, strong, readonly) CYMoreSettingsFooterViewModel *moreSettingFooterViewModel;
 @property (nonatomic, strong, readonly) CYVideoPlayerRegistrar *registrar;
 @property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
-@property (nonatomic, strong, readonly) CYPlayerGestureControl *gestureControl;
+//@property (nonatomic, strong, readonly) CYPlayerGestureControl *gestureControl;
 @property (nonatomic, strong, readonly) CYLoadingView *loadingView;
 @property (nonatomic, strong, readonly) dispatch_queue_t workQueue;
 
@@ -200,8 +200,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 - (void)_unknownState {
     // hidden
-    _cyHiddenViews(@[self.controlView]);
-    
+//    _cyHiddenViews(@[self.controlView]);
     self.state = CYVideoPlayerPlayState_Unknown;
 }
 
@@ -222,7 +221,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                      ]);
     
     if ( self.orentation.fullScreen ) {
-        _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
+        _cyShowViews(@[self.controlView.topControlView.moreBtn,self.controlView.topControlView.titleBtn,]);
+        [self.controlView.topControlView.moreBtn setImage:[UIImage imageNamed:[CYVideoPlayerResources bundleComponentWithImageName:@"cy_video_player_more"]] forState:UIControlStateNormal];
         self.hiddenLeftControlView = NO;
         if ( self.asset.hasBeenGeneratedPreviewImages ) {
             _cyShowViews(@[self.controlView.topControlView.previewBtn]);
@@ -232,6 +232,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         self.hiddenLeftControlView = YES;
         _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
                          self.controlView.topControlView.previewBtn,]);
+        _cyShowViews(@[self.controlView.topControlView.titleBtn,]);
+        //        _cyHiddenViews(@[self.controlView.topControlView.previewBtn,]);
+        [self.controlView.topControlView.moreBtn setImage:[UIImage imageNamed:@"btn_navi_share"] forState:UIControlStateNormal];
     }
     
     self.state = CYVideoPlayerPlayState_Prepare;
@@ -326,10 +329,10 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if ( self.orentation.fullScreen ) {
-        [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
+//        [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
     }
     else {
-        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+//        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
     }
 #pragma clang diagnostic pop
 }
@@ -354,7 +357,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+//    [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
 #pragma clang diagnostic pop
 }
 
@@ -657,6 +660,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _orentation = [[CYOrentationObserver alloc] initWithTarget:self.presentView container:self.view];
     __weak typeof(self) _self = self;
     
+    //横屏允许条件
     _orentation.rotationCondition = ^BOOL(CYOrentationObserver * _Nonnull observer) {
         __strong typeof(_self) self = _self;
         if ( !self ) return NO;
@@ -677,6 +681,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         return YES;
     };
     
+    //横屏回调
     _orentation.orientationChanged = ^(CYOrentationObserver * _Nonnull observer) {
         __strong typeof(_self) self = _self;
         if ( !self )
@@ -690,7 +695,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             self.hiddenMoreSettingView = YES;
             self.hiddenLeftControlView = !observer.isFullScreen;
             if ( observer.isFullScreen ) {
-                _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
+                _cyShowViews(@[self.controlView.topControlView.moreBtn,self.controlView.topControlView.titleBtn,]);
+                [self.controlView.topControlView.moreBtn setImage:[UIImage imageNamed:[CYVideoPlayerResources bundleComponentWithImageName:@"cy_video_player_more"]] forState:UIControlStateNormal];
                 if ( self.asset.hasBeenGeneratedPreviewImages ) {
                     _cyShowViews(@[self.controlView.topControlView.previewBtn]);
                 }
@@ -700,14 +706,58 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                     make.height.equalTo(self.controlView.superview);
                     make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
                 }];
+                
+                //优化横屏播放器topview的显示
+                [self.controlView.topControlView.backBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(20);
+                }];
+                
+                [self.controlView.topControlView.titleBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(20);
+                }];
+                
+                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(20);
+                }];
+                
+                [self.controlView.topControlView.moreBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(20);
+                }];
+                
+                //横屏按钮界面处理
+                self.controlView.bottomControlView.fullBtn.selected = YES;
             }
             else {
                 _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
                                  self.controlView.topControlView.previewBtn,]);
+//                _cyHiddenViews(@[self.controlView.topControlView.previewBtn,]);
+                _cyShowViews(@[self.controlView.topControlView.titleBtn,]);
+                [self.controlView.topControlView.moreBtn setImage:[UIImage imageNamed:@"btn_navi_share"] forState:UIControlStateNormal];
                 
                 [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
+                
+                // 优化竖屏播放器topview的显示
+                [self.controlView.topControlView.backBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(0);
+                }];
+                
+                [self.controlView.topControlView.titleBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(0);
+                }];
+                
+                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(0);
+                }];
+                
+                [self.controlView.topControlView.moreBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.top.offset(0);
+                }];
+                
+                //横屏按钮界面处理
+                self.controlView.bottomControlView.fullBtn.selected = NO;
+                
             }
         });//_cyAnima(^{})
         if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);
@@ -885,7 +935,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         if ( !self ) return;
         switch (direction) {
             case CYPanDirection_H: {
-                self.controlView.draggingProgressView.progress += translate.x * 0.0003;
+                self.controlView.draggingProgressView.progress += translate.x * 0.00003;//进度手势灵敏度
             }
                 break;
             case CYPanDirection_V: {
@@ -1001,7 +1051,11 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         case CYVideoPlaySliderTag_Progress: {
             NSInteger currentTime = slider.value * self.asset.duration;
             [self _refreshingTimeLabelWithCurrentTime:currentTime duration:self.asset.duration];
-            self.controlView.draggingProgressView.progress = slider.value;
+            __weak __typeof(&*self)weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                weakSelf.controlView.draggingProgressView.progress = slider.value;
+            });
+            
         }
             break;
             
@@ -1094,10 +1148,20 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         }
             break;
         case CYVideoPlayControlViewTag_More: {
-            _cyAnima(^{
-                self.hiddenMoreSettingView = NO;
-                self.hideControl = YES;
-            });
+            if (self.orentation.isFullScreen)
+            {
+                _cyAnima(^{
+                    self.hiddenMoreSettingView = NO;
+                    self.hideControl = YES;
+                });
+            }
+            else
+            {
+                if ([self.delegate respondsToSelector:@selector(CYVideoPlayer:onShareBtnCick:)])
+                {
+                    [self.delegate CYVideoPlayer:self onShareBtnCick:self.controlView.topControlView.moreBtn];
+                }
+            }
         }
             break;
     }
@@ -1140,13 +1204,17 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 }
 
 - (void)_itemReadyToPlay {
+    
+    self.state = CYVideoPlayerPlayState_Ready;
     _cyAnima(^{
         self.hideControl = NO;
     });
     if ( self.autoplay && !self.userClickedPause && !self.suspend ) {
+        if ([self.delegate respondsToSelector:@selector(CYVideoPlayerStartAutoPlaying:)])
+        {
+            [self.delegate CYVideoPlayerStartAutoPlaying:self];
+        }
         [self play];
-    }else {
-        [self pause];
     }
 }
 
@@ -1221,6 +1289,10 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     if ( state == _state ) return;
     _state = state;
     _presentView.state = state;
+    if ([self.delegate respondsToSelector:@selector(CYVideoPlayer:ChangeStatus:)])
+    {
+        [self.delegate CYVideoPlayer:self ChangeStatus:_state];
+    }
 }
 
 @end
@@ -1455,12 +1527,15 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 - (void)resetSetting {
     CYVideoPlayerSettings *setting = self.settings;
-    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
-    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
+    //    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
+    //    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
+    setting.backBtnImage = [UIImage imageNamed:@"btn_navi_return_title1"];
+    setting.moreBtnImage = [UIImage imageNamed:@"btn_navi_share"];
     setting.previewBtnImage = [CYVideoPlayerResources imageNamed:@""];
     setting.playBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_play"];
     setting.pauseBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_pause"];
-    setting.fullBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
+    setting.fullBtnImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
+    setting.fullBtnImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
     setting.lockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_lock"];
     setting.unlockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_unlock"];
     setting.replayBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_replay"];
@@ -1468,14 +1543,16 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     setting.progress_traceColor = CYColorWithHEX(0x00c5b5);
     setting.progress_bufferColor = [UIColor colorWithWhite:0 alpha:0.2];
     setting.progress_trackColor =  [UIColor whiteColor];
-    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
-    setting.progress_thumbImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
-    setting.progress_thumbImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_sel"];
+    //    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail"];
+    setting.progress_thumbImage_nor = [UIImage imageNamed:@"cy_video_player_thumbnail_nor"];
+    setting.progress_thumbImage_sel = [UIImage imageNamed:@"cy_video_player_thumbnail_sel"];
     setting.progress_traceHeight = 3;
     setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];
     setting.more_trackHeight = 5;
     setting.loadingLineColor = [UIColor whiteColor];
+    setting.title = @"";
+    setting.enableProgressControl = YES;
 }
 
 - (void)setPlaceholder:(UIImage *)placeholder {
@@ -1626,6 +1703,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
         _cyAnima(^{
             [self _unknownState];
         });
+        [self _stopLoading];
     }
     [self _clear];
 }

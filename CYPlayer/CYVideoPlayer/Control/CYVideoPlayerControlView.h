@@ -16,7 +16,7 @@
 #import "CYVideoPlayerDraggingProgressView.h"
 
 
-#define CYControlTopH (100)
+#define CYControlTopH (90)
 #define CYControlLeftH (49)
 #define CYControlBottomH (100)
 

@@ -17,6 +17,7 @@ typedef NS_ENUM(NSUInteger, CYVideoPlayerPlayState) {
     CYVideoPlayerPlayState_Pause,
     CYVideoPlayerPlayState_PlayEnd,
     CYVideoPlayerPlayState_PlayFailed,
+    CYVideoPlayerPlayState_Ready,
 };
 
 #endif /* CYVideoPlayerState_h */

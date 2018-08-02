@@ -54,19 +54,21 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.equalTo(_progressLabel.mas_top).offset(-12);
         make.centerX.offset(0);
-        make.width.offset(120);
+        //        make.width.offset(120);
+        make.width.equalTo(_imageView.superview.mas_width).multipliedBy(1.0 / 3.0);
         make.height.equalTo(_imageView.mas_width).multipliedBy(9.f / 16);
     }];
     
     [_progressLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_progressLabel.superview.mas_centerY);
+        make.top.equalTo(_progressLabel.superview.mas_centerY).offset(20);
         make.centerX.offset(0);
     }];
     
     [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_progressLabel.mas_bottom).offset(8);
         make.centerX.offset(0);
-        make.width.offset(54);
+        //        make.width.offset(54);
+        make.width.equalTo(_progressSlider.superview.mas_width).multipliedBy(1.0 / 5.0);
         make.height.offset(3);
     }];
 }
@@ -112,12 +114,18 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _progressSlider.trackHeight = 3;
     _progressSlider.pan.enabled = NO;
     _progressSlider.tag = CYVideoPlaySliderTag_Dragging;
+    _progressSlider.layer.borderColor = [UIColor blackColor].CGColor;
+    _progressSlider.layer.borderWidth = 0.5;
     return _progressSlider;
 }
 
 - (UILabel *)progressLabel {
     if ( _progressLabel ) return _progressLabel;
     _progressLabel = [CYUILabelFactory labelWithText:@"00:00" textColor:[UIColor whiteColor] alignment:NSTextAlignmentCenter font:[UIFont boldSystemFontOfSize:42]];
+    _progressLabel.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5];
+    _progressLabel.layer.cornerRadius = 5.0;
+    _progressLabel.layer.masksToBounds = YES;
+    _progressLabel.clipsToBounds = YES;
     return _progressLabel;
 }
 

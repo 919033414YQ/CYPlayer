@@ -39,6 +39,35 @@
         if ( !self ) return;
         self.bottomProgressSlider.traceImageView.backgroundColor = setting.progress_traceColor;
         self.bottomProgressSlider.trackImageView.backgroundColor = setting.progress_trackColor;
+        
+        for (UIGestureRecognizer * gtr in self.gestureRecognizers)
+        {
+            if ([gtr isKindOfClass:[UIPanGestureRecognizer class]])
+            {
+                if (setting.enableProgressControl == NO)
+                {
+                    gtr.enabled = NO;
+                }
+                else
+                {
+                    gtr.enabled = YES;
+                }
+            }
+            else if ([gtr isKindOfClass:[UITapGestureRecognizer class]])
+            {
+                if (((UITapGestureRecognizer *)gtr).numberOfTapsRequired == 2)
+                {
+                    if (setting.enableProgressControl == NO)
+                    {
+                        gtr.enabled = NO;
+                    }
+                    else
+                    {
+                        gtr.enabled = YES;
+                    }
+                }
+            }
+        }
     };
     return self;
 }

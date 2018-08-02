@@ -38,14 +38,33 @@
         if ( !self ) return;
         [self.playBtn setImage:setting.playBtnImage forState:UIControlStateNormal];
         [self.pauseBtn setImage:setting.pauseBtnImage forState:UIControlStateNormal];
-        [self.fullBtn setImage:setting.fullBtnImage forState:UIControlStateNormal];
+        [self.fullBtn setImage:setting.fullBtnImage_nor forState:UIControlStateNormal];
+        [self.fullBtn setImage:setting.fullBtnImage_sel forState:UIControlStateSelected];
         self.progressSlider.traceImageView.backgroundColor = setting.progress_traceColor;
         self.progressSlider.trackImageView.backgroundColor = setting.progress_trackColor;
-        self.progressSlider.thumbImageView.image = setting.progress_thumbImage;
+        self.progressSlider.thumbImageView.image = setting.progress_thumbImage_nor;
         self.progressSlider.thumbnail_nor = setting.progress_thumbImage_nor;
         self.progressSlider.thumbnail_sel = setting.progress_thumbImage_sel;
         self.progressSlider.bufferProgressColor = setting.progress_bufferColor;
         self.progressSlider.trackHeight = setting.progress_traceHeight;
+        if (setting.enableProgressControl)
+        {
+            self.progressSlider.hidden = NO;
+            self.separateLabel.hidden = NO;
+            self.durationTimeLabel.hidden = NO;
+            self.currentTimeLabel.hidden = NO;
+            self.playBtn.hidden = NO;
+            self.pauseBtn.hidden = NO;
+        }
+        else
+        {
+            self.progressSlider.hidden = YES;
+            self.separateLabel.hidden = YES;
+            self.durationTimeLabel.hidden = YES;
+            self.currentTimeLabel.hidden = YES;
+            self.playBtn.hidden = YES;
+            self.pauseBtn.hidden = YES;
+        }
     };
     return self;
 }
@@ -116,12 +135,14 @@
 - (UIButton *)playBtn {
     if ( _playBtn ) return _playBtn;
     _playBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Play];
+    [_playBtn setImageEdgeInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
     return _playBtn;
 }
 
 - (UIButton *)pauseBtn {
     if ( _pauseBtn ) return _pauseBtn;
     _pauseBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Pause];
+    [_pauseBtn setImageEdgeInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
     return _pauseBtn;
 }
 
@@ -136,6 +157,7 @@
 - (UIButton *)fullBtn {
     if ( _fullBtn ) return _fullBtn;
     _fullBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Full];
+    [_fullBtn setImageEdgeInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
     return _fullBtn;
 }
 
