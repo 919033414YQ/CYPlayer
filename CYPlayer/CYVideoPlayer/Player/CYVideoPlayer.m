@@ -101,30 +101,6 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 
 
 #pragma mark - State
-
-@interface CYVideoPlayer (State)
-
-@property (nonatomic, assign, readwrite, getter=isHiddenControl) BOOL hideControl;
-@property (nonatomic, assign, readwrite, getter=isLockedScrren) BOOL lockScreen;
-
-- (void)_cancelDelayHiddenControl;
-
-- (void)_delayHiddenControl;
-
-- (void)_prepareState;
-
-- (void)_playState;
-
-- (void)_pauseState;
-
-- (void)_playEndState;
-
-- (void)_playFailedState;
-
-- (void)_unknownState;
-
-@end
-
 @implementation CYVideoPlayer (State)
 
 - (CYTimerControl *)timerControl {

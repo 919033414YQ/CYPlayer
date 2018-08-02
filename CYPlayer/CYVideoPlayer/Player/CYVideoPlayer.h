@@ -76,6 +76,32 @@ typedef void(^LockScreen)(BOOL isLock);
 @end
 
 
+#pragma mark - State
+
+@interface CYVideoPlayer (State)
+
+@property (nonatomic, assign, readwrite, getter=isHiddenControl) BOOL hideControl;
+@property (nonatomic, assign, readwrite, getter=isLockedScrren) BOOL lockScreen;
+
+- (void)_cancelDelayHiddenControl;
+
+- (void)_delayHiddenControl;
+
+- (void)_prepareState;
+
+- (void)_playState;
+
+- (void)_pauseState;
+
+- (void)_playEndState;
+
+- (void)_playFailedState;
+
+- (void)_unknownState;
+
+@end
+
+
 #pragma mark - 
 
 @interface CYVideoPlayer (Setting)

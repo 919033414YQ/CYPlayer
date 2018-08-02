@@ -1,13 +1,9 @@
-
-$dir = File.dirname(__FILE__)
-$dir = $dir + "/CYPlayer/CYPlayer/**" 
-
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.2"
+s.version      = "1.4.3"
 s.summary      = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS'
-s.description  = 'https://github.com/yellowei/CYPlayer'
+s.description  = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
 s.license      = { :type => "MIT", :file => "LICENSE" }
 s.author             = { "yellowei" => "hw0521@vip.qq.com" }
