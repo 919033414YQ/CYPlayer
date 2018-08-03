@@ -806,6 +806,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     __weak typeof(self) _self = self;
     _gestureControl.triggerCondition = ^BOOL(CYPlayerGestureControl * _Nonnull control, UIGestureRecognizer *gesture) {
         __strong typeof(_self) self = _self;
+        if ([self.control_delegate respondsToSelector:@selector(CYVideoPlayer:triggerCondition:gesture:)]) {
+            return [self.control_delegate CYVideoPlayer:self triggerCondition:control gesture:gesture];
+        }
         if ( !self ) return NO;
         if ( self.isLockedScrren ) return NO;
         CGPoint point = [gesture locationInView:gesture.view];
@@ -823,6 +826,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _gestureControl.singleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYVideoPlayer:singleTapped:)]) {
+            [self.control_delegate CYVideoPlayer:self singleTapped:control];
+        }
         _cyAnima(^{
             if ( !self.hiddenMoreSettingView ) {
                 self.hiddenMoreSettingView = YES;
@@ -834,11 +840,15 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 self.hideControl = !self.isHiddenControl;
             }
         });
+        
     };
     
     _gestureControl.doubleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYVideoPlayer:doubleTapped:)]) {
+            [self.control_delegate CYVideoPlayer:self doubleTapped:control];
+        }
         switch (self.state) {
             case CYVideoPlayerPlayState_Unknown:
             case CYVideoPlayerPlayState_Prepare:
@@ -863,6 +873,9 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _gestureControl.beganPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYVideoPlayer:beganPan:direction:location:)]) {
+            [self.control_delegate CYVideoPlayer:self beganPan:control direction:direction location:location];
+        }
         switch (direction) {
             case CYPanDirection_H: {
                 [self _pause];
@@ -904,11 +917,15 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             case CYPanDirection_Unknown:
                 break;
         }
+        
     };
     
     _gestureControl.changedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location, CGPoint translate) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYVideoPlayer:changedPan:direction:location:)]) {
+            [self.control_delegate CYVideoPlayer:self changedPan:control direction:direction location:location];
+        }
         switch (direction) {
             case CYPanDirection_H: {
                 self.controlView.draggingProgressView.progress += translate.x * 0.00003;//进度手势灵敏度
@@ -934,9 +951,13 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             default:
                 break;
         }
+        
     };
     
     _gestureControl.endedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
+        if ([_self.control_delegate respondsToSelector:@selector(CYVideoPlayer:endedPan:direction:location:)]) {
+            [_self.control_delegate CYVideoPlayer:_self endedPan:control direction:direction location:location];
+        }
         switch ( direction ) {
             case CYPanDirection_H:{
                 _cyAnima(^{
@@ -964,6 +985,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 break;
             case CYPanDirection_Unknown: break;
         }
+        
     };
 }
 

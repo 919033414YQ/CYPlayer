@@ -219,7 +219,18 @@ typedef void(^LockScreen)(BOOL isLock);
 @end
 
 
-#pragma mark -
+#pragma mark - CYVideoPlayer (Control)
+@protocol CYVideoPlayerControlDelegate <NSObject>
+
+@optional
+- (BOOL)CYVideoPlayer:(CYVideoPlayer *)player triggerCondition:(CYPlayerGestureControl *)control gesture:(UIGestureRecognizer *)gesture;
+- (void)CYVideoPlayer:(CYVideoPlayer *)player singleTapped:(CYPlayerGestureControl *)control;
+- (void)CYVideoPlayer:(CYVideoPlayer *)player doubleTapped:(CYPlayerGestureControl *)control;
+- (void)CYVideoPlayer:(CYVideoPlayer *)player beganPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+- (void)CYVideoPlayer:(CYVideoPlayer *)player changedPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+- (void)CYVideoPlayer:(CYVideoPlayer *)player endedPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+
+@end
 
 @interface CYVideoPlayer (Control)
 
@@ -231,6 +242,8 @@ typedef void(^LockScreen)(BOOL isLock);
  *  当返回播放界面时, 如果是我们自己调用`pause`, 则可以使用`play`, 使其继续播放.
  **/
 @property (nonatomic, assign, readonly) BOOL userPaused;
+
+@property (nonatomic, weak) id<CYVideoPlayerControlDelegate> control_delegate;
 
 - (BOOL)play;
 
