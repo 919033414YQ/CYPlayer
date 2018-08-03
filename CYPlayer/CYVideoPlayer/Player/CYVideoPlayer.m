@@ -1661,6 +1661,17 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     return self.userClickedPause;
 }
 
+- (id<CYVideoPlayerControlDelegate>)control_delegate
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setControl_delegate:(id<CYVideoPlayerControlDelegate>)control_delegate
+{
+    objc_setAssociatedObject(self, @selector(control_delegate), control_delegate, OBJC_ASSOCIATION_ASSIGN);
+}
+
+
 - (BOOL)play {
     self.suspend = NO;
     self.stopped = NO;
