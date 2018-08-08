@@ -15,8 +15,9 @@ s.requires_arc = true
 
 s.libraries = 'z', 'iconv', 'bz2'
 s.dependency 'Masonry'
-s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
-s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'YES' }
+#s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
+#s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'YES' }
+s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 
 
 s.subspec 'CYAttributesFactory' do |ss|
