@@ -33,7 +33,8 @@
                           @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
                           @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
                           @"rtmp://live.hkstv.hk.lxdns.com/live/hks",
-                          @"rtmp://rtmp.yayiguanjia.com/AppName/StreamName?auth_key=1533608675-0-0-4708840ac7649d449d643a25156f7be7"
+                          @"rtmp://rtmp.yayiguanjia.com/AppName/StreamName?auth_key=1533608675-0-0-4708840ac7649d449d643a25156f7be7",
+                          @"smb://192.168.31.217/Downloads/a.avi"
                           ];
         
     }

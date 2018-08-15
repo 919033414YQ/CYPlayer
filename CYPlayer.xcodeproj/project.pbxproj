@@ -78,6 +78,13 @@
 		0E2407ED20FE1631008BEAB5 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E2407A420FE1630008BEAB5 /* README.md */; };
 		0E2407F920FF1C97008BEAB5 /* RTSPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E2407F820FF1C97008BEAB5 /* RTSPViewController.m */; };
 		0E2407FC20FF1D1C008BEAB5 /* CYRtspPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */; };
+		0E2D3084212448B300D6763D /* FFmpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D3083212448B300D6763D /* FFmpeg.framework */; };
+		0E2D308E2124490C00D6763D /* libtevent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D30862124490C00D6763D /* libtevent.a */; };
+		0E2D308F2124490C00D6763D /* libwbclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D30872124490C00D6763D /* libwbclient.a */; };
+		0E2D30902124490C00D6763D /* libsmbclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D30892124490C00D6763D /* libsmbclient.a */; };
+		0E2D30912124490C00D6763D /* libtalloc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D308B2124490C00D6763D /* libtalloc.a */; };
+		0E2D30922124490C00D6763D /* libtdb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D308D2124490C00D6763D /* libtdb.a */; };
+		0E2D30942124493900D6763D /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D30932124493900D6763D /* libresolv.tbd */; };
 		0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E602107132D00DF4564 /* libiconv.tbd */; };
 		0E343E632107133A00DF4564 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E622107133A00DF4564 /* libbz2.tbd */; };
 		0E343E652107134900DF4564 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E642107134900DF4564 /* libz.tbd */; };
@@ -88,7 +95,6 @@
 		0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */; };
 		0ECD4C1D2111DFFB0078D24A /* CYAudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */; };
 		0ECD4C1E2111DFFB0078D24A /* CYPlayerDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */; };
-		0ECD4C212111E0340078D24A /* FFmpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ECD4C202111E0340078D24A /* FFmpeg.framework */; };
 		2A6AD4A2C0516D1E913FE4FE /* libPods-TestVideo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F82A6770E16FD3C855878832 /* libPods-TestVideo.a */; };
 		3287BA2CDF7FE8BAA695DA8D /* libPods-CYPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 99FA05E579685BD309A43463 /* libPods-CYPlayer.a */; };
 		84B261B31A46A0AF00C8CAA9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B21A46A0AF00C8CAA9 /* main.m */; };
@@ -256,6 +262,16 @@
 		0E2407F820FF1C97008BEAB5 /* RTSPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTSPViewController.m; sourceTree = "<group>"; };
 		0E2407FA20FF1D1C008BEAB5 /* CYRtspPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYRtspPlayer.m; sourceTree = "<group>"; };
 		0E2407FB20FF1D1C008BEAB5 /* CYRtspPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYRtspPlayer.h; sourceTree = "<group>"; };
+		0E2D3083212448B300D6763D /* FFmpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FFmpeg.framework; sourceTree = "<group>"; };
+		0E2D30862124490C00D6763D /* libtevent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtevent.a; sourceTree = "<group>"; };
+		0E2D30872124490C00D6763D /* libwbclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwbclient.a; sourceTree = "<group>"; };
+		0E2D30882124490C00D6763D /* libsmbclient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libsmbclient.h; sourceTree = "<group>"; };
+		0E2D30892124490C00D6763D /* libsmbclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsmbclient.a; sourceTree = "<group>"; };
+		0E2D308A2124490C00D6763D /* talloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = talloc.h; sourceTree = "<group>"; };
+		0E2D308B2124490C00D6763D /* libtalloc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtalloc.a; sourceTree = "<group>"; };
+		0E2D308C2124490C00D6763D /* talloc_stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = talloc_stack.h; sourceTree = "<group>"; };
+		0E2D308D2124490C00D6763D /* libtdb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtdb.a; sourceTree = "<group>"; };
+		0E2D30932124493900D6763D /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		0E343E602107132D00DF4564 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		0E343E622107133A00DF4564 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		0E343E642107134900DF4564 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -274,7 +290,6 @@
 		0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYAudioManager.m; sourceTree = "<group>"; };
 		0ECD4C1B2111DFFA0078D24A /* CYPlayerDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYPlayerDecoder.h; sourceTree = "<group>"; };
 		0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerDecoder.m; sourceTree = "<group>"; };
-		0ECD4C202111E0340078D24A /* FFmpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FFmpeg.framework; sourceTree = "<group>"; };
 		0ECD4C222111E0450078D24A /* CYLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYLogger.h; sourceTree = "<group>"; };
 		2ADA3809947CB08F543F3AB2 /* Pods-CYPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		3DB1B54C0CBE9E54921F0855 /* Pods-CYPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.release.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.release.xcconfig"; sourceTree = "<group>"; };
@@ -304,12 +319,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E2D30942124493900D6763D /* libresolv.tbd in Frameworks */,
+				0E2D30902124490C00D6763D /* libsmbclient.a in Frameworks */,
+				0E2D308E2124490C00D6763D /* libtevent.a in Frameworks */,
 				0E343E652107134900DF4564 /* libz.tbd in Frameworks */,
 				0E343E632107133A00DF4564 /* libbz2.tbd in Frameworks */,
+				0E2D308F2124490C00D6763D /* libwbclient.a in Frameworks */,
 				0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */,
+				0E2D30922124490C00D6763D /* libtdb.a in Frameworks */,
+				0E2D30912124490C00D6763D /* libtalloc.a in Frameworks */,
 				2A6AD4A2C0516D1E913FE4FE /* libPods-TestVideo.a in Frameworks */,
 				3287BA2CDF7FE8BAA695DA8D /* libPods-CYPlayer.a in Frameworks */,
-				0ECD4C212111E0340078D24A /* FFmpeg.framework in Frameworks */,
+				0E2D3084212448B300D6763D /* FFmpeg.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -707,6 +728,21 @@
 			path = CYBorderLineView;
 			sourceTree = "<group>";
 		};
+		0E2D30852124490C00D6763D /* Smbclient */ = {
+			isa = PBXGroup;
+			children = (
+				0E2D30862124490C00D6763D /* libtevent.a */,
+				0E2D30872124490C00D6763D /* libwbclient.a */,
+				0E2D30882124490C00D6763D /* libsmbclient.h */,
+				0E2D30892124490C00D6763D /* libsmbclient.a */,
+				0E2D308A2124490C00D6763D /* talloc.h */,
+				0E2D308B2124490C00D6763D /* libtalloc.a */,
+				0E2D308C2124490C00D6763D /* talloc_stack.h */,
+				0E2D308D2124490C00D6763D /* libtdb.a */,
+			);
+			path = Smbclient;
+			sourceTree = "<group>";
+		};
 		0E343E5F2106D96800DF4564 /* DEBUG */ = {
 			isa = PBXGroup;
 			children = (
@@ -725,7 +761,8 @@
 		0ECD4C1F2111E0250078D24A /* CYFrameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0ECD4C202111E0340078D24A /* FFmpeg.framework */,
+				0E2D30852124490C00D6763D /* Smbclient */,
+				0E2D3083212448B300D6763D /* FFmpeg.framework */,
 			);
 			path = CYFrameworks;
 			sourceTree = "<group>";
@@ -804,6 +841,7 @@
 		AA3CD3F92BA184082CBCD8BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0E2D30932124493900D6763D /* libresolv.tbd */,
 				0E343E642107134900DF4564 /* libz.tbd */,
 				0E343E622107133A00DF4564 /* libbz2.tbd */,
 				0E343E602107132D00DF4564 /* libiconv.tbd */,
@@ -1162,11 +1200,15 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/TestVideo",
 					"$(SRCROOT)/CYPlayer/CYFrameworks",
+					"$(PROJECT_DIR)/CYPlayer/CYFrameworks",
 				);
 				INFOPLIST_FILE = TestVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CYPlayer/CYFrameworks/Smbclient",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yellowei.www.-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1182,12 +1224,16 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/TestVideo",
 					"$(SRCROOT)/CYPlayer/CYFrameworks",
+					"$(PROJECT_DIR)/CYPlayer/CYFrameworks",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = "COCOAPODS=1";
 				INFOPLIST_FILE = TestVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CYPlayer/CYFrameworks/Smbclient",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yellowei.www.-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
