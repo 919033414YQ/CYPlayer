@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.4.3"
+s.version      = "1.4.5"
 s.summary      = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -19,6 +19,26 @@ s.dependency 'Masonry'
 #s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'YES' }
 s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 
+s.subspec 'CYSMBClient' do |ss|
+ss.source_files = 'CYPlayer/CYFrameworks/Smbclient/*.{h,m}'
+ss.vendored_libraries = "CYPlayer/CYFrameworks/Smbclient/*.a"
+ss.libraries = 'resolv'
+end
+
+# s.subspec 'CYFFmpeg' do |ss|
+# ss.source_files = 	'CYPlayer/CYFrameworks/FFmpeg.framework/Headers/*.{h}'
+# ss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
+# ss.public_header_files = "CYPlayer/CYFrameworks/FFmpeg.framework/Headers/*.{h}"
+# ss.dependency 'CYPlayer/CYSMBClient'
+# ss.libraries = 'z', 'iconv', 'bz2'
+# ss.frameworks  = "Foundation"
+# end
+
+# s.subspec 'CYTest' do |ss|
+# ss.source_files = 'CYPlayer/CYTest/*.{h,m}'
+# ss.dependency 'CYPlayer/CYSMBClient'
+# ss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
+# end
 
 s.subspec 'CYAttributesFactory' do |ss|
 ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
@@ -49,6 +69,7 @@ end
 #end
 
 end
+
 
 s.subspec 'CYPrompt' do |ss|
 ss.source_files = 'CYPlayer/CYPrompt/*.{h,m}'
@@ -96,6 +117,7 @@ ss.subspec 'Model' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
 sss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
+sss.dependency 'CYPlayer/CYSMBClient'
 end
 
 ss.subspec 'Resource' do |sss|

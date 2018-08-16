@@ -95,6 +95,7 @@
 		0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */; };
 		0ECD4C1D2111DFFB0078D24A /* CYAudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */; };
 		0ECD4C1E2111DFFB0078D24A /* CYPlayerDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */; };
+		0EEAC86A212568EB0017CF3B /* CYTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EEAC869212568EB0017CF3B /* CYTest.m */; };
 		2A6AD4A2C0516D1E913FE4FE /* libPods-TestVideo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F82A6770E16FD3C855878832 /* libPods-TestVideo.a */; };
 		3287BA2CDF7FE8BAA695DA8D /* libPods-CYPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 99FA05E579685BD309A43463 /* libPods-CYPlayer.a */; };
 		84B261B31A46A0AF00C8CAA9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B21A46A0AF00C8CAA9 /* main.m */; };
@@ -291,6 +292,8 @@
 		0ECD4C1B2111DFFA0078D24A /* CYPlayerDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYPlayerDecoder.h; sourceTree = "<group>"; };
 		0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerDecoder.m; sourceTree = "<group>"; };
 		0ECD4C222111E0450078D24A /* CYLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYLogger.h; sourceTree = "<group>"; };
+		0EEAC868212568EB0017CF3B /* CYTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYTest.h; sourceTree = "<group>"; };
+		0EEAC869212568EB0017CF3B /* CYTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYTest.m; sourceTree = "<group>"; };
 		2ADA3809947CB08F543F3AB2 /* Pods-CYPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.debug.xcconfig"; sourceTree = "<group>"; };
 		3DB1B54C0CBE9E54921F0855 /* Pods-CYPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.release.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.release.xcconfig"; sourceTree = "<group>"; };
 		843207C61A4B05F900FC9BAA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -347,6 +350,7 @@
 		0E2406FD20FE1630008BEAB5 /* CYPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				0EEAC867212568DE0017CF3B /* CYTest */,
 				0ECD4C1F2111E0250078D24A /* CYFrameworks */,
 				0E2406FE20FE1630008BEAB5 /* CYUIFactory */,
 				0E24070820FE1630008BEAB5 /* CYLoadingView */,
@@ -731,13 +735,13 @@
 		0E2D30852124490C00D6763D /* Smbclient */ = {
 			isa = PBXGroup;
 			children = (
+				0E2D30882124490C00D6763D /* libsmbclient.h */,
+				0E2D308A2124490C00D6763D /* talloc.h */,
+				0E2D308C2124490C00D6763D /* talloc_stack.h */,
 				0E2D30862124490C00D6763D /* libtevent.a */,
 				0E2D30872124490C00D6763D /* libwbclient.a */,
-				0E2D30882124490C00D6763D /* libsmbclient.h */,
 				0E2D30892124490C00D6763D /* libsmbclient.a */,
-				0E2D308A2124490C00D6763D /* talloc.h */,
 				0E2D308B2124490C00D6763D /* libtalloc.a */,
-				0E2D308C2124490C00D6763D /* talloc_stack.h */,
 				0E2D308D2124490C00D6763D /* libtdb.a */,
 			);
 			path = Smbclient;
@@ -765,6 +769,15 @@
 				0E2D3083212448B300D6763D /* FFmpeg.framework */,
 			);
 			path = CYFrameworks;
+			sourceTree = "<group>";
+		};
+		0EEAC867212568DE0017CF3B /* CYTest */ = {
+			isa = PBXGroup;
+			children = (
+				0EEAC868212568EB0017CF3B /* CYTest.h */,
+				0EEAC869212568EB0017CF3B /* CYTest.m */,
+			);
+			path = CYTest;
 			sourceTree = "<group>";
 		};
 		84B261A41A46A0AE00C8CAA9 = {
@@ -1062,6 +1075,7 @@
 				0E2407C920FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m in Sources */,
 				0E2407D220FE1631008BEAB5 /* Utilities.m in Sources */,
 				0E2407AD20FE1630008BEAB5 /* CYLabelSlider.m in Sources */,
+				0EEAC86A212568EB0017CF3B /* CYTest.m in Sources */,
 				0E5FA22D21003E24002A7597 /* MainViewController.m in Sources */,
 				0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */,
 				0ECD4C102111A33C0078D24A /* CYFFmpegPlayer.m in Sources */,
