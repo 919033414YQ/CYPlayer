@@ -81,6 +81,7 @@
     
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     vc.autoplay = YES;
+//    vc.generatPreviewImages = YES;
     [contentView addSubview:vc.view];
     
     [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -114,6 +115,13 @@
     [self.navigationController setNavigationBarHidden:YES];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self.navigationController setNavigationBarHidden:YES];
+    [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -122,6 +130,7 @@
 - (void)dealloc
 {
     [vc stop];
+    [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
 }
 
 /*

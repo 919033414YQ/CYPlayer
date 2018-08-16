@@ -608,6 +608,7 @@ CYSliderDelegate>
                         strongSelf->_generatedPreviewImageInterrupted = YES;
                         break;
                     }
+                    
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
                     __strong CYFFmpegPlayer *strongSelf2 = weakSelf;

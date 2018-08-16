@@ -809,6 +809,12 @@ static int interrupt_callback(void *ctx);
         };
         formatCtx->interrupt_callback = cb;
     }
+    else
+    {
+        formatCtx = avformat_alloc_context();
+        if (!formatCtx)
+            return cyPlayerErrorOpenFile;
+    }
     
 //    AVDictionary* options = NULL;
 //

@@ -98,7 +98,7 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     }
     else
     {
-        [cell setValue:_previewFrames[indexPath.item] forKey:@"frame"];
+        [cell setValue:_previewFrames[indexPath.item] forKey:@"videoFrame"];
     }
     return cell;
 }
