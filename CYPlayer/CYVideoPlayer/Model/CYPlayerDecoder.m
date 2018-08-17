@@ -961,9 +961,9 @@ static int interrupt_callback(void *ctx);
                                         0,
                                         NULL);
         
-        if (!swrContext ||
-            swr_init(swrContext)) {
-            
+        if (!swrContext) {
+//            ||
+//            swr_init(swrContext)
             if (swrContext)
             {
                 swr_free(&swrContext);

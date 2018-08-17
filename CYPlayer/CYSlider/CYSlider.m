@@ -310,7 +310,7 @@
             _isDragging = NO;
             self.thumbImageView.image = self.thumbnail_nor;
             [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
-                make.width.height.equalTo(@16);
+                make.width.height.equalTo(@10);
             }];
             if ( ![self.delegate respondsToSelector:@selector(sliderDidEndDragging:)] ) break;
             [self.delegate sliderDidEndDragging:self];
@@ -382,7 +382,7 @@
     [_thumbImageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_thumbImageView.superview);
         make.centerX.equalTo(_traceImageView.mas_trailing);
-        make.width.height.equalTo(@16);
+        make.width.height.equalTo(@10);
     }];
     return _thumbImageView;
 }

@@ -1052,7 +1052,7 @@ CYSliderDelegate>
         
         if (0 == leftFrames)
         {
-            if (_decoder.duration - _decoder.position <= 0.5)
+            if (_decoder.duration - _decoder.position <= 1.0)
             {
                 [self _itemPlayEnd];
                 return;
@@ -1475,6 +1475,8 @@ CYSliderDelegate>
 //                    make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
                     make.edges.equalTo(self.controlView.superview);
                 }];
+                //横屏按钮界面处理
+                self.controlView.bottomControlView.fullBtn.selected = YES;
             }
             else {
                 _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
@@ -1483,6 +1485,8 @@ CYSliderDelegate>
                 [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
+                //横屏按钮界面处理
+                self.controlView.bottomControlView.fullBtn.selected = NO;
             }
         });//_cyAnima(^{})
         if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);
@@ -1719,8 +1723,16 @@ CYSliderDelegate>
 }
 
 - (void)_refreshingTimeLabelWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
-    self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
-    self.controlView.bottomControlView.durationTimeLabel.text = _formatWithSec(duration);
+    if (currentTime > duration || duration == NSNotFound)
+    {
+        self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
+        self.controlView.bottomControlView.durationTimeLabel.text = @"LIVE?";
+    }
+    else
+    {
+        self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
+        self.controlView.bottomControlView.durationTimeLabel.text = _formatWithSec(duration);
+    }
 }
 
 - (void)_refreshingTimeProgressSliderWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
@@ -2282,13 +2294,13 @@ CYSliderDelegate>
     CYVideoPlayerSettings *setting = self.settings;
     //    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
     //    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
-    setting.backBtnImage = [UIImage imageNamed:@"btn_navi_return_title1"];
-    setting.moreBtnImage = [UIImage imageNamed:@"btn_navi_share"];
+    setting.backBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_back"];
+    setting.moreBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_more"];
     setting.previewBtnImage = [CYVideoPlayerResources imageNamed:@""];
     setting.playBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_play"];
     setting.pauseBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_pause"];
-    setting.fullBtnImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
-    setting.fullBtnImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen"];
+    setting.fullBtnImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen_nor"];
+    setting.fullBtnImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_fullscreen_sel"];
     setting.lockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_lock"];
     setting.unlockBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_unlock"];
     setting.replayBtnImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_replay"];
@@ -2297,8 +2309,8 @@ CYSliderDelegate>
     setting.progress_bufferColor = [UIColor colorWithWhite:0 alpha:0.2];
     setting.progress_trackColor =  [UIColor whiteColor];
     //    setting.progress_thumbImage = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail"];
-    setting.progress_thumbImage_nor = [UIImage imageNamed:@"cy_video_player_thumbnail_nor"];
-    setting.progress_thumbImage_sel = [UIImage imageNamed:@"cy_video_player_thumbnail_sel"];
+    setting.progress_thumbImage_nor = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_nor"];
+    setting.progress_thumbImage_sel = [CYVideoPlayerResources imageNamed:@"cy_video_player_thumbnail_sel"];
     setting.progress_traceHeight = 3;
     setting.more_traceColor = CYColorWithHEX(0x00c5b5);
     setting.more_trackColor = [UIColor whiteColor];

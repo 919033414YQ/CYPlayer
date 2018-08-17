@@ -14,4 +14,6 @@
 
 + (NSString *)bundleComponentWithImageName:(NSString *)imageName;
 
++ (NSBundle *)bundle;
+
 @end

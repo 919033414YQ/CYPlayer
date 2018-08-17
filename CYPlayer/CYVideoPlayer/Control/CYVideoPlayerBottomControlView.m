@@ -157,7 +157,7 @@
 - (UIButton *)fullBtn {
     if ( _fullBtn ) return _fullBtn;
     _fullBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Full];
-    [_fullBtn setImageEdgeInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
+    [_fullBtn setImageEdgeInsets:UIEdgeInsetsMake(14, 14, 14, 14)];
     return _fullBtn;
 }
 
