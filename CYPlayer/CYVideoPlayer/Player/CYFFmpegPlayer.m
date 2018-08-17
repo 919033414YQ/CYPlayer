@@ -500,9 +500,10 @@ CYSliderDelegate>
     _disableUpdateHUD = YES;
     [self enableAudio:NO];
     
+    __weak typeof(&*self)weakSelf = self;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [self updatePosition:position playMode:playMode];
+        [weakSelf updatePosition:position playMode:playMode];
     });
 }
 
@@ -539,6 +540,11 @@ CYSliderDelegate>
         [self updatePosition:n.floatValue playMode:YES];
     else
         [self play];
+}
+
+- (void)rePlay
+{
+    [self play];
 }
 
 - (void)setGeneratedPreviewImagesDecoder: (CYPlayerDecoder *) decoder
@@ -1052,13 +1058,15 @@ CYSliderDelegate>
         
         if (0 == leftFrames)
         {
-            if (_decoder.duration - _decoder.position <= 1.0)
-            {
-                [self _itemPlayEnd];
-                return;
-            }
-            
             if (_decoder.isEOF) {
+                if (_decoder.duration - _decoder.position <= 1.0 &&
+                    _decoder.duration > 0 &&
+                    _decoder.duration != NSNotFound)
+                {
+                    [self _itemPlayEnd];
+                    return;
+                }
+                
                 [self _itemPlayFailed];
 //                [self enableAudio:NO];
                 return;
@@ -1277,6 +1285,7 @@ CYSliderDelegate>
     [self freeBufferedFrames];
     
     position = MIN(_decoder.duration - 1, MAX(0, position));
+    position = MAX(position, 0);
     
     __weak CYFFmpegPlayer *weakSelf = self;
     
@@ -1862,7 +1871,7 @@ CYSliderDelegate>
             _cyAnima(^{
                 if ( !self.isLockedScrren ) self.hideControl = NO;
             });
-            [self play];
+            [self rePlay];
         }
             break;
         case CYVideoPlayControlViewTag_Preview: {
