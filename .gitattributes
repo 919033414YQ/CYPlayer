@@ -1,2 +1,8 @@
-CYPlayer/CYFrameworks/FFmpeg.framework/FFmpeg filter=lfs diff=lfs merge=lfs -text
 CYPlayer/CYFrameworks/Smbclient/libsmbclient.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavcodec.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavformat.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/fdk-aac-ios/lib/libfdk-aac.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libswscale.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavutil.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavfilter.a filter=lfs diff=lfs merge=lfs -text
+CYPlayer/CYFrameworks/x264-iOS/lib/libx264.a filter=lfs diff=lfs merge=lfs -text

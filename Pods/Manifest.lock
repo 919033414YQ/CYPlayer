@@ -1,16 +1,22 @@
 PODS:
   - Masonry (1.1.0)
+  - NSLogger (1.9.0):
+    - NSLogger/ObjC (= 1.9.0)
+  - NSLogger/ObjC (1.9.0)
 
 DEPENDENCIES:
   - Masonry
+  - NSLogger
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Masonry
+    - NSLogger
 
 SPEC CHECKSUMS:
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  NSLogger: 9f8f5ab017eb34d1a138f4905dc7fb8e9a0e3186
 
-PODFILE CHECKSUM: c7bb52b4da69817d0b9dc2f1f7d289e22a423ed7
+PODFILE CHECKSUM: 7cabb9e552725ce73b6bb42e4ec54bd1b3352bda
 
 COCOAPODS: 1.5.3

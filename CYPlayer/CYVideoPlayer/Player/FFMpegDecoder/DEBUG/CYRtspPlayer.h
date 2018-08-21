@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <FFmpeg/ffmpeg.h>
+#import "ffmpeg.h"
 
 @interface CYRtspPlayer : NSObject
 

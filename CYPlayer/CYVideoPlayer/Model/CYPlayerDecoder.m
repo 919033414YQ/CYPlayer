@@ -11,7 +11,7 @@
 
 #import "CYPlayerDecoder.h"
 #import <Accelerate/Accelerate.h>
-#import <FFmpeg/FFmpeg.h>
+#import "ffmpeg.h"
 #import "CYAudioManager.h"
 #import "CYLogger.h"
 
@@ -402,6 +402,7 @@ static int interrupt_callback(void *ctx);
 
 @interface CYPlayerDecoder () {
     
+    AVDictionary        *_options;
     AVFormatContext     *_formatCtx;
 	AVCodecContext      *_videoCodecCtx;
     AVCodecContext      *_audioCodecCtx;
@@ -708,7 +709,7 @@ static int interrupt_callback(void *ctx);
 
 + (void)initialize
 {
-    av_log_set_callback(FFLog);
+//    av_log_set_callback(FFLog);
     av_register_all();
     avformat_network_init();
 }
@@ -816,12 +817,10 @@ static int interrupt_callback(void *ctx);
             return cyPlayerErrorOpenFile;
     }
     
-//    AVDictionary* options = NULL;
-//
-//    av_dict_set(&options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-//    av_dict_set(&options, "stimeout", "3000000", 0);//设置超时3秒
+    av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
+    av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
     
-    if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, NULL) < 0) {
+    if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
         if (formatCtx)
             avformat_free_context(formatCtx);
@@ -961,9 +960,8 @@ static int interrupt_callback(void *ctx);
                                         0,
                                         NULL);
         
-        if (!swrContext) {
-//            ||
-//            swr_init(swrContext)
+        if (!swrContext ||
+            swr_init(swrContext)) {//swrContext在swr_convert之前必须初始化
             if (swrContext)
             {
                 swr_free(&swrContext);
@@ -1074,6 +1072,11 @@ static int interrupt_callback(void *ctx);
         
         avformat_close_input(&_formatCtx);
         _formatCtx = NULL;
+    }
+    
+    if (_options)
+    {
+        av_dict_free(&_options);
     }
     
     _interruptCallback = nil;
@@ -1282,7 +1285,7 @@ static int interrupt_callback(void *ctx);
         
         const int bufSize = av_samples_get_buffer_size(NULL,
                                                        audioManager.numOutputChannels,
-                                                       _audioFrame->nb_samples * ratio,
+                                                       (int)(_audioFrame->nb_samples * ratio),
                                                        AV_SAMPLE_FMT_S16,
                                                        1);
         
@@ -1295,7 +1298,7 @@ static int interrupt_callback(void *ctx);
         
         numFrames = swr_convert(_swrContext,
                                 outbuf,
-                                _audioFrame->nb_samples * ratio,
+                                (int)(_audioFrame->nb_samples * ratio),
                                 (const uint8_t **)_audioFrame->data,
                                 _audioFrame->nb_samples);
         

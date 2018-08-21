@@ -7,6 +7,7 @@ target 'CYPlayer' do
 
 
   pod 'Masonry'
+  pod 'NSLogger'
 #  pod 'FFmpeg-Decoder'
 #  pod 'AFNetworking','~>3.0'
 # pod 'CYUIFactory',git: 'https://github.com/yellowei/CYUIFactory'
