@@ -24,7 +24,7 @@
  * swscale version macros
  */
 
-#include "libavutil/version.h"
+#include "version.h"
 
 #define LIBSWSCALE_VERSION_MAJOR   4
 #define LIBSWSCALE_VERSION_MINOR   8

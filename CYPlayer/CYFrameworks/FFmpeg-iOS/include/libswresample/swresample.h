@@ -120,11 +120,11 @@
  */
 
 #include <stdint.h>
-#include "libavutil/channel_layout.h"
-#include "libavutil/frame.h"
-#include "libavutil/samplefmt.h"
+#include "channel_layout.h"
+#include "frame.h"
+#include "samplefmt.h"
 
-#include "libswresample/version.h"
+#include "version.h"
 
 /**
  * @name Option constants
