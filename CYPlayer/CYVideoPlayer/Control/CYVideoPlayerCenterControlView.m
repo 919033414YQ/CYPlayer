@@ -57,10 +57,12 @@
     [self.containerView addSubview:self.replayBtn];
     [_failedBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
+        make.width.equalTo(_failedBtn.mas_height);
     }];
     
     [_replayBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
+        make.width.equalTo(_replayBtn.mas_height);
     }];
 }
 
@@ -76,6 +78,9 @@
     if ( _replayBtn ) return _replayBtn;
     _replayBtn = [CYUIButtonFactory buttonWithImageName:@"" target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Replay];
     _replayBtn.titleLabel.numberOfLines = 0;
+    _replayBtn.layer.cornerRadius = 2.0;
+    _replayBtn.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
+    _replayBtn.clipsToBounds = YES;
     return _replayBtn;
 }
 @end

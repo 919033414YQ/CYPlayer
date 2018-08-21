@@ -2136,6 +2136,7 @@ CYSliderDelegate>
     _cyHiddenViews(@[
                      self.controlView.bottomControlView.playBtn,
                      self.controlView.centerControlView.replayBtn,
+                     self.controlView.centerControlView.failedBtn
                      ]);
     
     self.state = CYFFmpegPlayerPlayState_Playing;

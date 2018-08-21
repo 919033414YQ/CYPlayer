@@ -252,8 +252,16 @@ static NSArray *collectStreams(AVFormatContext *formatCtx, enum AVMediaType code
 {
     NSMutableArray *ma = [NSMutableArray array];
     for (NSInteger i = 0; i < formatCtx->nb_streams; ++i)
-        if (codecType == formatCtx->streams[i]->codec->codec_type)
+    {
+        AVStream * video_Stream      = formatCtx->streams[i];
+        AVCodecContext *codecCtx = avcodec_alloc_context3(NULL);
+        avcodec_parameters_to_context(codecCtx, video_Stream->codecpar);
+        if (codecType == codecCtx->codec_type)
+        {
             [ma addObject: [NSNumber numberWithInteger: i]];
+        }
+        avcodec_free_context(&codecCtx);
+    }
     return [ma copy];
 }
 
@@ -580,7 +588,7 @@ static int interrupt_callback(void *ctx);
             
             if (_formatCtx->bit_rate) {
                 
-                [md setValue: [NSNumber numberWithInt:_formatCtx->bit_rate]
+                [md setValue: [NSNumber numberWithInt:(int)(_formatCtx->bit_rate)]
                       forKey: @"bitrate"];
             }
             
