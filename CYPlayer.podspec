@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.5.0"
+s.version      = "1.4.7"
 s.summary      = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. This FFmpeg is a framework build for iOS. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -15,11 +15,11 @@ s.frameworks  = "UIKit", "Foundation"
 s.requires_arc = true
 
 s.dependency 'Masonry'
-# s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
+# s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 # s.pod_target_xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 
-s.user_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer"', 'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer"', 'ENABLE_BITCODE' => 'YES' }
-s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(SRCROOT)/CYPlayer"', 'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer"', 'ENABLE_BITCODE' => 'YES' }
+s.user_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"', 'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' }
+s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"', 'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' }
 
 # s.subspec 'CYTest' do |ss|
 # ss.source_files = 'CYPlayer/CYTest/*.{h}'
@@ -58,7 +58,7 @@ ss.dependency 'CYPlayer/CYfdkAAC'
 ss.dependency 'CYPlayer/CYx264'
 ss.libraries = 'resolv', 'z', 'iconv', 'bz2'
 ss.frameworks  = "VideoToolbox", "CoreMedia","AudioToolbox"
-# ss.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include"' }
+ss.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer/CYFrameworks/FFmpeg-iOS/include"' }
 end
 
 # s.subspec 'CYFFmpeg' do |ss|
@@ -154,7 +154,7 @@ sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
 # sss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
 sss.dependency 'CYPlayer/CYFFmpeg'
-sss.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include"' }
+# sss.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include"' }
 end
 
 ss.subspec 'Resource' do |sss|

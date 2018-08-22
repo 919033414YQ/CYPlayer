@@ -889,7 +889,7 @@ typedef struct AVStream {
     /**
      * @deprecated use the codecpar struct instead
      */
-    attribute_deprecated
+    //attribute_deprecated
     AVCodecContext *codec;
 #endif
     void *priv_data;
@@ -898,7 +898,7 @@ typedef struct AVStream {
     /**
      * @deprecated this field is unused
      */
-    attribute_deprecated
+    //attribute_deprecated
     struct AVFrac pts;
 #endif
 
@@ -1865,7 +1865,7 @@ typedef struct AVFormatContext {
      *
      * @deprecated Use io_open and io_close.
      */
-    attribute_deprecated
+    //attribute_deprecated
     int (*open_cb)(struct AVFormatContext *s, AVIOContext **p, const char *url, int flags, const AVIOInterruptCB *int_cb, AVDictionary **options);
 #endif
 
@@ -1939,8 +1939,8 @@ void      av_format_set_opaque(AVFormatContext *s, void *opaque);
 av_format_control_message av_format_get_control_message_cb(const AVFormatContext *s);
 void      av_format_set_control_message_cb(AVFormatContext *s, av_format_control_message callback);
 #if FF_API_OLD_OPEN_CALLBACKS
-attribute_deprecated AVOpenCallback av_format_get_open_cb(const AVFormatContext *s);
-attribute_deprecated void av_format_set_open_cb(AVFormatContext *s, AVOpenCallback callback);
+//attribute_deprecated AVOpenCallback av_format_get_open_cb(const AVFormatContext *s);
+//attribute_deprecated void av_format_set_open_cb(AVFormatContext *s, AVOpenCallback callback);
 #endif
 
 /**
@@ -2227,7 +2227,7 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
  */
 int avformat_open_input(AVFormatContext **ps, const char *url, AVInputFormat *fmt, AVDictionary **options);
 
-attribute_deprecated
+//attribute_deprecated
 int av_demuxer_open(AVFormatContext *ic);
 
 /**
@@ -2966,7 +2966,7 @@ int avformat_queue_attached_pictures(AVFormatContext *s);
  * @return  >=0 on success;
  *          AVERROR code on failure
  */
-attribute_deprecated
+//attribute_deprecated
 int av_apply_bitstream_filters(AVCodecContext *codec, AVPacket *pkt,
                                AVBitStreamFilterContext *bsfc);
 #endif

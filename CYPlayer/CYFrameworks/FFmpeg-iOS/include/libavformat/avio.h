@@ -573,7 +573,7 @@ int avio_feof(AVIOContext *s);
 /**
  * @deprecated use avio_feof()
  */
-attribute_deprecated
+//attribute_deprecated
 int url_feof(AVIOContext *s);
 #endif
 
