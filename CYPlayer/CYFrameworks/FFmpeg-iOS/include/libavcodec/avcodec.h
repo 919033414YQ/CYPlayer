@@ -1704,7 +1704,7 @@ typedef struct AVPacket {
      * for Matroska subtitles, whose duration values could overflow when the
      * duration field was still an int.
      */
-    //attribute_deprecated
+    attribute_deprecated
     int64_t convergence_duration;
 #endif
 } AVPacket;
@@ -1772,7 +1772,7 @@ typedef struct AVCodecContext {
     /**
      * @deprecated this field is not used for anything in libavcodec
      */
-    //attribute_deprecated
+    attribute_deprecated
     char             codec_name[32];
 #endif
     enum AVCodecID     codec_id; /* see AV_CODEC_ID_xxx */
@@ -1796,7 +1796,7 @@ typedef struct AVCodecContext {
     /**
      * @deprecated this field is unused
      */
-    //attribute_deprecated
+    attribute_deprecated
     unsigned int stream_codec_tag;
 #endif
 
@@ -1993,7 +1993,7 @@ typedef struct AVCodecContext {
      * This option does nothing
      * @deprecated use codec private options instead
      */
-    //attribute_deprecated int me_method;
+    attribute_deprecated int me_method;
 #endif
 
     /**
@@ -2057,13 +2057,13 @@ typedef struct AVCodecContext {
 
 #if FF_API_RC_STRATEGY
     /** @deprecated use codec private option instead */
-    //attribute_deprecated int rc_strategy;
+    attribute_deprecated int rc_strategy;
 #define FF_RC_STRATEGY_XVID 1
 #endif
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int b_frame_strategy;
 #endif
 
@@ -2084,7 +2084,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int mpeg_quant;
 #endif
 
@@ -2148,7 +2148,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
      int prediction_method;
 #define FF_PRED_LEFT   0
 #define FF_PRED_PLANE  1
@@ -2229,7 +2229,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int pre_me;
 #endif
 
@@ -2264,7 +2264,7 @@ typedef struct AVCodecContext {
      * - decoding: Set by decoder.
      * @deprecated Deprecated in favor of AVSideData
      */
-    //attribute_deprecated int dtg_active_format;
+    attribute_deprecated int dtg_active_format;
 #define FF_DTG_AFD_SAME         8
 #define FF_DTG_AFD_4_3          9
 #define FF_DTG_AFD_16_9         10
@@ -2287,13 +2287,13 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private option instead
      */
-    //attribute_deprecated int intra_quant_bias;
+    attribute_deprecated int intra_quant_bias;
 #define FF_DEFAULT_QUANT_BIAS 999999
 
     /**
      * @deprecated use encoder private option instead
      */
-    //attribute_deprecated int inter_quant_bias;
+    attribute_deprecated int inter_quant_bias;
 #endif
 
     /**
@@ -2313,7 +2313,7 @@ typedef struct AVCodecContext {
      * - decoding: set by decoder
      * @deprecated XvMC doesn't need it anymore.
      */
-    //attribute_deprecated int xvmc_acceleration;
+    attribute_deprecated int xvmc_acceleration;
 #endif /* FF_API_XVMC */
 
     /**
@@ -2342,11 +2342,11 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int scenechange_threshold;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int noise_reduction;
 #endif
 
@@ -2354,13 +2354,13 @@ typedef struct AVCodecContext {
     /**
      * @deprecated this field is unused
      */
-    //attribute_deprecated
+    attribute_deprecated
     int me_threshold;
 
     /**
      * @deprecated this field is unused
      */
-    //attribute_deprecated
+    attribute_deprecated
     int mb_threshold;
 #endif
 
@@ -2389,7 +2389,7 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     float border_masking;
 #endif
 
@@ -2411,7 +2411,7 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     int me_penalty_compensation;
 #endif
 
@@ -2423,7 +2423,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int brd_scale;
 #endif
 
@@ -2443,7 +2443,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int chromaoffset;
 #endif
 
@@ -2453,7 +2453,7 @@ typedef struct AVCodecContext {
      * - encoding: Set by user.
      * - decoding: unused
      */
-    //attribute_deprecated int scenechange_factor;
+    attribute_deprecated int scenechange_factor;
 #endif
 
     /**
@@ -2465,7 +2465,7 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int b_sensitivity;
 #endif
 
@@ -2690,7 +2690,7 @@ typedef struct AVCodecContext {
      * - encoding: unused
      * - decoding: set by the caller before avcodec_open2().
      */
-    //attribute_deprecated
+    attribute_deprecated
     int refcounted_frames;
 
     /* - encoding parameters */
@@ -2722,12 +2722,12 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     float rc_qsquish;
 
-    //attribute_deprecated
+    attribute_deprecated
     float rc_qmod_amp;
-    //attribute_deprecated
+    attribute_deprecated
     int rc_qmod_freq;
 #endif
 
@@ -2750,7 +2750,7 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     const char *rc_eq;
 #endif
 
@@ -2772,10 +2772,10 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     float rc_buffer_aggressivity;
 
-    //attribute_deprecated
+    attribute_deprecated
     float rc_initial_cplx;
 #endif
 
@@ -2811,13 +2811,13 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     int coder_type;
 #endif /* FF_API_CODER_TYPE */
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int context_model;
 #endif
 
@@ -2825,31 +2825,31 @@ typedef struct AVCodecContext {
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     int lmin;
 
     /**
      * @deprecated use encoder private options instead
      */
-    //attribute_deprecated
+    attribute_deprecated
     int lmax;
 #endif
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int frame_skip_threshold;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int frame_skip_factor;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int frame_skip_exp;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int frame_skip_cmp;
 #endif /* FF_API_PRIVATE_OPT */
 
@@ -2862,15 +2862,15 @@ typedef struct AVCodecContext {
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int min_prediction_order;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int max_prediction_order;
 
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int64_t timecode_frame_start;
 #endif
 
@@ -2884,13 +2884,13 @@ typedef struct AVCodecContext {
     /* with a Start Code (it should). H.263 does.   */
     /* mb_nb contains the number of macroblocks     */
     /* encoded in the RTP payload.                  */
-    //attribute_deprecated
+    attribute_deprecated
     void (*rtp_callback)(struct AVCodecContext *avctx, void *data, int size, int mb_nb);
 #endif
 
 #if FF_API_PRIVATE_OPT
     /** @deprecated use encoder private options instead */
-    //attribute_deprecated
+    attribute_deprecated
     int rtp_payload_size;   /* The size of the RTP payload: the coder will  */
                             /* do its best to deliver a chunk with size     */
                             /* below rtp_payload_size, the chunk will start */
@@ -2901,25 +2901,25 @@ typedef struct AVCodecContext {
 
 #if FF_API_STAT_BITS
     /* statistics, used for 2-pass encoding */
-    //attribute_deprecated
+    attribute_deprecated
     int mv_bits;
-    //attribute_deprecated
+    attribute_deprecated
     int header_bits;
-    //attribute_deprecated
+    attribute_deprecated
     int i_tex_bits;
-    //attribute_deprecated
+    attribute_deprecated
     int p_tex_bits;
-    //attribute_deprecated
+    attribute_deprecated
     int i_count;
-    //attribute_deprecated
+    attribute_deprecated
     int p_count;
-    //attribute_deprecated
+    attribute_deprecated
     int skip_count;
-    //attribute_deprecated
+    attribute_deprecated
     int misc_bits;
 
     /** @deprecated this field is unused */
-    //attribute_deprecated
+    attribute_deprecated
     int frame_bits;
 #endif
 
@@ -3180,7 +3180,7 @@ typedef struct AVCodecContext {
      *
      * @deprecated use the quality factor packet side data instead
      */
-    //attribute_deprecated AVFrame *coded_frame;
+    attribute_deprecated AVFrame *coded_frame;
 #endif
 
     /**
@@ -3401,7 +3401,7 @@ typedef struct AVCodecContext {
      * @deprecated use the 'error_rate' private AVOption of the mpegvideo
      * encoders
      */
-    //attribute_deprecated
+    attribute_deprecated
     int error_rate;
 #endif
 
@@ -3414,7 +3414,7 @@ typedef struct AVCodecContext {
      * @deprecated this value is now exported as a part of
      * AV_PKT_DATA_CPB_PROPERTIES packet side data
      */
-    //attribute_deprecated
+    attribute_deprecated
     uint64_t vbv_delay;
 #endif
 
@@ -3429,7 +3429,7 @@ typedef struct AVCodecContext {
      * @deprecated this field disables the default behaviour and
      *             it is kept only for compatibility.
      */
-    //attribute_deprecated
+    attribute_deprecated
     int side_data_only_packets;
 #endif
 
@@ -4059,9 +4059,9 @@ typedef struct AVHWAccel {
  * @deprecated use AVFrame or imgutils functions instead
  */
 typedef struct AVPicture {
-    //attribute_deprecated
+    attribute_deprecated
     uint8_t *data[AV_NUM_DATA_POINTERS];    ///< pointers to the image data planes
-    //attribute_deprecated
+    attribute_deprecated
     int linesize[AV_NUM_DATA_POINTERS];     ///< number of bytes per line
 } AVPicture;
 
@@ -4101,7 +4101,7 @@ typedef struct AVSubtitleRect {
     /**
      * @deprecated unused
      */
-    //attribute_deprecated
+    attribute_deprecated
     AVPicture pict;
 #endif
     /**
@@ -4408,7 +4408,7 @@ const AVClass *avcodec_get_subtitle_rect_class(void);
  * avcodec_parameters_from_context() / avcodec_parameters_to_context()
  * functions.
  */
-//attribute_deprecated
+attribute_deprecated
 int avcodec_copy_context(AVCodecContext *dest, const AVCodecContext *src);
 #endif
 
@@ -4617,7 +4617,7 @@ int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size);
  *
  * @deprecated Use av_packet_ref
  */
-//attribute_deprecated
+attribute_deprecated
 int av_dup_packet(AVPacket *pkt);
 /**
  * Copy packet, including contents
@@ -4626,7 +4626,7 @@ int av_dup_packet(AVPacket *pkt);
  *
  * @deprecated Use av_packet_ref
  */
-//attribute_deprecated
+attribute_deprecated
 int av_copy_packet(AVPacket *dst, const AVPacket *src);
 
 /**
@@ -4636,7 +4636,7 @@ int av_copy_packet(AVPacket *dst, const AVPacket *src);
  *
  * @deprecated Use av_packet_copy_props
  */
-//attribute_deprecated
+attribute_deprecated
 int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
 
 /**
@@ -4646,7 +4646,7 @@ int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
  *
  * @param pkt packet to free
  */
-//attribute_deprecated
+attribute_deprecated
 void av_free_packet(AVPacket *pkt);
 #endif
 /**
@@ -4699,10 +4699,10 @@ uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType 
                                  int *size);
 
 #if FF_API_MERGE_SD_API
-//attribute_deprecated
+attribute_deprecated
 int av_packet_merge_side_data(AVPacket *pkt);
 
-//attribute_deprecated
+attribute_deprecated
 int av_packet_split_side_data(AVPacket *pkt);
 #endif
 
@@ -4842,7 +4842,7 @@ int avcodec_default_get_buffer2(AVCodecContext *s, AVFrame *frame, int flags);
  * @deprecated CODEC_FLAG_EMU_EDGE is deprecated, so this function is no longer
  * needed
  */
-//attribute_deprecated
+attribute_deprecated
 unsigned avcodec_get_edge_width(void);
 #endif
 
@@ -4940,7 +4940,7 @@ enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
  *
 * @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
  */
-//attribute_deprecated
+attribute_deprecated
 int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
                           int *got_frame_ptr, const AVPacket *avpkt);
 
@@ -4989,7 +4989,7 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  *
  * @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
  */
-//attribute_deprecated
+attribute_deprecated
 int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
                          int *got_picture_ptr,
                          const AVPacket *avpkt);
@@ -5219,7 +5219,7 @@ typedef struct AVCodecParserContext {
     /**
      * @deprecated unused
      */
-    //attribute_deprecated
+    attribute_deprecated
     int64_t convergence_duration;
 #endif
 
@@ -5465,7 +5465,7 @@ AVCodec *avcodec_find_encoder_by_name(const char *name);
  *
  * @deprecated use avcodec_send_frame()/avcodec_receive_packet() instead
  */
-//attribute_deprecated
+attribute_deprecated
 int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
                           const AVFrame *frame, int *got_packet_ptr);
 
@@ -5504,7 +5504,7 @@ int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
  *
  * @deprecated use avcodec_send_frame()/avcodec_receive_packet() instead
  */
-//attribute_deprecated
+attribute_deprecated
 int avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt,
                           const AVFrame *frame, int *got_packet_ptr);
 
@@ -5545,7 +5545,7 @@ typedef struct ReSampleContext ReSampleContext;
  * @param cutoff           cutoff frequency, 1.0 corresponds to half the output sampling rate
  * @return allocated ReSampleContext, NULL if error occurred
  */
-//attribute_deprecated
+attribute_deprecated
 ReSampleContext *av_audio_resample_init(int output_channels, int input_channels,
                                         int output_rate, int input_rate,
                                         enum AVSampleFormat sample_fmt_out,
@@ -5553,7 +5553,7 @@ ReSampleContext *av_audio_resample_init(int output_channels, int input_channels,
                                         int filter_length, int log2_phase_count,
                                         int linear, double cutoff);
 
-//attribute_deprecated
+attribute_deprecated
 int audio_resample(ReSampleContext *s, short *output, short *input, int nb_samples);
 
 /**
@@ -5562,7 +5562,7 @@ int audio_resample(ReSampleContext *s, short *output, short *input, int nb_sampl
  * @param s a non-NULL pointer to a resample context previously
  *          created with av_audio_resample_init()
  */
-//attribute_deprecated
+attribute_deprecated
 void audio_resample_close(ReSampleContext *s);
 
 
@@ -5575,7 +5575,7 @@ void audio_resample_close(ReSampleContext *s);
                  between the 2 closest, if 0 the closest will be used
  * @param cutoff cutoff frequency, 1.0 corresponds to half the output sampling rate
  */
-//attribute_deprecated
+attribute_deprecated
 struct AVResampleContext *av_resample_init(int out_rate, int in_rate, int filter_length, int log2_phase_count, int linear, double cutoff);
 
 /**
@@ -5587,7 +5587,7 @@ struct AVResampleContext *av_resample_init(int out_rate, int in_rate, int filter
  * @param update_ctx If this is 0 then the context will not be modified, that way several channels can be resampled with the same context.
  * @return the number of samples written in dst or -1 if an error occurred
  */
-//attribute_deprecated
+attribute_deprecated
 int av_resample(struct AVResampleContext *c, short *dst, short *src, int *consumed, int src_size, int dst_size, int update_ctx);
 
 
@@ -5603,9 +5603,9 @@ int av_resample(struct AVResampleContext *c, short *dst, short *src, int *consum
  * note, due to rounding the actual compensation might be slightly different,
  * especially if the compensation_distance is large and the in_rate used during init is small
  */
-//attribute_deprecated
+attribute_deprecated
 void av_resample_compensate(struct AVResampleContext *c, int sample_delta, int compensation_distance);
-//attribute_deprecated
+attribute_deprecated
 void av_resample_close(struct AVResampleContext *c);
 
 /**
@@ -5622,26 +5622,26 @@ void av_resample_close(struct AVResampleContext *c);
 /**
  * @deprecated unused
  */
-//attribute_deprecated
+attribute_deprecated
 int avpicture_alloc(AVPicture *picture, enum AVPixelFormat pix_fmt, int width, int height);
 
 /**
  * @deprecated unused
  */
-//attribute_deprecated
+attribute_deprecated
 void avpicture_free(AVPicture *picture);
 
 /**
  * @deprecated use av_image_fill_arrays() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 int avpicture_fill(AVPicture *picture, const uint8_t *ptr,
                    enum AVPixelFormat pix_fmt, int width, int height);
 
 /**
  * @deprecated use av_image_copy_to_buffer() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 int avpicture_layout(const AVPicture *src, enum AVPixelFormat pix_fmt,
                      int width, int height,
                      unsigned char *dest, int dest_size);
@@ -5649,27 +5649,27 @@ int avpicture_layout(const AVPicture *src, enum AVPixelFormat pix_fmt,
 /**
  * @deprecated use av_image_get_buffer_size() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 int avpicture_get_size(enum AVPixelFormat pix_fmt, int width, int height);
 
 /**
  * @deprecated av_image_copy() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 void av_picture_copy(AVPicture *dst, const AVPicture *src,
                      enum AVPixelFormat pix_fmt, int width, int height);
 
 /**
  * @deprecated unused
  */
-//attribute_deprecated
+attribute_deprecated
 int av_picture_crop(AVPicture *dst, const AVPicture *src,
                     enum AVPixelFormat pix_fmt, int top_band, int left_band);
 
 /**
  * @deprecated unused
  */
-//attribute_deprecated
+attribute_deprecated
 int av_picture_pad(AVPicture *dst, const AVPicture *src, int height, int width, enum AVPixelFormat pix_fmt,
             int padtop, int padbottom, int padleft, int padright, int *color);
 
@@ -5699,7 +5699,7 @@ int av_picture_pad(AVPicture *dst, const AVPicture *src, int height, int width, 
  * @deprecated Use av_pix_fmt_get_chroma_sub_sample
  */
 
-//attribute_deprecated
+attribute_deprecated
 void avcodec_get_chroma_sub_sample(enum AVPixelFormat pix_fmt, int *h_shift, int *v_shift);
 #endif
 
@@ -5743,7 +5743,7 @@ enum AVPixelFormat avcodec_find_best_pix_fmt_of_list(const enum AVPixelFormat *p
 enum AVPixelFormat avcodec_find_best_pix_fmt_of_2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
 
-//attribute_deprecated
+attribute_deprecated
 enum AVPixelFormat avcodec_find_best_pix_fmt2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
 
@@ -5757,7 +5757,7 @@ enum AVPixelFormat avcodec_default_get_format(struct AVCodecContext *s, const en
 /**
  * @deprecated this function is not supposed to be used from outside of lavc
  */
-//attribute_deprecated
+attribute_deprecated
 void avcodec_set_dimensions(AVCodecContext *s, int width, int height);
 #endif
 
@@ -5773,7 +5773,7 @@ void avcodec_set_dimensions(AVCodecContext *s, int width, int height);
  *
  * @deprecated see av_fourcc_make_string() and av_fourcc2str().
  */
-//attribute_deprecated
+attribute_deprecated
 size_t av_get_codec_tag_string(char *buf, size_t buf_size, unsigned int codec_tag);
 #endif
 
@@ -6005,7 +6005,7 @@ typedef struct AVBitStreamFilter {
  *
  * @see avcodec_register_all()
  */
-//attribute_deprecated
+attribute_deprecated
 void av_register_bitstream_filter(AVBitStreamFilter *bsf);
 
 /**
@@ -6018,7 +6018,7 @@ void av_register_bitstream_filter(AVBitStreamFilter *bsf);
  * @return a bitstream filter context if a matching filter was found
  * and successfully initialized, NULL otherwise
  */
-//attribute_deprecated
+attribute_deprecated
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
 
 /**
@@ -6050,7 +6050,7 @@ AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
  * its starting address). A special case is if *poutbuf was set to NULL and
  * *poutbuf_size was set to 0, which indicates the packet should be dropped.
  */
-//attribute_deprecated
+attribute_deprecated
 int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
                                AVCodecContext *avctx, const char *args,
                                uint8_t **poutbuf, int *poutbuf_size,
@@ -6062,7 +6062,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
  * @param bsf the bitstream filter context created with
  * av_bitstream_filter_init(), can be NULL
  */
-//attribute_deprecated
+attribute_deprecated
 void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
 
 /**
@@ -6073,7 +6073,7 @@ void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
  * This function can be used to iterate over all registered bitstream
  * filters.
  */
-//attribute_deprecated
+attribute_deprecated
 AVBitStreamFilter *av_bitstream_filter_next(const AVBitStreamFilter *f);
 #endif
 
@@ -6296,7 +6296,7 @@ unsigned int av_xiphlacing(unsigned char *s, unsigned int v);
  * mailing list.
  * @deprecated Use avpriv_report_missing_feature() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 void av_log_missing_feature(void *avc, const char *feature, int want_sample);
 
 /**
@@ -6308,7 +6308,7 @@ void av_log_missing_feature(void *avc, const char *feature, int want_sample);
  * @param[in] msg string containing an optional message, or NULL if no message
  * @deprecated Use avpriv_request_sample() instead.
  */
-//attribute_deprecated
+attribute_deprecated
 void av_log_ask_for_sample(void *avc, const char *msg, ...) av_printf_format(2, 3);
 #endif /* FF_API_MISSING_SAMPLE */
 

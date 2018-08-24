@@ -8,12 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "CYPlayerGestureControl.h"
 
 @class
 CYPlayerDecoder,
 CYVideoPlayerSettings,
 CYPrompt,
-CYVideoFrame;
+CYVideoFrame,
+CYVideoPlayerMoreSetting;
 
 typedef void(^LockScreen)(BOOL isLock);
 
@@ -25,6 +27,7 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
     CYFFmpegPlayerPlayState_Pause,
     CYFFmpegPlayerPlayState_PlayEnd,
     CYFFmpegPlayerPlayState_PlayFailed,
+    CYFFmpegPlayerPlayState_Ready
 };
 
 typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames, NSError * error);
@@ -35,14 +38,34 @@ extern NSString * const CYPlayerParameterMinBufferedDuration;    // Float
 extern NSString * const CYPlayerParameterMaxBufferedDuration;    // Float
 extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
+# pragma mark - CYFFmpegPlayer
+
+@class CYFFmpegPlayer;
+
+@protocol CYFFmpegPlayerDelegate <NSObject>
+
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player onShareBtnCick:(UIButton *)btn;
+
+- (void)CYFFmpegPlayerStartAutoPlaying:(CYFFmpegPlayer *)player;
+
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeStatus:(CYFFmpegPlayerPlayState)state;
+
+
+@end
+
 @interface CYFFmpegPlayer : NSObject
+
++ (instancetype)sharedPlayer;
 
 + (id) movieViewWithContentPath: (NSString *) path
                                parameters: (NSDictionary *) parameters;
 
+- (void)setupPlayerWithPath:(NSString *)path;
 
 
+@property (nonatomic, strong) CYPlayerDecoder *decoder;
 
+@property (nonatomic, weak) id<CYFFmpegPlayerDelegate> delegate;
 
 /*!
  *  present View. support autoLayout.
@@ -61,7 +84,10 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 - (void)viewDidAppear;
 - (void)viewWillDisappear;
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
-
+- (void) setMoviePosition: (CGFloat) position;
+- (void)setupPlayerWithPath:(NSString *)path;
+- (double)currentTime;
+- (NSTimeInterval)totalTime;
 
 @end
 
@@ -139,12 +165,32 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
  */
 @property (nonatomic, assign, readwrite, getter=isAutoplay) BOOL autoplay;
 
+/*!
+ *  clicked More button to display items.
+ *
+ *  点击更多按钮, 弹出来的选项.
+ **/
+@property (nonatomic, strong, readwrite, nullable) NSArray<CYVideoPlayerMoreSetting *> *moreSettings;
+
 @end
 
 
-# pragma mark -
+#pragma mark - CYVideoPlayer (Control)
+@protocol CYFFmpegControlDelegate <NSObject>
+
+@optional
+- (BOOL)CYFFmpegPlayer:(CYFFmpegPlayer *)player triggerCondition:(CYPlayerGestureControl *)control gesture:(UIGestureRecognizer *)gesture;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player singleTapped:(CYPlayerGestureControl *)control;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player doubleTapped:(CYPlayerGestureControl *)control;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player beganPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player changedPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player endedPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
+
+@end
 
 @interface CYFFmpegPlayer (Control)
+
+
 
 - (BOOL)play;
 
@@ -154,6 +200,7 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 @property (nonatomic, copy) LockScreen lockscreen;
 
+@property (nonatomic, weak) id<CYFFmpegControlDelegate> control_delegate;
 
 @end
 

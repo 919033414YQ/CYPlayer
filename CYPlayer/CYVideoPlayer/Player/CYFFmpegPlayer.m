@@ -18,6 +18,8 @@
 //Views
 #import "CYVideoPlayerControlView.h"
 #import "CYLoadingView.h"
+#import "CYVideoPlayerMoreSettingsView.h"
+#import "CYVideoPlayerMoreSettingSecondaryView.h"
 
 
 //Models
@@ -29,6 +31,7 @@
 #import "CYVideoPlayerSettings.h"
 #import "CYVideoPlayerResources.h"
 #import "CYPrompt.h"
+#import "CYVideoPlayerMoreSetting.h"
 
 //Others
 #import <objc/message.h>
@@ -94,8 +97,6 @@ CYSliderDelegate>
     BOOL                _savedIdleTimer;
     BOOL                _isDraging;
     
-    
-    CYPlayerDecoder      *_decoder;
     dispatch_queue_t    _dispatchQueue;
     NSMutableArray      *_videoFrames;
     NSMutableArray      *_audioFrames;
@@ -138,10 +139,14 @@ CYSliderDelegate>
 @property (nonatomic, strong, readonly) CYVideoPlayerControlView *controlView;
 @property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
 @property (nonatomic, strong, readonly) CYLoadingView *loadingView;
+@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingsView *moreSettingView;
+@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingSecondaryView *moreSecondarySettingView;
 @property (nonatomic, strong, readonly) CYOrentationObserver *orentation;
 @property (nonatomic, strong, readonly) dispatch_queue_t workQueue;
 
 @property (nonatomic, assign, readwrite) CYFFmpegPlayerPlayState state;
+@property (nonatomic, assign, readwrite) BOOL hiddenMoreSettingView;
+@property (nonatomic, assign, readwrite) BOOL hiddenMoreSecondarySettingView;
 @property (nonatomic, assign, readwrite) BOOL hiddenLeftControlView;
 @property (nonatomic, assign, readwrite)  BOOL hasBeenGeneratedPreviewImages;
 @property (nonatomic, assign, readwrite) BOOL userClickedPause;
@@ -155,6 +160,9 @@ CYSliderDelegate>
 @implementation CYFFmpegPlayer
 {
     CYVideoPlayerControlView *_controlView;
+    CYVideoPlayerMoreSettingsView *_moreSettingView;
+    CYVideoPlayerMoreSettingSecondaryView *_moreSecondarySettingView;
+    CYMoreSettingsFooterViewModel *_moreSettingFooterViewModel;
     CYVolBrigControl *_volBrigControl;
     CYLoadingView *_loadingView;
     CYPlayerGestureControl *_gestureControl;
@@ -162,6 +170,15 @@ CYSliderDelegate>
     CYOrentationObserver *_orentation;
     dispatch_queue_t _workQueue;
     CYVideoPlayerRegistrar *_registrar;
+}
+
++ (instancetype)sharedPlayer {
+    static id _instance;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _instance = [[self alloc] init];
+    });
+    return _instance;
 }
 
 + (void)initialize
@@ -177,8 +194,6 @@ CYSliderDelegate>
 + (id) movieViewWithContentPath: (NSString *) path
                                parameters: (NSDictionary *) parameters
 {
-    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
-    [audioManager activateAudioSession];
     return [[self alloc] initWithContentPath: path parameters: parameters];;
 }
 
@@ -196,6 +211,10 @@ CYSliderDelegate>
 
 - (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters
 {
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+    BOOL canUseAudio = [audioManager activateAudioSession];
+//    BOOL canUseAudio = YES;
+    
     [self view];
     [self orentation];
     [self volBrig];
@@ -217,7 +236,16 @@ CYSliderDelegate>
     _parameters = parameters;
     
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
-    [decoder setDecodeType:(CYVideoDecodeTypeVideo | CYVideoDecodeTypeAudio)];//
+    CYVideoDecodeType type = CYVideoDecodeTypeVideo;
+    if (canUseAudio)
+    {
+        type |= CYVideoDecodeTypeAudio;
+    }
+    else
+    {
+        LoggerAudio(0, @"Can not open Audio Session");
+    }
+    [decoder setDecodeType:type];//
     
     self.controlView.decoder = decoder;
     
@@ -330,9 +358,12 @@ CYSliderDelegate>
     _view = [CYVideoPlayerBaseView new];
     _view.backgroundColor = [UIColor blackColor];
     [_view addSubview:self.presentView];
-//    [_presentView addSubview:self.controlView];
     [_view addSubview:self.controlView];
+    [_controlView addSubview:self.moreSettingView];
+    [_controlView addSubview:self.moreSecondarySettingView];
     [self gesturesHandleWithTargetView:_controlView];
+    self.hiddenMoreSettingView = YES;
+    self.hiddenMoreSecondarySettingView = YES;
     _controlView.delegate = self;
     _controlView.bottomControlView.progressSlider.delegate = self;
 
@@ -342,6 +373,15 @@ CYSliderDelegate>
 
     [_controlView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_controlView.superview);
+    }];
+    
+    [_moreSettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.bottom.trailing.offset(0);
+        make.width.offset(MoreSettingWidth);
+    }];
+    
+    [_moreSecondarySettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(_moreSettingView);
     }];
 
     _loadingView = [CYLoadingView new];
@@ -367,9 +407,72 @@ CYSliderDelegate>
     return _controlView;
 }
 
+- (CYVideoPlayerMoreSettingsView *)moreSettingView {
+    if ( _moreSettingView ) return _moreSettingView;
+    _moreSettingView = [CYVideoPlayerMoreSettingsView new];
+    _moreSettingView.backgroundColor = [UIColor blackColor];
+    return _moreSettingView;
+}
+
+- (CYVideoPlayerMoreSettingSecondaryView *)moreSecondarySettingView {
+    if ( _moreSecondarySettingView ) return _moreSecondarySettingView;
+    _moreSecondarySettingView = [CYVideoPlayerMoreSettingSecondaryView new];
+    _moreSecondarySettingView.backgroundColor = [UIColor blackColor];
+    _moreSettingFooterViewModel = [CYMoreSettingsFooterViewModel new];
+    __weak typeof(self) _self = self;
+    _moreSettingFooterViewModel.needChangeBrightness = ^(float brightness) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        self.volBrigControl.brightness = brightness;
+    };
+    
+    _moreSettingFooterViewModel.needChangePlayerRate = ^(float rate) {
+//        __strong typeof(_self) self = _self;
+//        if ( !self ) return;
+//        if ( !self.de ) return;
+//        self.rate = rate;
+//        if ( self.internallyChangedRate ) self.internallyChangedRate(self, rate);
+    };
+    
+    _moreSettingFooterViewModel.needChangeVolume = ^(float volume) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        self.volBrigControl.volume = volume;
+    };
+    
+    _moreSettingFooterViewModel.initialVolumeValue = ^float{
+        __strong typeof(_self) self = _self;
+        if ( !self ) return 0;
+        return self.volBrigControl.volume;
+    };
+    
+    _moreSettingFooterViewModel.initialBrightnessValue = ^float{
+        __strong typeof(_self) self = _self;
+        if ( !self ) return 0;
+        return self.volBrigControl.brightness;
+    };
+    
+    _moreSettingFooterViewModel.initialPlayerRateValue = ^float{
+        __strong typeof(_self) self = _self;
+        if ( !self ) return 0;
+        return self.rate;
+    };
+    
+    _moreSettingView.footerViewModel = _moreSettingFooterViewModel;
+    return _moreSecondarySettingView;
+}
 
 
 # pragma mark - 公开方法
+- (double)currentTime
+{
+    return self.decoder.position;
+}
+
+- (NSTimeInterval)totalTime {
+    return self.decoder.duration;
+}
+
 - (void)viewDidAppear
 {
     if (_decoder) {
@@ -530,6 +633,23 @@ CYSliderDelegate>
         }
     });
 }
+
+- (void)setupPlayerWithPath:(NSString *)path
+{
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    
+    // increase buffering for .wmv, it solves problem with delaying audio frames
+    if ([path.pathExtension isEqualToString:@"wmv"] ||
+        [path.pathExtension isEqualToString:@"mov"])
+        parameters[CYPlayerParameterMinBufferedDuration] = @(5.0);
+    
+    // disable deinterlacing for iPhone, because it's complex operation can cause stuttering
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+        parameters[CYPlayerParameterDisableDeinterlacing] = @(YES);
+    
+    [self setupPlayerWithPath:path parameters:parameters];
+}
+
 
 # pragma mark - 私有方法
 # pragma mark player
@@ -769,8 +889,7 @@ CYSliderDelegate>
                                                        delegate:nil
                                               cancelButtonTitle:NSLocalizedString(@"Close", nil)
                                               otherButtonTitles:nil];
-    
-    [alertView show];
+//    [alertView show];
 }
 
 - (UIView *)presentView
@@ -1366,6 +1485,28 @@ CYSliderDelegate>
 }
 
 # pragma mark controlview
+- (void)setHiddenMoreSettingView:(BOOL)hiddenMoreSettingView {
+    if ( hiddenMoreSettingView == _hiddenMoreSettingView ) return;
+    _hiddenMoreSettingView = hiddenMoreSettingView;
+    if ( hiddenMoreSettingView ) {
+        _moreSettingView.transform = CGAffineTransformMakeTranslation(MoreSettingWidth, 0);
+    }
+    else {
+        _moreSettingView.transform = CGAffineTransformIdentity;
+    }
+}
+
+- (void)setHiddenMoreSecondarySettingView:(BOOL)hiddenMoreSecondarySettingView {
+    if ( hiddenMoreSecondarySettingView == _hiddenMoreSecondarySettingView ) return;
+    _hiddenMoreSecondarySettingView = hiddenMoreSecondarySettingView;
+    if ( hiddenMoreSecondarySettingView ) {
+        _moreSecondarySettingView.transform = CGAffineTransformMakeTranslation(MoreSettingWidth, 0);
+    }
+    else {
+        _moreSecondarySettingView.transform = CGAffineTransformIdentity;
+    }
+}
+
 - (void)setHiddenLeftControlView:(BOOL)hiddenLeftControlView {
     if ( hiddenLeftControlView == _hiddenLeftControlView ) return;
     _hiddenLeftControlView = hiddenLeftControlView;
@@ -1470,6 +1611,8 @@ CYSliderDelegate>
         self.hideControl = NO;
         _cyAnima(^{
             self.controlView.previewView.hidden = YES;
+            self.hiddenMoreSecondarySettingView = YES;
+            self.hiddenMoreSettingView = YES;
             self.hiddenLeftControlView = !observer.isFullScreen;
             if ( observer.isFullScreen ) {
                 _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
@@ -1507,7 +1650,10 @@ CYSliderDelegate>
 - (void)setState:(CYFFmpegPlayerPlayState)state {
     if ( state == _state ) return;
     _state = state;
-    
+    if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ChangeStatus:)])
+    {
+        [self.delegate CYFFmpegPlayer:self ChangeStatus:_state];
+    }
 }
 
 - (dispatch_queue_t)workQueue {
@@ -1532,10 +1678,17 @@ CYSliderDelegate>
     __weak typeof(self) _self = self;
     _gestureControl.triggerCondition = ^BOOL(CYPlayerGestureControl * _Nonnull control, UIGestureRecognizer *gesture) {
         __strong typeof(_self) self = _self;
-        if ( !self ) return NO;
+        if (!self) {
+            return NO;
+        }
+        if ([self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:triggerCondition:gesture:)]) {
+            return [self.control_delegate CYFFmpegPlayer:self triggerCondition:control gesture:gesture];
+        }
         if ( self.isLockedScrren ) return NO;
         CGPoint point = [gesture locationInView:gesture.view];
-        if (CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
+        if (CGRectContainsPoint(self.moreSettingView.frame, point) ||
+            CGRectContainsPoint(self.moreSecondarySettingView.frame, point) ||
+            CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
             return NO;
         }
         else return YES;
@@ -1545,9 +1698,17 @@ CYSliderDelegate>
     _gestureControl.singleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:singleTapped:)]) {
+            [self.control_delegate CYFFmpegPlayer:self singleTapped:control];
+        }
         _cyAnima(^{
-
-            {
+            if ( !self.hiddenMoreSettingView ) {
+                self.hiddenMoreSettingView = YES;
+            }
+            else if ( !self.hiddenMoreSecondarySettingView ) {
+                self.hiddenMoreSecondarySettingView = YES;
+            }
+            else {
                 self.hideControl = !self.isHiddenControl;
             }
         });
@@ -1556,6 +1717,9 @@ CYSliderDelegate>
     _gestureControl.doubleTapped = ^(CYPlayerGestureControl * _Nonnull control) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:doubleTapped:)]) {
+            [self.control_delegate CYFFmpegPlayer:self doubleTapped:control];
+        }
         switch (self.state) {
             case CYFFmpegPlayerPlayState_Unknown:
             case CYFFmpegPlayerPlayState_Prepare:
@@ -1581,6 +1745,9 @@ CYSliderDelegate>
     _gestureControl.beganPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:beganPan:direction:location:)]) {
+            [self.control_delegate CYFFmpegPlayer:self beganPan:control direction:direction location:location];
+        }
         switch (direction) {
             case CYPanDirection_H: {
                 if (self->_decoder.duration <= 0)//没有进度信息
@@ -1633,6 +1800,9 @@ CYSliderDelegate>
     _gestureControl.changedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location, CGPoint translate) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
+        if ([self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:changedPan:direction:location:)]) {
+            [self.control_delegate CYFFmpegPlayer:self changedPan:control direction:direction location:location];
+        }
         switch (direction) {
             case CYPanDirection_H: {
                 if (self->_decoder.duration <= 0)//没有进度信息
@@ -1666,6 +1836,9 @@ CYSliderDelegate>
     };
     
     _gestureControl.endedPan = ^(CYPlayerGestureControl * _Nonnull control, CYPanDirection direction, CYPanLocation location) {
+        if ([_self.control_delegate respondsToSelector:@selector(CYFFmpegPlayer:endedPan:direction:location:)]) {
+            [_self.control_delegate CYFFmpegPlayer:_self endedPan:control direction:direction location:location];
+        }
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         switch ( direction ) {
@@ -1701,6 +1874,8 @@ CYSliderDelegate>
     [self _startLoading];
     self.hideControl = YES;
     self.userClickedPause = NO;
+    self.hiddenMoreSettingView = YES;
+    self.hiddenMoreSecondarySettingView = YES;
     self.controlView.bottomProgressSlider.value = 0;
     self.controlView.bottomProgressSlider.bufferProgress = 0;
     [self _prepareState];
@@ -1717,12 +1892,12 @@ CYSliderDelegate>
         self.hideControl = NO;
     });
     if ( self.autoplay && !self.userClickedPause && !self.suspend ) {
-        [self restorePlay];
+        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayerStartAutoPlaying:)])
+        {
+            [self.delegate CYFFmpegPlayerStartAutoPlaying:self];
+        }
+        [self play];
     }
-    else {
-        [self pause];
-    }
-        
 }
 
 - (void)_itemPlayEnd {
@@ -1897,10 +2072,20 @@ CYSliderDelegate>
         }
             break;
         case CYVideoPlayControlViewTag_More: {
-            _cyAnima(^{
-//                self.hiddenMoreSettingView = NO;
-                self.hideControl = YES;
-            });
+            if (self.orentation.isFullScreen)
+            {
+                _cyAnima(^{
+                    self.hiddenMoreSettingView = NO;
+                    self.hideControl = YES;
+                });
+            }
+            else
+            {
+                if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:onShareBtnCick:)])
+                {
+                    [self.delegate CYFFmpegPlayer:self onShareBtnCick:self.controlView.topControlView.moreBtn];
+                }
+            }
         }
             break;
     }
@@ -2292,6 +2477,60 @@ CYSliderDelegate>
     _controlView.asset = nil;
 }
 
+- (void)dressSetting:(CYVideoPlayerMoreSetting *)setting {
+    if ( !setting.clickedExeBlock ) return;
+    void(^clickedExeBlock)(CYVideoPlayerMoreSetting *model) = [setting.clickedExeBlock copy];
+    __weak typeof(self) _self = self;
+    if ( setting.isShowTowSetting ) {
+        setting.clickedExeBlock = ^(CYVideoPlayerMoreSetting * _Nonnull model) {
+            clickedExeBlock(model);
+            __strong typeof(_self) self = _self;
+            if ( !self ) return;
+            self.moreSecondarySettingView.twoLevelSettings = model;
+            _cyAnima(^{
+                self.hiddenMoreSettingView = YES;
+                self.hiddenMoreSecondarySettingView = NO;
+            });
+        };
+        return;
+    }
+    
+    setting.clickedExeBlock = ^(CYVideoPlayerMoreSetting * _Nonnull model) {
+        clickedExeBlock(model);
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        _cyAnima(^{
+            self.hiddenMoreSettingView = YES;
+            if ( !model.isShowTowSetting ) self.hiddenMoreSecondarySettingView = YES;
+        });
+    };
+}
+
+- (NSArray<CYVideoPlayerMoreSetting *> *)moreSettings {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setMoreSettings:(NSArray<CYVideoPlayerMoreSetting *> *)moreSettings {
+    objc_setAssociatedObject(self, @selector(moreSettings), moreSettings, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    NSMutableSet<CYVideoPlayerMoreSetting *> *moreSettingsM = [NSMutableSet new];
+    [moreSettings enumerateObjectsUsingBlock:^(CYVideoPlayerMoreSetting * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self addSetting:obj container:moreSettingsM];
+    }];
+    
+    [moreSettingsM enumerateObjectsUsingBlock:^(CYVideoPlayerMoreSetting * _Nonnull obj, BOOL * _Nonnull stop) {
+        [self dressSetting:obj];
+    }];
+    self.moreSettingView.moreSettings = moreSettings;
+}
+
+- (void)addSetting:(CYVideoPlayerMoreSetting *)setting container:(NSMutableSet<CYVideoPlayerMoreSetting *> *)moreSttingsM {
+    [moreSttingsM addObject:setting];
+    if ( !setting.showTowSetting ) return;
+    [setting.twoSettingItems enumerateObjectsUsingBlock:^(CYVideoPlayerMoreSettingSecondary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self addSetting:(CYVideoPlayerMoreSetting *)obj container:moreSttingsM];
+    }];
+}
+
 - (CYVideoPlayerSettings *)settings {
     CYVideoPlayerSettings *setting = objc_getAssociatedObject(self, _cmd);
     if ( setting ) return setting;
@@ -2383,6 +2622,17 @@ CYSliderDelegate>
 # pragma mark -
 
 @implementation CYFFmpegPlayer (Control)
+
+- (id<CYFFmpegControlDelegate>)control_delegate
+{
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setControl_delegate:(id<CYFFmpegControlDelegate>)control_delegate
+{
+    objc_setAssociatedObject(self, @selector(control_delegate), control_delegate, OBJC_ASSOCIATION_ASSIGN);
+}
+
 
 - (BOOL)play {
     self.suspend = NO;

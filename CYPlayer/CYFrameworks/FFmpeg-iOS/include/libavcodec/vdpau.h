@@ -108,7 +108,7 @@ typedef struct AVVDPAUContext {
      *
      * Set by libavcodec.
      */
-    //attribute_deprecated
+    attribute_deprecated
     union AVVDPAUPictureInfo info;
 
     /**
@@ -116,7 +116,7 @@ typedef struct AVVDPAUContext {
      *
      * Set by libavcodec.
      */
-    //attribute_deprecated
+    attribute_deprecated
     int bitstream_buffers_allocated;
 
     /**
@@ -124,7 +124,7 @@ typedef struct AVVDPAUContext {
      *
      * Set by libavcodec.
      */
-    //attribute_deprecated
+    attribute_deprecated
     int bitstream_buffers_used;
 
    /**
@@ -133,7 +133,7 @@ typedef struct AVVDPAUContext {
      *
      * Set by libavcodec.
      */
-    //attribute_deprecated
+    attribute_deprecated
     VdpBitstreamBuffer *bitstream_buffers;
 #endif
     AVVDPAU_Render2 render2;
@@ -210,7 +210,7 @@ AVVDPAUContext *av_vdpau_alloc_context(void);
  *
  * @return 0 on success (non-negative), a negative AVERROR on failure.
  */
-//attribute_deprecated
+attribute_deprecated
 int av_vdpau_get_profile(AVCodecContext *avctx, VdpDecoderProfile *profile);
 #endif
 

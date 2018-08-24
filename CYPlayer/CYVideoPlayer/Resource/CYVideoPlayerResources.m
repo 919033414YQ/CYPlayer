@@ -11,7 +11,26 @@
 @implementation CYVideoPlayerResources
 
 + (UIImage *)imageNamed:(NSString *)name {
-    return [UIImage imageNamed:name inBundle:[self bundle] compatibleWithTraitCollection:nil];
+//    return [UIImage imageNamed:name inBundle:[self bundle] compatibleWithTraitCollection:nil];
+    return [self imageNamed:name ofBundle:@"CYVideoPlayer.bundle"];
+}
+
++ (UIImage *)imageNamed:(NSString *)name ofBundle:(NSString *)bundleName {
+    
+    UIImage *image = nil;
+    
+    NSString *image_name = [NSString stringWithFormat:@"%@.png", name];
+    
+    NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
+    
+    NSString *bundlePath = [resourcePath stringByAppendingPathComponent:bundleName];
+    
+    NSString *image_path = [bundlePath stringByAppendingPathComponent:image_name];;
+    
+    image = [[UIImage alloc] initWithContentsOfFile:image_path];
+    
+    return image;
+    
 }
 
 + (NSString *)bundleComponentWithImageName:(NSString *)imageName {
