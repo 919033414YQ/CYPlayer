@@ -109,6 +109,7 @@
 		0EF574AB212A71850057ECB3 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EF574AA212A71850057ECB3 /* AudioToolbox.framework */; };
 		0EF574AD212A718E0057ECB3 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EF574AC212A718E0057ECB3 /* VideoToolbox.framework */; };
 		0EF574AF212A719A0057ECB3 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EF574AE212A719A0057ECB3 /* CoreMedia.framework */; };
+		0EF7875221390DCF0072AED4 /* CYOpenALPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EF7875121390DCF0072AED4 /* CYOpenALPlayer.m */; };
 		0EF8F4A7212FB6FF0087018F /* CYPCMAudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EF8F4A6212FB6FF0087018F /* CYPCMAudioManager.m */; };
 		3287BA2CDF7FE8BAA695DA8D /* libPods-CYPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 99FA05E579685BD309A43463 /* libPods-CYPlayer.a */; };
 		84B261B31A46A0AF00C8CAA9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261B21A46A0AF00C8CAA9 /* main.m */; };
@@ -439,6 +440,8 @@
 		0EF574AC212A718E0057ECB3 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		0EF574AE212A719A0057ECB3 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		0EF5753C212A73EE0057ECB3 /* ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffmpeg.h; sourceTree = "<group>"; };
+		0EF7875021390DCF0072AED4 /* CYOpenALPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYOpenALPlayer.h; sourceTree = "<group>"; };
+		0EF7875121390DCF0072AED4 /* CYOpenALPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYOpenALPlayer.m; sourceTree = "<group>"; };
 		0EF8F4A5212FB6FF0087018F /* CYPCMAudioManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYPCMAudioManager.h; sourceTree = "<group>"; };
 		0EF8F4A6212FB6FF0087018F /* CYPCMAudioManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYPCMAudioManager.m; sourceTree = "<group>"; };
 		2ADA3809947CB08F543F3AB2 /* Pods-CYPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CYPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CYPlayer/Pods-CYPlayer.debug.xcconfig"; sourceTree = "<group>"; };
@@ -647,6 +650,8 @@
 			children = (
 				0ECD4C192111DFFA0078D24A /* CYAudioManager.h */,
 				0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */,
+				0EF7875021390DCF0072AED4 /* CYOpenALPlayer.h */,
+				0EF7875121390DCF0072AED4 /* CYOpenALPlayer.m */,
 				0EF8F4A5212FB6FF0087018F /* CYPCMAudioManager.h */,
 				0EF8F4A6212FB6FF0087018F /* CYPCMAudioManager.m */,
 				0ECD4C1B2111DFFA0078D24A /* CYPlayerDecoder.h */,
@@ -1504,6 +1509,7 @@
 				0E2407DF20FE1631008BEAB5 /* CYPrompt.m in Sources */,
 				0E2407E920FE1631008BEAB5 /* CYLabel.m in Sources */,
 				0E2407DE20FE1631008BEAB5 /* CYPromptConfig.m in Sources */,
+				0EF7875221390DCF0072AED4 /* CYOpenALPlayer.m in Sources */,
 				0EF8F4A7212FB6FF0087018F /* CYPCMAudioManager.m in Sources */,
 				0E2407C720FE1630008BEAB5 /* CYVideoPlayerCenterControlView.m in Sources */,
 				0E2407D320FE1631008BEAB5 /* CYOrentationObserver.m in Sources */,

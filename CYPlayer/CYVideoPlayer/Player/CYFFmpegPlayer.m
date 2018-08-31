@@ -32,12 +32,13 @@
 #import "CYVideoPlayerResources.h"
 #import "CYPrompt.h"
 #import "CYVideoPlayerMoreSetting.h"
+#import "CYPCMAudioManager.h"
 
 //Others
 #import <objc/message.h>
 
 
-
+#define UseCYPCMAudioManager @"UseCYPCMAudioManager"
 
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
 
@@ -153,6 +154,7 @@ CYSliderDelegate>
 @property (nonatomic, assign, readwrite) BOOL stopped;
 @property (nonatomic, assign, readwrite) BOOL touchedScrollView;
 @property (nonatomic, assign, readwrite) BOOL suspend; // Set it when the [`pause` + `play` + `stop`] is called.
+@property (nonatomic, assign, readwrite) BOOL enableAudio;
 @property (nonatomic, strong, readwrite) NSError *error;
 
 @end
@@ -211,9 +213,9 @@ CYSliderDelegate>
 
 - (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters
 {
-    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
-    BOOL canUseAudio = [audioManager activateAudioSession];
-//    BOOL canUseAudio = YES;
+//    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+//    BOOL canUseAudio = [audioManager activateAudioSession];
+    BOOL canUseAudio = YES;
     
     [self view];
     [self orentation];
@@ -275,6 +277,7 @@ CYSliderDelegate>
 
 - (void) dealloc
 {
+    [self enableAudio:NO];
     while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
         [self presentFrame];
         const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
@@ -288,7 +291,6 @@ CYSliderDelegate>
         LoggerStream(1, @"%@ waiting dealloc", self);
     }
     
-    [self enableAudio:NO];
     self.playing = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -601,7 +603,6 @@ CYSliderDelegate>
     
     self.playing = NO;
     _disableUpdateHUD = YES;
-    [self enableAudio:NO];
     
     __weak typeof(&*self)weakSelf = self;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
@@ -1008,6 +1009,67 @@ CYSliderDelegate>
 
 - (void) enableAudio: (BOOL) on
 {
+#ifdef UseCYPCMAudioManager
+    if (on && _decoder.validAudio) {
+        __weak typeof(&*self)weakSelf = self;
+        self.enableAudio = YES;
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            __strong __typeof(&*self)strongSelf = weakSelf;
+            if (strongSelf)
+            {
+                CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+                while (strongSelf.enableAudio)//循环开始
+                {
+                    if (strongSelf->_buffered) {
+                        continue;
+                    }
+                    @synchronized(strongSelf->_audioFrames)
+                    {
+                        NSUInteger count = strongSelf->_audioFrames.count;
+                        CYAudioFrame * audioFrame = [strongSelf->_audioFrames firstObject];
+                        if ([audioFrame isKindOfClass: NSClassFromString(@"CYAudioFrame")] &&
+                            count > 0)
+                        {
+                            if (strongSelf->_decoder.validVideo)
+                            {
+                                const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
+                                
+                                if (strongSelf->_audioFrames.count)
+                                {
+                                    [strongSelf->_audioFrames removeObjectAtIndex:0];
+                                }
+                                
+                                if (delta > 0.1 && count > 1)//音视频播放同步
+                                {
+#ifdef DEBUG
+                                    LoggerStream(0, @"desync audio (lags) skip %.4f %.4f", strongSelf->_moviePosition, audioFrame.position);
+                                    _debugAudioStatus = 2;
+                                    _debugAudioStatusTS = [NSDate date];
+#endif
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                [strongSelf->_audioFrames removeObjectAtIndex:0];
+                                strongSelf->_moviePosition = audioFrame.position;
+                                strongSelf->_bufferedDuration -= audioFrame.duration;
+                            }
+                            [audioManager setData:audioFrame.samples sampleRate:44100];//播放
+                        }
+                        
+                    }
+                }
+            }
+        });
+    }
+    else
+    {
+        self.enableAudio = NO;
+        CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+        [audioManager pause];
+    }
+#else
     id<CYAudioManager> audioManager = [CYAudioManager audioManager];
     
     if (on && _decoder.validAudio) {
@@ -1029,6 +1091,8 @@ CYSliderDelegate>
         [audioManager pause];
         audioManager.outputBlock = nil;
     }
+    
+#endif
 }
 
 - (void) freeBufferedFrames
@@ -2006,6 +2070,7 @@ CYSliderDelegate>
             _cyAnima(^{
                 _cyHiddenViews(@[self.controlView.draggingProgressView]);
             });
+            [self _buffering];
         }
             break;
             

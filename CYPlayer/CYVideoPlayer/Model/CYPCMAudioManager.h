@@ -38,14 +38,14 @@
 /**
  开始播放
  ****/
-- (void)play;
+//- (void)play;
 
 
 
 /**
  停止播放
  ****/
-- (void)stop;
+- (void)pause;
 
 
 

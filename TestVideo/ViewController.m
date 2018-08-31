@@ -13,6 +13,7 @@
 #import "MainViewController.h"
 #import "CYFFmpegViewController.h"
 #import "UIViewController+CYExtension.h"
+#import "CYPCMAudioManager.h"
 
 
 @implementation ViewController
@@ -92,11 +93,17 @@
         [self.navigationController pushViewController:vc animated:YES];
     }
     else if (sender.tag == 300) {
+        CYPCMAudioManager * audio = [CYPCMAudioManager audioManager];
+        for (NSInteger i = 0; i <= 490; i++)
+        {
+            [audio setFilePath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%ld", i] ofType:@"pcm"] sampleRate:44100];
+        }
+        
 //        RTSPViewController * vc = [[RTSPViewController alloc] init];
 //        UIViewController *vc = [[MainViewController alloc] init];
-        UIViewController *vc = [[CYFFmpegViewController alloc] init];
-        
-        [self.navigationController pushViewController:vc animated:YES];
+//        UIViewController *vc = [[CYFFmpegViewController alloc] init];
+//        
+//        [self.navigationController pushViewController:vc animated:YES];
     }
 }
 

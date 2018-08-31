@@ -12,8 +12,9 @@
 #import "CYPlayerDecoder.h"
 #import <Accelerate/Accelerate.h>
 #import "ffmpeg.h"
-#import "CYAudioManager.h"
+#import "CYPCMAudioManager.h"
 #import "CYLogger.h"
+#import "CYOpenALPlayer.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ static BOOL audioCodecIsSupported(AVCodecContext *audio)
 {
     if (audio->sample_fmt == AV_SAMPLE_FMT_S16) {
 
-        id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+        CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         return  (int)audioManager.samplingRate == audio->sample_rate &&
                 audioManager.numOutputChannels == audio->channels;
     }
@@ -430,12 +431,14 @@ static int interrupt_callback(void *ctx);
     NSArray             *_audioStreams;
     NSArray             *_subtitleStreams;
     SwrContext          *_swrContext;
-    void                *_swrBuffer;
+    unsigned char       *_swrBuffer;
     NSUInteger          _swrBufferSize;
     NSDictionary        *_info;
     CYVideoFrameFormat  _videoFrameFormat;
     NSUInteger          _artworkStream;
     NSInteger           _subtitleASSEvents;
+    FILE                *_out_fb;
+    NSInteger           _fileCount;
 }
 @end
 
@@ -479,13 +482,13 @@ static int interrupt_callback(void *ctx);
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_FRAME);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
     if ([self validAudio]) {
         int64_t ts = (int64_t)(seconds / _audioTimeBase);
-        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
+        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
 //        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
     }
@@ -957,29 +960,33 @@ static int interrupt_callback(void *ctx);
     
     if (!audioCodecIsSupported(codecCtx)) {
 
-        id<CYAudioManager> audioManager = [CYAudioManager audioManager];
-        swrContext = swr_alloc_set_opts(NULL,
-                                        av_get_default_channel_layout(audioManager.numOutputChannels),
-                                        AV_SAMPLE_FMT_S16,
-                                        audioManager.samplingRate,
-                                        av_get_default_channel_layout(codecCtx->channels),
-                                        codecCtx->sample_fmt,
-                                        codecCtx->sample_rate,
-                                        0,
-                                        NULL);
+        CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+//        swrContext = swr_alloc_set_opts(swrContext,
+//                                        av_get_default_channel_layout((int)(audioManager.numOutputChannels)),
+//                                        AV_SAMPLE_FMT_S16,
+//                                        audioManager.samplingRate,
+//                                        av_get_default_channel_layout(codecCtx->channels),
+//                                        codecCtx->sample_fmt,
+//                                        codecCtx->sample_rate,
+//                                        0,
+//                                        NULL);
         
-        if (!swrContext ||
-            swr_init(swrContext)) {//swrContext在swr_convert之前必须初始化
-            if (swrContext)
-            {
-                swr_free(&swrContext);
-            }
-             avcodec_free_context(&codecCtx);
-
+//        if (!swrContext ||
+//            swr_init(swrContext)) {//swrContext在swr_convert之前必须初始化
+//            if (swrContext)
+//            {
+//                swr_free(&swrContext);
+//            }
+//             avcodec_free_context(&codecCtx);
+//
+//            return cyPlayerErroReSampler;
+//        }
+        
+        if (audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0)
+        {
             return cyPlayerErroReSampler;
         }
     }
-    
     _audioFrame = av_frame_alloc();
 
     if (!_audioFrame) {
@@ -1274,50 +1281,172 @@ static int interrupt_callback(void *ctx);
     return frame;
 }
 
+
+/**
+ 初始化转换参数
+
+ @param swr_ctx SwrContext 转换参数
+ @param codec AVCodecContext
+ */
+int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
+{
+    
+    if(codec->sample_fmt == AV_SAMPLE_FMT_S16 || codec->sample_fmt == AV_SAMPLE_FMT_S32 ||codec->sample_fmt == AV_SAMPLE_FMT_U8){
+        
+        LoggerAudio(1, @"codec->sample_fmt:%d", codec->sample_fmt);
+        
+        if(*swr_ctx){
+            
+            swr_free(swr_ctx);
+            
+            *swr_ctx = NULL;
+        }
+        return -1;
+    }
+    
+    if(*swr_ctx){
+        swr_free(swr_ctx);
+    }
+    
+    *swr_ctx = swr_alloc();
+    
+    if(!*swr_ctx){
+        
+        LoggerAudio(1, @"%@",@"swr_alloc failed");
+        
+        return -1;
+        
+    }
+    
+    
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    /* set options */
+    
+    av_opt_set_int(*swr_ctx, "in_channel_layout",    codec->channel_layout, 0);
+    
+    av_opt_set_int(*swr_ctx, "in_sample_rate",       codec->sample_rate, 0);
+    
+    av_opt_set_sample_fmt(*swr_ctx, "in_sample_fmt", codec->sample_fmt, 0);
+    
+    av_opt_set_int(*swr_ctx, "out_channel_layout",    av_get_default_channel_layout((int)(audioManager.numOutputChannels)), 0);
+    
+    av_opt_set_int(*swr_ctx, "out_sample_rate",       audioManager.samplingRate, 0);
+    
+    av_opt_set_sample_fmt(*swr_ctx, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);// AV_SAMPLE_FMT_S16
+    
+    /* initialize the resampling context */
+    
+    int ret = 0;
+    
+    if ((ret = swr_init(*swr_ctx)) < 0) {
+        
+        LoggerAudio(1, @"Failed to initialize the resampling context\n");
+        
+        if(*swr_ctx){
+            
+            swr_free(swr_ctx);
+            
+            *swr_ctx = NULL;
+            
+        }
+        
+        return ret;
+        
+    }
+    
+    return 1;
+    
+}
+
+
+int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t **targetData){
+    
+    int len = swr_convert(swr_ctx,
+                          targetData,
+                          audioFrame->nb_samples,
+                          (const uint8_t **)audioFrame->extended_data,
+                          audioFrame->nb_samples);
+    
+    if(len < 0){
+        
+        LoggerAudio(0, @"error swr_convert");
+        
+        return -1;
+        
+    }
+    
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    
+    long int dst_bufsize = len * audioManager.numOutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+    
+    LoggerAudio(1, @" dst_bufsize:%d", (int)dst_bufsize);
+    
+    return (int)dst_bufsize;
+}
+
+void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
+    
+    if(*swr_ctx){
+        
+        swr_free(swr_ctx);
+        
+        *swr_ctx = NULL;
+    }
+}
+
 - (CYAudioFrame *) handleAudioFrame
 {
     if (!_audioFrame->data[0])
         return nil;
     
-    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     
     const NSUInteger numChannels = audioManager.numOutputChannels;
     NSInteger numFrames;
     
     void * audioData;
+    int out_linesize;
     
     if (_swrContext) {
         
         const NSUInteger ratio = MAX(1, audioManager.samplingRate / _audioCodecCtx->sample_rate) *
                                  MAX(1, audioManager.numOutputChannels / _audioCodecCtx->channels) * 2;
+
         
-        const int bufSize = av_samples_get_buffer_size(NULL,
-                                                       audioManager.numOutputChannels,
-                                                       (int)(_audioFrame->nb_samples * ratio),
+        const int bufSize = av_samples_get_buffer_size(&out_linesize,
+                                                       (int)audioManager.numOutputChannels,
+                                                       _audioCodecCtx->frame_size,
                                                        AV_SAMPLE_FMT_S16,
                                                        1);
+        
+        
         
         if (!_swrBuffer || _swrBufferSize < bufSize) {
             _swrBufferSize = bufSize;
             _swrBuffer = realloc(_swrBuffer, _swrBufferSize);
         }
         
-        Byte *outbuf[2] = { _swrBuffer, 0 };
         
-        numFrames = swr_convert(_swrContext,
-                                outbuf,
-                                (int)(_audioFrame->nb_samples * ratio),
-                                (const uint8_t **)_audioFrame->data,
-                                _audioFrame->nb_samples);
+        
+        Byte *outbuf[2] = { _swrBuffer, 0 };
+       
+        numFrames = audio_swr_resampling_audio(_swrContext, _audioFrame, outbuf);
+        
+//        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
+//        if (_swrContext && av_sample_fmt_is_planar(_audioCodecCtx->sample_fmt) ) {
+//            NSString *filename=[[self infoFilePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.pcm", _fileCount]];
+//            const char *out_file = [filename cStringUsingEncoding:NSUTF8StringEncoding];
+//            _out_fb = fopen(out_file, "wb");
+//            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
+//            fclose(_out_fb);
+//            _fileCount++;
+//        }
         
         if (numFrames < 0) {
             LoggerAudio(0, @"fail resample audio");
             return nil;
         }
         
-        //int64_t delay = swr_get_delay(_swrContext, audioManager.samplingRate);
-        //if (delay > 0)
-        //    LoggerAudio(0, @"resample delay %lld", delay);
         
         audioData = _swrBuffer;
         
@@ -1329,20 +1458,22 @@ static int interrupt_callback(void *ctx);
         }
         
         audioData = _audioFrame->data[0];
-        numFrames = _audioFrame->nb_samples;
+        numFrames = _audioCodecCtx->frame_size;
     }
     
     const NSUInteger numElements = numFrames * numChannels;
-    NSMutableData *data = [NSMutableData dataWithLength:numElements * sizeof(float)];
     
-    float scale = 1.0 / (float)INT16_MAX ;
-    vDSP_vflt16((SInt16 *)audioData, 1, data.mutableBytes, 1, numElements);
-    vDSP_vsmul(data.mutableBytes, 1, &scale, data.mutableBytes, 1, numElements);
+//    NSMutableData *data = [NSMutableData dataWithLength:numElements * sizeof(float)];
+//
+//    float scale = 1.0 / (float)INT16_MAX ;
+//    vDSP_vflt16((SInt16 *)audioData, 1, data.mutableBytes, 1, numElements);
+//    vDSP_vsmul(data.mutableBytes, 1, &scale, data.mutableBytes, 1, numElements);
     
     CYAudioFrame *frame = [[CYAudioFrame alloc] init];
     frame.position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
     frame.duration = av_frame_get_pkt_duration(_audioFrame) * _audioTimeBase;
-    frame.samples = data;
+//    frame.samples = data;
+    frame.samples = [NSData dataWithBytes:audioData length:numFrames];
     
     if (frame.duration == 0) {
         // sometimes ffmpeg can't determine the duration of audio frame
@@ -1359,6 +1490,102 @@ static int interrupt_callback(void *ctx);
 #endif
     
     return frame;
+}
+
+-(NSString*)infoFilePath
+
+{
+    
+    NSArray *Paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES );
+    
+    NSString *MyDocpath=[Paths objectAtIndex:0];
+
+    return MyDocpath;
+    
+}
+
+
+
+-(NSString *)currentTime{
+    
+    NSDate *currentDate = [NSDate date];
+    
+    NSDateFormatter *dateformatter=[[NSDateFormatter alloc] init];
+    
+    [dateformatter setDateFormat:@"YYYY-MM-dd mm:ss"];
+    
+    NSString *currentString=[dateformatter stringFromDate:currentDate];
+    
+    return currentString;
+    
+}
+
+
+
+-(void)allWriteToFileWithLocalMac:(NSString *)localMac andRemoteMac:(NSString *)remoteMac andLength:(int)length{
+    
+    
+    
+    NSData *buffer;
+    
+    
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[self infoFilePath]]) {
+        
+        
+        
+        NSLog(@"%@",@"文件不存在");
+        
+        NSString *s = [NSString stringWithFormat:@"开始了:\r"];
+        
+        [s writeToFile:[self infoFilePath] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        
+        
+        
+    }
+    
+    
+    
+    NSString *filePath = [self infoFilePath];
+    
+    
+    
+    NSFileHandle  *outFile = [NSFileHandle fileHandleForWritingAtPath:filePath];
+    
+    
+    
+    if(outFile == nil)
+        
+    {
+        
+        NSLog(@"Open of file for writing failed");
+        
+    }
+    
+    
+    
+    //找到并定位到outFile的末尾位置(在此后追加文件)
+    
+    [outFile seekToEndOfFile];
+    
+    
+    
+    //读取inFile并且将其内容写到outFile中
+    
+    NSString *bs = [NSString stringWithFormat:@"发送数据时间:%@--localMac:%@--remoteMac:%@--length:%d \n",[self currentTime],localMac,remoteMac,length];
+    
+    buffer = [bs dataUsingEncoding:NSUTF8StringEncoding];
+    
+    
+    
+    [outFile writeData:buffer];
+    
+    
+    
+    //关闭读写文件
+    
+    [outFile closeFile];
+    
 }
 
 - (CYSubtitleFrame *) handleSubtitle: (AVSubtitle *)pSubtitle
