@@ -96,7 +96,7 @@
         CYPCMAudioManager * audio = [CYPCMAudioManager audioManager];
         for (NSInteger i = 0; i <= 490; i++)
         {
-            [audio setFilePath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%ld", i] ofType:@"pcm"] sampleRate:44100];
+            [audio setFilePath:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%ld", i] ofType:@"pcm"] sampleRate:[audio samplingRate]];
         }
         
 //        RTSPViewController * vc = [[RTSPViewController alloc] init];

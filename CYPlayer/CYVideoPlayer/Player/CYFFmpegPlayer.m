@@ -277,7 +277,11 @@ CYSliderDelegate>
 
 - (void) dealloc
 {
-    [self enableAudio:NO];
+    if (self.enableAudio)
+    {
+        [self enableAudio:NO];
+    }
+    
     while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
         [self presentFrame];
         const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
@@ -601,6 +605,18 @@ CYSliderDelegate>
 {
     BOOL playMode = self.playing;
     
+    self.playing = NO;
+    _disableUpdateHUD = YES;
+    
+    __weak typeof(&*self)weakSelf = self;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [weakSelf updatePosition:position playMode:playMode];
+    });
+}
+
+- (void) setMoviePosition: (CGFloat) position playMode:(BOOL)playMode
+{
     self.playing = NO;
     _disableUpdateHUD = YES;
     
@@ -1020,9 +1036,27 @@ CYSliderDelegate>
                 CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
                 while (strongSelf.enableAudio)//循环开始
                 {
+                    
+                    if (!(strongSelf->_bufferedDuration > strongSelf->_minBufferedDuration))//缓冲
+                    {
+                        if (strongSelf->_minBufferedDuration > 0) {
+                            
+                            if (!strongSelf->_buffered)
+                            {
+                                strongSelf->_buffered = YES;
+                            }
+                            
+                            if (weakSelf.state != CYFFmpegPlayerPlayState_Buffing) {
+                                [strongSelf _buffering];
+                            }
+                            
+                        }
+                    }
+                    
                     if (strongSelf->_buffered) {
                         continue;
                     }
+            
                     @synchronized(strongSelf->_audioFrames)
                     {
                         NSUInteger count = strongSelf->_audioFrames.count;
@@ -1032,21 +1066,36 @@ CYSliderDelegate>
                         {
                             if (strongSelf->_decoder.validVideo)
                             {
-                                const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
-                                
                                 if (strongSelf->_audioFrames.count)
                                 {
                                     [strongSelf->_audioFrames removeObjectAtIndex:0];
                                 }
                                 
+                                const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
+                                
+                                if (delta <= 0.01)
+                                {
+#ifdef DEBUG
+                                    LoggerStream(0, @"desync audio (outrun) wait %.4f %.4f", strongSelf->_moviePosition, audioFrame.position);
+                                    strongSelf->_debugAudioStatus = 1;
+                                    strongSelf->_debugAudioStatusTS = [NSDate date];
+#endif
+                                    
+//                                    if (strongSelf->_bufferedDuration > strongSelf->_minBufferedDuration)
+                                    {
+                                        [audioManager setData:audioFrame.samples sampleRate:[audioManager samplingRate]];//播放
+                                    }
+                                }
+                                
+                                
+                                
                                 if (delta > 0.1 && count > 1)//音视频播放同步
                                 {
 #ifdef DEBUG
                                     LoggerStream(0, @"desync audio (lags) skip %.4f %.4f", strongSelf->_moviePosition, audioFrame.position);
-                                    _debugAudioStatus = 2;
-                                    _debugAudioStatusTS = [NSDate date];
+                                    strongSelf->_debugAudioStatus = 2;
+                                    strongSelf->_debugAudioStatusTS = [NSDate date];
 #endif
-                                    continue;
                                 }
                             }
                             else
@@ -1054,8 +1103,12 @@ CYSliderDelegate>
                                 [strongSelf->_audioFrames removeObjectAtIndex:0];
                                 strongSelf->_moviePosition = audioFrame.position;
                                 strongSelf->_bufferedDuration -= audioFrame.duration;
+                                if (strongSelf->_bufferedDuration > strongSelf->_minBufferedDuration)
+                                {
+                                    [audioManager setData:audioFrame.samples sampleRate:[audioManager samplingRate]];//播放
+                                }
                             }
-                            [audioManager setData:audioFrame.samples sampleRate:44100];//播放
+                            
                         }
                         
                     }
@@ -1222,7 +1275,9 @@ CYSliderDelegate>
 
 - (void) tick
 {
-    if (_buffered && ((_bufferedDuration > _minBufferedDuration) || _decoder.isEOF)) {
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    if (_buffered &&
+        ((_bufferedDuration > _minBufferedDuration) ||_decoder.isEOF)) {
         
         _tickCorrectionTime = 0;
         _buffered = NO;
@@ -1914,8 +1969,8 @@ CYSliderDelegate>
                 _cyAnima(^{
                     _cyHiddenViews(@[_self.controlView.draggingProgressView]);
                 });
-                [_self setMoviePosition:_self.controlView.draggingProgressView.progress * _self.controlView.draggingProgressView.decoder.duration];
-                [_self play];
+                [_self setMoviePosition:_self.controlView.draggingProgressView.progress * _self.controlView.draggingProgressView.decoder.duration playMode:YES];
+//                [_self play];
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     _self.controlView.draggingProgressView.hiddenProgressSlider = NO;
                 });
@@ -1995,7 +2050,8 @@ CYSliderDelegate>
     switch (slider.tag) {
         case CYVideoPlaySliderTag_Progress: {
             NSInteger currentTime = slider.value * _decoder.duration;
-            [self setMoviePosition:currentTime];
+            [self pause];
+            [self setMoviePosition:currentTime playMode:YES];
             [self _delayHiddenControl];
             _cyAnima(^{
                 _cyHiddenViews(@[self.controlView.draggingProgressView]);
@@ -2064,8 +2120,7 @@ CYSliderDelegate>
                 return;
             }
             NSInteger currentTime = slider.value * _decoder.duration;
-            self.playing = YES;
-            [self setMoviePosition:currentTime];
+            [self setMoviePosition:currentTime playMode:YES];
             [self _delayHiddenControl];
             _cyAnima(^{
                 _cyHiddenViews(@[self.controlView.draggingProgressView]);

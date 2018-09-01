@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import<AVFoundation/AVFoundation.h>
 
+//typedef void(^CYPCMAudioManageriNeedBu)(<#arguments#>);
+
 @interface CYPCMAudioManager : NSObject<AVAudioPlayerDelegate>
 
 

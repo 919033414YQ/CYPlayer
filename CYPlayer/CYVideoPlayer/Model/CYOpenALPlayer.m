@@ -49,6 +49,16 @@
     return ret;
 }
 
+- (BOOL)isPlaying
+{
+    //播放状态字段
+    ALint stateVaue = 0;
+    //获取播放状态，是不是正在播放
+    alGetSourcei(m_outSourceId, AL_SOURCE_STATE, &stateVaue);
+    BOOL result = stateVaue == AL_PLAYING;
+    return result;
+}
+
 -(int)updataQueueBuffer{
     
     
@@ -76,7 +86,7 @@
         {
             //停止播放
             printf("...Audio Stop\n");
-            [self stopSound];;
+//            [self stopSound];;
 //            [self cleanUpOpenAL];
             return 0;
         }
@@ -135,6 +145,24 @@
 -(void)stopSound
 {
     alSourceStop(m_outSourceId);
+    //将已经播放过的的数据删除掉
+    while((_m_numprocessed --) && _m_numprocessed > 0)
+    {
+        ALuint buff;
+        //更新缓存buffer中的数据到source中
+        alSourceUnqueueBuffers(m_outSourceId, 1, &buff);
+        //删除缓存buff中的数据
+        alDeleteBuffers(1, &buff);
+    }
+    //将未播放过的的数据删除掉
+    while((-_m_numqueued --) && _m_numqueued > 0)
+    {
+        ALuint buff;
+        //更新缓存buffer中的数据到source中
+        alSourceUnqueueBuffers(m_outSourceId, 1, &buff);
+        //删除缓存buff中的数据
+        alDeleteBuffers(1, &buff);
+    }
 }
 
 -(int)openAudioFromQueue:(char*)data

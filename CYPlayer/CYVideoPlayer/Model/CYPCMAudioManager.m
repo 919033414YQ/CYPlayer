@@ -8,6 +8,7 @@
 
 #import "CYPCMAudioManager.h"
 #import "CYOpenALPlayer.h"
+#import "ffmpeg.h"
 
 typedef struct Wavehead
 {
@@ -61,7 +62,9 @@ typedef struct Wavehead
     
     int dataSize = (int)[data length];
     char * dataBytes = (char *)[data bytes];
-    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:16 andWithAchannel:2];
+    int bit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
+    int channels = (int)[self numOutputChannels];
+    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
     //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
     NSLog(@"++++++++++++++%d",self.player.m_numqueued);
     if (self.player.m_numqueued > 10 && self.player.m_numqueued < 35) {
@@ -79,7 +82,9 @@ typedef struct Wavehead
     
     int dataSize = (int)[data length];
     char * dataBytes = (char *)[data bytes];
-    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:16 andWithAchannel:2];
+    int bit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
+    int channels = (int)[self numOutputChannels];
+    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
     //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
     NSLog(@"++++++++++++++%d",self.player.m_numqueued);
     if (self.player.m_numqueued > 10 && self.player.m_numqueued < 35) {
@@ -108,7 +113,12 @@ typedef struct Wavehead
 - (void)pause
 {
     [self.player stopSound];
-    self.player = nil;
+//    self.player = nil;
+}
+
+- (BOOL)isPlaying
+{
+    return self.player.isPlaying;
 }
 
 - (double)samplingRate

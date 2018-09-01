@@ -20,6 +20,7 @@
 @property(nonatomic,assign) int m_channel;                  //声道数
 @property(nonatomic,assign) int m_datasize;                 //一帧音频数据量
 @property(nonatomic,assign) double playRate;                //播放速率
+@property(nonatomic,assign,readonly) BOOL isPlaying;                //播放状态
 
 #pragma mark - 接口
 -(int)initOpenAL;
