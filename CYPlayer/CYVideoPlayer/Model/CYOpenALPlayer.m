@@ -15,11 +15,12 @@
     ALuint       m_outSourceId;           //source id 负责播放
     NSLock     * lock;
     float        rate;
-    
+    dispatch_semaphore_t bufferLock;
 }
 
 
 -(int)initOpenAL{
+    bufferLock = dispatch_semaphore_create(1);
     int ret = 0;
     if (m_Devicde == NULL)
     {
@@ -59,9 +60,21 @@
     return result;
 }
 
+- (int)m_numprocessed
+{
+    //获取处理队列，得出已经播放过的缓冲器的数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_PROCESSED, &_m_numprocessed);
+    return _m_numprocessed;
+}
+
+- (int)m_numqueued
+{
+    //获取缓存队列，缓存的队列数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_QUEUED, &_m_numqueued);
+    return _m_numprocessed;
+}
+
 -(int)updataQueueBuffer{
-    
-    
     //播放状态字段
     ALint stateVaue = 0;
     
@@ -109,12 +122,12 @@
         //得到已经播放的音频队列多少块
         _m_IsplayBufferSize ++;
     }
-    
     return 1;
 }
 
 -(void)cleanUpOpenAL{
     
+    dispatch_semaphore_wait(bufferLock, DISPATCH_TIME_FOREVER);
     printf("=======cleanUpOpenAL===\n");
     alDeleteSources(1, &m_outSourceId);
     
@@ -129,10 +142,11 @@
     }
     alcCloseDevice(m_Devicde);
     m_Devicde = NULL;
+    dispatch_semaphore_signal(bufferLock);
 }
 
 -(void)playSound{
-    
+    dispatch_semaphore_wait(bufferLock, DISPATCH_TIME_FOREVER);
     int ret = 0;
     
     alSourcePlay(m_outSourceId);
@@ -140,13 +154,24 @@
     {
         printf("error alcMakeContextCurrent %x\n", ret);
     }
+    dispatch_semaphore_signal(bufferLock);
 }
 
--(void)stopSound
+- (void)pauseSound
 {
     alSourceStop(m_outSourceId);
+}
+
+-(void)stopSoundAndCleanBuffer
+{
+    dispatch_semaphore_wait(bufferLock, DISPATCH_TIME_FOREVER);
+    alSourceStop(m_outSourceId);
+    //获取处理队列，得出已经播放过的缓冲器的数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_PROCESSED, &_m_numprocessed);
+    //获取缓存队列，缓存的队列数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_QUEUED, &_m_numqueued);
     //将已经播放过的的数据删除掉
-    while((_m_numprocessed --) && _m_numprocessed > 0)
+    while(_m_numprocessed > 0 && (_m_numprocessed --))
     {
         ALuint buff;
         //更新缓存buffer中的数据到source中
@@ -155,7 +180,7 @@
         alDeleteBuffers(1, &buff);
     }
     //将未播放过的的数据删除掉
-    while((-_m_numqueued --) && _m_numqueued > 0)
+    while(_m_numqueued > 0 && (-_m_numqueued --))
     {
         ALuint buff;
         //更新缓存buffer中的数据到source中
@@ -163,6 +188,7 @@
         //删除缓存buff中的数据
         alDeleteBuffers(1, &buff);
     }
+    dispatch_semaphore_signal(bufferLock);
 }
 
 -(int)openAudioFromQueue:(char*)data
@@ -252,6 +278,7 @@
     
     bufferID = 0;
     
+
     return ret;
 }
 

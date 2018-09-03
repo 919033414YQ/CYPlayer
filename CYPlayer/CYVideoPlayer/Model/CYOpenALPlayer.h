@@ -27,6 +27,7 @@
 -(int)updataQueueBuffer;
 -(void)cleanUpOpenAL;
 -(void)playSound;
--(void)stopSound;
+-(void)pauseSound;
+-(void)stopSoundAndCleanBuffer;
 -(int)openAudioFromQueue:(char*)data andWithDataSize:(int)dataSize andWithSampleRate:(int) aSampleRate andWithAbit:(int)aBit andWithAchannel:(int)aChannel;
 @end

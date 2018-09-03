@@ -431,6 +431,7 @@ static int interrupt_callback(void *ctx);
     NSArray             *_audioStreams;
     NSArray             *_subtitleStreams;
     SwrContext          *_swrContext;
+    dispatch_semaphore_t _swrContextLock;
     unsigned char       *_swrBuffer;
     NSUInteger          _swrBufferSize;
     NSDictionary        *_info;
@@ -481,8 +482,8 @@ static int interrupt_callback(void *ctx);
 	   
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
-//        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_BACKWARD);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_FRAME);
+        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+//        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
@@ -725,6 +726,15 @@ static int interrupt_callback(void *ctx);
     avformat_network_init();
 }
 
+- (instancetype)init
+{
+    if (self = [super init])
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)   name:AVAudioSessionRouteChangeNotification object:nil];
+    }
+    return self;
+}
+
 + (id) movieDecoderWithContentPath: (NSString *) path
                              error: (NSError **) perror
 {
@@ -739,6 +749,7 @@ static int interrupt_callback(void *ctx);
 {
     LoggerStream(2, @"%@ dealloc", self);
     [self closeFile];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - private
@@ -981,8 +992,11 @@ static int interrupt_callback(void *ctx);
 //
 //            return cyPlayerErroReSampler;
 //        }
-        
-        if (audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0)
+        _swrContextLock = dispatch_semaphore_create(1);
+        dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+        BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0;
+        dispatch_semaphore_signal(_swrContextLock);
+        if (result)
         {
             return cyPlayerErroReSampler;
         }
@@ -1290,7 +1304,6 @@ static int interrupt_callback(void *ctx);
  */
 int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
 {
-    
     if(codec->sample_fmt == AV_SAMPLE_FMT_S16 || codec->sample_fmt == AV_SAMPLE_FMT_S32 ||codec->sample_fmt == AV_SAMPLE_FMT_U8){
         
         LoggerAudio(1, @"codec->sample_fmt:%d", codec->sample_fmt);
@@ -1407,11 +1420,12 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     void * audioData;
     int out_linesize;
     
+    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
     if (_swrContext) {
         
         const NSUInteger ratio = MAX(1, audioManager.samplingRate / _audioCodecCtx->sample_rate) *
-                                 MAX(1, audioManager.numOutputChannels / _audioCodecCtx->channels) * 2;
-
+        MAX(1, audioManager.numOutputChannels / _audioCodecCtx->channels) * 2;
+        
         
         const int bufSize = av_samples_get_buffer_size(&out_linesize,
                                                        (int)audioManager.numOutputChannels,
@@ -1429,25 +1443,23 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         
         
         Byte *outbuf[2] = { _swrBuffer, 0 };
-       
+        
         numFrames = audio_swr_resampling_audio(_swrContext, _audioFrame, outbuf);
         
-//        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
-//        if (_swrContext && av_sample_fmt_is_planar(_audioCodecCtx->sample_fmt) ) {
-//            NSString *filename=[[self infoFilePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.pcm", _fileCount]];
-//            const char *out_file = [filename cStringUsingEncoding:NSUTF8StringEncoding];
-//            _out_fb = fopen(out_file, "wb");
-//            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
-//            fclose(_out_fb);
-//            _fileCount++;
-//        }
+        //        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
+        //        if (_swrContext && av_sample_fmt_is_planar(_audioCodecCtx->sample_fmt) ) {
+        //            NSString *filename=[[self infoFilePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.pcm", _fileCount]];
+        //            const char *out_file = [filename cStringUsingEncoding:NSUTF8StringEncoding];
+        //            _out_fb = fopen(out_file, "wb");
+        //            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
+        //            fclose(_out_fb);
+        //            _fileCount++;
+        //        }
         
         if (numFrames < 0) {
             LoggerAudio(0, @"fail resample audio");
             return nil;
         }
-        
-        
         audioData = _swrBuffer;
         
     } else {
@@ -1460,6 +1472,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         audioData = _audioFrame->data[0];
         numFrames = _audioCodecCtx->frame_size;
     }
+    dispatch_semaphore_signal(_swrContextLock);
     
     const NSUInteger numElements = numFrames * numChannels;
     
@@ -1821,6 +1834,26 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     av_packet_unref(&packet);
     
     return result;
+}
+
+# pragma mark - NotificationCenter
+
+- (void)audioRouteChangeListenerCallback:(NSNotification*)notification
+{
+    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    int64_t audioChannel = av_get_default_channel_layout((int)(audioManager.numOutputChannels));
+    int64_t swrcontext_channel;
+    av_opt_get_int(_swrContext, "out_channel_layout", 0, &swrcontext_channel);
+    if (audioChannel != swrcontext_channel)
+    {
+        BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx);
+        if (!result)
+        {
+            
+        }
+    }
+    dispatch_semaphore_signal(_swrContextLock);
 }
 
 @end

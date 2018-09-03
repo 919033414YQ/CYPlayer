@@ -32,9 +32,8 @@ typedef struct Wavehead
     long int q;             //语音数据部分长度，不包括文件头的任何部分
 } WaveHead;//定义WAVE文件的文件头结构体
 
-@interface CYPCMAudioManager()
+@interface CYPCMAudioManager()<AVAudioSessionDelegate>
 
-@property (nonatomic,strong) CYOpenALPlayer *player;
 @property (nonatomic,strong) NSMutableData *pcmData;
 @property (nonatomic,strong) NSTimer *timer;
 
@@ -48,8 +47,18 @@ typedef struct Wavehead
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         audioManager = [[CYPCMAudioManager alloc] init];
+        [[AVAudioSession sharedInstance]setCategory:AVAudioSessionCategoryPlayback error:nil];
     });
     return audioManager;
+}
+
+- (instancetype)init
+{
+    if (self = [super init])
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)   name:AVAudioSessionRouteChangeNotification object:nil];
+    }
+    return self;
 }
 
 -(void)setFilePath:(NSString *)path sampleRate:(long)sample
@@ -87,7 +96,7 @@ typedef struct Wavehead
     [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
     //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
     NSLog(@"++++++++++++++%d",self.player.m_numqueued);
-    if (self.player.m_numqueued > 10 && self.player.m_numqueued < 35) {
+    if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
         [NSThread sleepForTimeInterval:0.01];
     }else if (self.player.m_numqueued > 35){
         [NSThread sleepForTimeInterval:0.025];
@@ -105,15 +114,27 @@ typedef struct Wavehead
     return _player;
 }
 
-//- (void)play
-//{
-//    [self.player playSound];
-//}
+- (void)play
+{
+    [self.player playSound];
+}
 
 - (void)pause
 {
-    [self.player stopSound];
+    [self.player pauseSound];
 //    self.player = nil;
+}
+
+- (void)stopSoundAndCleanBuffer
+{
+    [self.player stopSoundAndCleanBuffer];
+}
+
+- (void)resetPlayer
+{
+    [self.player pauseSound];
+    self.player = nil;
+    [self player];
 }
 
 - (BOOL)isPlaying
@@ -131,6 +152,21 @@ typedef struct Wavehead
 {
     double result = [AVAudioSession sharedInstance].outputNumberOfChannels;
     return result;
+}
+
+# pragma mark - NotificationCenter
+- (void)audioRouteChangeListenerCallback:(NSNotification*)notification
+{
+    if ([self.delegate respondsToSelector:@selector(audioManager:audioRouteChangeListenerCallback:)])
+    {
+        [self.delegate audioManager:self audioRouteChangeListenerCallback:notification];
+    }
+}
+
+# pragma mark - Other
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end

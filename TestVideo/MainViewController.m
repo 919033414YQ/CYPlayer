@@ -87,7 +87,7 @@
 {
     [super viewWillAppear:animated];
     
-    [self reloadMovies];
+//    [self reloadMovies];
     [self.tableView reloadData];
 }
 

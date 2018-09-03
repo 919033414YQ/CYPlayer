@@ -8,13 +8,27 @@
 
 #import <Foundation/Foundation.h>
 #import<AVFoundation/AVFoundation.h>
+#import "CYOpenALPlayer.h"
+
+@class CYPCMAudioManager;
 
 //typedef void(^CYPCMAudioManageriNeedBu)(<#arguments#>);
+
+@protocol CYPCMAudioManagerDelegate<NSObject>
+
+@optional
+- (void)audioManager:(CYPCMAudioManager *)audioManager audioRouteChangeListenerCallback:(NSNotification*)notification;
+
+@end
 
 @interface CYPCMAudioManager : NSObject<AVAudioPlayerDelegate>
 
 
 + (CYPCMAudioManager*) audioManager;
+
+@property (nonatomic, weak) id<CYPCMAudioManagerDelegate> delegate;
+
+@property (nonatomic,strong) CYOpenALPlayer *player;
 
 @property (readonly) NSInteger          numOutputChannels;
 @property (readonly) double             samplingRate;
@@ -40,15 +54,24 @@
 /**
  开始播放
  ****/
-//- (void)play;
+- (void)play;
 
 
+/**
+ 停止并清除缓存
+ */
+- (void)stopSoundAndCleanBuffer;
 
 /**
  停止播放
  ****/
 - (void)pause;
 
+
+/**
+ 重置播放器
+ */
+- (void)resetPlayer;
 
 
 

@@ -89,6 +89,8 @@
 		0E343E652107134900DF4564 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E642107134900DF4564 /* libz.tbd */; };
 		0E5FA22D21003E24002A7597 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA22B21003E23002A7597 /* MainViewController.m */; };
 		0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0E5FA237210062C5002A7597 /* cyplayer.bundle */; };
+		0E7FA51C213CF42400D1F16B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51B213CF42300D1F16B /* AVFoundation.framework */; };
+		0E7FA51E213CF43600D1F16B /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51D213CF43600D1F16B /* OpenAL.framework */; };
 		0ECD4C0B2111A2D30078D24A /* CYFFmpegViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA24221007479002A7597 /* CYFFmpegViewController.m */; };
 		0ECD4C102111A33C0078D24A /* CYFFmpegPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */; };
 		0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */; };
@@ -296,6 +298,8 @@
 		0E5FA237210062C5002A7597 /* cyplayer.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = cyplayer.bundle; sourceTree = "<group>"; };
 		0E5FA24121007479002A7597 /* CYFFmpegViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegViewController.h; sourceTree = "<group>"; };
 		0E5FA24221007479002A7597 /* CYFFmpegViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegViewController.m; sourceTree = "<group>"; };
+		0E7FA51B213CF42300D1F16B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		0E7FA51D213CF43600D1F16B /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegPlayer.m; sourceTree = "<group>"; };
 		0ECD4C0D2111A33C0078D24A /* CYFFmpegPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYFFmpegPlayer.h; sourceTree = "<group>"; };
 		0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerGLView.m; sourceTree = "<group>"; };
@@ -472,6 +476,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E7FA51E213CF43600D1F16B /* OpenAL.framework in Frameworks */,
+				0E7FA51C213CF42400D1F16B /* AVFoundation.framework in Frameworks */,
 				0ED085FE212ADAAB0057BE9F /* libavfilter.a in Frameworks */,
 				0ED085FD212ADAAB0057BE9F /* libavutil.a in Frameworks */,
 				0ED08604212ADAAB0057BE9F /* libswscale.a in Frameworks */,
@@ -1292,6 +1298,8 @@
 		AA3CD3F92BA184082CBCD8BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0E7FA51D213CF43600D1F16B /* OpenAL.framework */,
+				0E7FA51B213CF42300D1F16B /* AVFoundation.framework */,
 				0EF574AE212A719A0057ECB3 /* CoreMedia.framework */,
 				0EF574AC212A718E0057ECB3 /* VideoToolbox.framework */,
 				0EF574AA212A71850057ECB3 /* AudioToolbox.framework */,
