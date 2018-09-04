@@ -107,6 +107,8 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 - (void)_prepareState;
 
+- (void)_readyState;
+
 - (void)_playState;
 
 - (void)_pauseState;

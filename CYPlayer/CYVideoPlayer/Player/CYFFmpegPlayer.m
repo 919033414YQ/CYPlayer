@@ -84,8 +84,8 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
-#define NETWORK_MIN_BUFFERED_DURATION 2.0
-#define NETWORK_MAX_BUFFERED_DURATION 4.0
+#define NETWORK_MIN_BUFFERED_DURATION 4.0
+#define NETWORK_MAX_BUFFERED_DURATION 8.0
 
 @interface CYFFmpegPlayer ()<
 CYVideoPlayerControlViewDelegate,
@@ -2016,6 +2016,7 @@ CYPCMAudioManagerDelegate>
         }
         [self play];
     }
+    [self _readyState];
 }
 
 - (void)_itemPlayEnd {
@@ -2458,6 +2459,10 @@ CYPCMAudioManagerDelegate>
     }
     
     self.state = CYFFmpegPlayerPlayState_Prepare;
+}
+
+- (void)_readyState {
+    self.state = CYFFmpegPlayerPlayState_Ready;
 }
 
 - (void)_playState {
