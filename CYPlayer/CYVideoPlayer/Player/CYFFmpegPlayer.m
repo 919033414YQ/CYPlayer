@@ -1840,7 +1840,10 @@ CYPCMAudioManagerDelegate>
                 break;
             case CYFFmpegPlayerPlayState_Buffing:
             case CYFFmpegPlayerPlayState_Playing: {
-                [self pause];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self pause];
+                    [self showTitle:@"已暂停"];
+                });
                 self.userClickedPause = YES;
             }
                 break;
@@ -2161,7 +2164,11 @@ CYPCMAudioManagerDelegate>
         }
             break;
         case CYVideoPlayControlViewTag_Pause: {
-            [self pause];
+            __weak typeof(&*self)weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf pause];
+                [weakSelf showTitle:@"已暂停"];
+            });
             self.userClickedPause = YES;
         }
             break;
@@ -2324,22 +2331,41 @@ CYPCMAudioManagerDelegate>
     NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
     switch (routeChangeReason) {
         case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
+        {
             NSLog(@"AVAudioSessionRouteChangeReasonNewDeviceAvailable");
             NSLog(@"耳机插入");
             [self pause];
+            __weak typeof(&*self)weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf pause];
+                [weakSelf showTitle:@"已暂停"];
+            });
             [[CYPCMAudioManager audioManager] resetPlayer];
+        }
             break;
         case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
+        {
             NSLog(@"AVAudioSessionRouteChangeReasonOldDeviceUnavailable");
             NSLog(@"耳机拔出，停止播放操作");
-            [self pause];
+            __weak typeof(&*self)weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf pause];
+                [weakSelf showTitle:@"已暂停"];
+            });
             [[CYPCMAudioManager audioManager] resetPlayer];
+        }
             break;
         case AVAudioSessionRouteChangeReasonCategoryChange:
+        {
             // called at start - also when other audio wants to play
             NSLog(@"AVAudioSessionRouteChangeReasonCategoryChange");
-            [self pause];
+            __weak typeof(&*self)weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf pause];
+                [weakSelf showTitle:@"已暂停"];
+            });
             [[CYPCMAudioManager audioManager] resetPlayer];
+        }
             break;
     }
 }
@@ -2789,6 +2815,7 @@ CYPCMAudioManagerDelegate>
 
 
 - (BOOL)play {
+    if (!_decoder) { return NO; }
     self.suspend = NO;
     self.stopped = NO;
     
@@ -2805,6 +2832,8 @@ CYPCMAudioManagerDelegate>
 
 
 - (BOOL)pause {
+    if (!_decoder) { return NO; }
+    
     self.suspend = YES;
     
 //    if ( !self.asset ) return NO;
@@ -2816,9 +2845,9 @@ CYPCMAudioManagerDelegate>
     }
     [self _pause];
 //    if ( self.orentation.fullScreen )
-    {
-        [self showTitle:@"已暂停"];
-    }
+//    {
+//        [self showTitle:@"已暂停"];
+//    }
     return YES;
 }
 

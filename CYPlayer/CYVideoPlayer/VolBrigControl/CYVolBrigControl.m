@@ -64,6 +64,10 @@
 //    volumeView.frame = CGRectMake(-1000, -100, 100, 100);
         if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
             _systemVolume = (UISlider *)view;
+            AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+            CGFloat currentVol = audioSession.outputVolume;
+            _volume = currentVol;
+            _systemVolume.value  = currentVol;
             break;
         }
     }
