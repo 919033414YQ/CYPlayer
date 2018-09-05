@@ -61,7 +61,7 @@ typedef struct Wavehead
     return self;
 }
 
--(void)setFilePath:(NSString *)path sampleRate:(long)sample
+-(void)setFilePath:(NSString *)path
 {
     NSData * data = [NSData dataWithContentsOfFile:path];
     
@@ -83,7 +83,7 @@ typedef struct Wavehead
 //    }
 }
 
--(void)setData:(NSData *)data sampleRate:(long)sample
+-(void)setData:(NSData *)data
 {
     if (data == nil) {
         return;

@@ -958,6 +958,7 @@ static int interrupt_callback(void *ctx);
 
 - (cyPlayerError) openAudioStream: (NSInteger) audioStream
 {
+    _swrContextLock = dispatch_semaphore_create(1);//初始化锁
     AVCodecContext *codecCtx = avcodec_alloc_context3(NULL);
     avcodec_parameters_to_context(codecCtx, _formatCtx->streams[audioStream]->codecpar);
     SwrContext *swrContext = NULL;
@@ -992,7 +993,6 @@ static int interrupt_callback(void *ctx);
 //
 //            return cyPlayerErroReSampler;
 //        }
-        _swrContextLock = dispatch_semaphore_create(1);
         dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
         BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0;
         dispatch_semaphore_signal(_swrContextLock);
@@ -1304,18 +1304,18 @@ static int interrupt_callback(void *ctx);
  */
 int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
 {
-    if(codec->sample_fmt == AV_SAMPLE_FMT_S16 || codec->sample_fmt == AV_SAMPLE_FMT_S32 ||codec->sample_fmt == AV_SAMPLE_FMT_U8){
-        
-        LoggerAudio(1, @"codec->sample_fmt:%d", codec->sample_fmt);
-        
-        if(*swr_ctx){
-            
-            swr_free(swr_ctx);
-            
-            *swr_ctx = NULL;
-        }
-        return -1;
-    }
+//    if(codec->sample_fmt == AV_SAMPLE_FMT_S16 || codec->sample_fmt == AV_SAMPLE_FMT_S32 ||codec->sample_fmt == AV_SAMPLE_FMT_U8){
+//
+//        LoggerAudio(1, @"codec->sample_fmt:%d", codec->sample_fmt);
+//
+//        if(*swr_ctx){
+//
+//            swr_free(swr_ctx);
+//
+//            *swr_ctx = NULL;
+//        }
+//        return 2;
+//    }
     
     if(*swr_ctx){
         swr_free(swr_ctx);
@@ -1335,7 +1335,14 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     /* set options */
     
-    av_opt_set_int(*swr_ctx, "in_channel_layout",    codec->channel_layout, 0);
+    if (codec->channel_layout)
+    {
+        av_opt_set_int(*swr_ctx, "in_channel_layout",    codec->channel_layout, 0);
+    }
+    else
+    {
+        av_opt_set_int(*swr_ctx, "in_channel_layout",    AV_CH_LAYOUT_MONO, 0);
+    }
     
     av_opt_set_int(*swr_ctx, "in_sample_rate",       codec->sample_rate, 0);
     
@@ -1392,7 +1399,7 @@ int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t
     
     long int dst_bufsize = len * audioManager.numOutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
     
-    LoggerAudio(1, @" dst_bufsize:%d", (int)dst_bufsize);
+//    LoggerAudio(1, @" dst_bufsize:%d", (int)dst_bufsize);
     
     return (int)dst_bufsize;
 }
@@ -1420,21 +1427,18 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     void * audioData;
     int out_linesize;
     
+    const int bufSize = av_samples_get_buffer_size(&out_linesize,
+                                                   (int)audioManager.numOutputChannels,
+                                                   _audioFrame->nb_samples,
+                                                   AV_SAMPLE_FMT_S16,
+                                                   1);
+
     dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
     if (_swrContext) {
         
         const NSUInteger ratio = MAX(1, audioManager.samplingRate / _audioCodecCtx->sample_rate) *
         MAX(1, audioManager.numOutputChannels / _audioCodecCtx->channels) * 2;
-        
-        
-        const int bufSize = av_samples_get_buffer_size(&out_linesize,
-                                                       (int)audioManager.numOutputChannels,
-                                                       _audioCodecCtx->frame_size,
-                                                       AV_SAMPLE_FMT_S16,
-                                                       1);
-        
-        
-        
+    
         if (!_swrBuffer || _swrBufferSize < bufSize) {
             _swrBufferSize = bufSize;
             _swrBuffer = realloc(_swrBuffer, _swrBufferSize);
@@ -1446,15 +1450,18 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         
         numFrames = audio_swr_resampling_audio(_swrContext, _audioFrame, outbuf);
         
-        //        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
-        //        if (_swrContext && av_sample_fmt_is_planar(_audioCodecCtx->sample_fmt) ) {
-        //            NSString *filename=[[self infoFilePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.pcm", _fileCount]];
-        //            const char *out_file = [filename cStringUsingEncoding:NSUTF8StringEncoding];
-        //            _out_fb = fopen(out_file, "wb");
-        //            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
-        //            fclose(_out_fb);
-        //            _fileCount++;
-        //        }
+//        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
+//        if (_swrContext ) {
+//            NSString *filename=[[self infoFilePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.pcm", _fileCount]];
+//            const char *out_file = [filename cStringUsingEncoding:NSUTF8StringEncoding];
+//            if (!_out_fb)
+//            {
+//                _out_fb = fopen(out_file, "wb");
+//            }
+//            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
+//            fclose(_out_fb);
+////            _fileCount++;
+//        }
         
         if (numFrames < 0) {
             LoggerAudio(0, @"fail resample audio");
@@ -1469,8 +1476,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             return nil;
         }
         
-        audioData = _audioFrame->data[0];
-        numFrames = _audioCodecCtx->frame_size;
+        audioData = _audioFrame->extended_data;
+        numFrames = out_linesize;
     }
     dispatch_semaphore_signal(_swrContextLock);
     

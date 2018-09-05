@@ -84,7 +84,7 @@
     alGetSourcei(outSourceID,AL_BUFFERS_PROCESSED, &processed);
     alGetSourcei(outSourceID,AL_BUFFERS_QUEUED, &queued);
     
-    while(processed--)
+    while(processed > 0 && processed--)
     {
         alSourceUnqueueBuffers(outSourceID,1, &buff);
         alDeleteBuffers(1, &buff);

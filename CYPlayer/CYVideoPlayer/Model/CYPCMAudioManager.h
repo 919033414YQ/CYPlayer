@@ -39,7 +39,7 @@
  * path   音频pcm文件完整路径
  * sample 音频pcm文件采样率，支持8000和16000两种
  ****/
--(void)setFilePath:(NSString *)path sampleRate:(long)sample;
+-(void)setFilePath:(NSString *)path;
 
 
 /**
@@ -48,7 +48,7 @@
  * data   音频数据
  * sample 音频pcm文件采样率，支持8000和16000两种
  ****/
--(void)setData:(NSData *)data sampleRate:(long)sample;
+-(void)setData:(NSData *)data;
 
 
 /**
