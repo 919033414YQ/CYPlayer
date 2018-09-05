@@ -52,26 +52,14 @@
 
 
 /**
- 开始播放
- ****/
-- (void)play;
-
-
-/**
  停止并清除缓存
  */
-- (void)stopSoundAndCleanBuffer;
+- (void)stopAndCleanBuffer;
 
 /**
  停止播放
  ****/
-- (void)pause;
-
-
-/**
- 重置播放器
- */
-- (void)resetPlayer;
+- (void)stop;
 
 
 

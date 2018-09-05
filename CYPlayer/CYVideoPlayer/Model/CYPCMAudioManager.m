@@ -68,19 +68,19 @@ typedef struct Wavehead
     if (data == nil) {
         return;
     }
-    
-    int dataSize = (int)[data length];
-    char * dataBytes = (char *)[data bytes];
-    int bit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
-    int channels = (int)[self numOutputChannels];
-    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
-    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
-    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
-    if (self.player.m_numqueued > 10 && self.player.m_numqueued < 35) {
-        [NSThread sleepForTimeInterval:0.01];
-    }else if (self.player.m_numqueued > 35){
-        [NSThread sleepForTimeInterval:0.025];
-    }
+//    
+//    int dataSize = (int)[data length];
+//    char * dataBytes = (char *)[data bytes];
+//    int bit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
+//    int channels = (int)[self numOutputChannels];
+//    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
+//    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
+//    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
+//    if (self.player.m_numqueued > 10 && self.player.m_numqueued < 35) {
+//        [NSThread sleepForTimeInterval:0.01];
+//    }else if (self.player.m_numqueued > 35){
+//        [NSThread sleepForTimeInterval:0.025];
+//    }
 }
 
 -(void)setData:(NSData *)data sampleRate:(long)sample
@@ -90,17 +90,15 @@ typedef struct Wavehead
     }
     
     int dataSize = (int)[data length];
-    char * dataBytes = (char *)[data bytes];
-    int bit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
-    int channels = (int)[self numOutputChannels];
-    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:(int)sample andWithAbit:bit andWithAchannel:channels];
-    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
-    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
-    if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
-        [NSThread sleepForTimeInterval:0.01];
-    }else if (self.player.m_numqueued > 35){
-        [NSThread sleepForTimeInterval:0.025];
-    }
+    unsigned char * dataBytes = (unsigned char *)[data bytes];
+    [self.player openAudioFromQueue:dataBytes withLength:dataSize];
+//    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
+//    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
+//    if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
+//        [NSThread sleepForTimeInterval:0.01];
+//    }else if (self.player.m_numqueued > 35){
+//        [NSThread sleepForTimeInterval:0.025];
+//    }
 }
 
 
@@ -109,7 +107,34 @@ typedef struct Wavehead
     if (!_player)
     {
         _player = [[CYOpenALPlayer alloc] init];
-        [_player initOpenAL];
+        int aBit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
+        int aChannel = (int)[self numOutputChannels];
+        //样本数openal的表示方法
+        ALenum format = 0;
+        if (aBit == 8)
+        {
+            if (aChannel == 1)
+            {
+                format = AL_FORMAT_MONO8;
+            }
+            else if(aChannel == 2)
+            {
+                format = AL_FORMAT_STEREO8;
+            }
+        }
+        
+        if( aBit == 16 )
+        {
+            if( aChannel == 1 )
+            {
+                format = AL_FORMAT_MONO16;
+            }
+            if( aChannel == 2 )
+            {
+                format = AL_FORMAT_STEREO16;
+            }
+        }
+        [_player initOpenAL:format :self.samplingRate];
     }
     return _player;
 }
@@ -119,20 +144,22 @@ typedef struct Wavehead
     [self.player playSound];
 }
 
-- (void)pause
+- (void)stop
 {
-    [self.player pauseSound];
+    [self.player stopSound];
 //    self.player = nil;
 }
 
-- (void)stopSoundAndCleanBuffer
+- (void)stopAndCleanBuffer
 {
-    [self.player stopSoundAndCleanBuffer];
+    [self.player stopSound];
+    [self.player cleanUpOpenAL];
+    self.player = nil;
 }
 
 - (void)resetPlayer
 {
-    [self.player pauseSound];
+    [self.player stopSound];
     self.player = nil;
     [self player];
 }

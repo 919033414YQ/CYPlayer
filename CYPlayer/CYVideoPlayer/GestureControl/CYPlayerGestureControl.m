@@ -21,6 +21,10 @@
 @end
 
 @implementation CYPlayerGestureControl
+{
+    //Gesture
+    BOOL                _gestureHandling;
+}
 
 @synthesize singleTap = _singleTap;
 @synthesize doubleTap = _doubleTap;
@@ -81,6 +85,12 @@
 
 - (void)handlePan:(UIPanGestureRecognizer *)pan {
     
+    if (_gestureHandling)
+    {
+        return;
+    }
+    _gestureHandling = YES;
+    
     CGPoint translate = [pan translationInView:pan.view];
     
     switch (pan.state) {
@@ -120,6 +130,8 @@
     }
     
     [pan setTranslation:CGPointZero inView:pan.view];
+    
+    _gestureHandling = NO;
 }
 
 @end

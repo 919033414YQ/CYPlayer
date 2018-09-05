@@ -67,7 +67,7 @@
             AVAudioSession *audioSession = [AVAudioSession sharedInstance];
             CGFloat currentVol = audioSession.outputVolume;
             _volume = currentVol;
-            _systemVolume.value  = currentVol;
+//            _systemVolume.value  = currentVol;
             break;
         }
     }
@@ -75,9 +75,9 @@
 }
 
 - (void)setVolume:(float)volume {
-    if (volume < -0.1)
+    if (volume < 0)
     {
-        volume = -0.1;
+        volume = 0;
     }
     else if (volume > 1.0)
     {
