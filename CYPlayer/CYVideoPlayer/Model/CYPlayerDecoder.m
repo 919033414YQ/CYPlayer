@@ -81,8 +81,8 @@ static BOOL audioCodecIsSupported(AVCodecContext *audio)
     if (audio->sample_fmt == AV_SAMPLE_FMT_S16) {
 
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-        return  (int)audioManager.samplingRate == audio->sample_rate &&
-                audioManager.numOutputChannels == audio->channels;
+        return  (int)audioManager.avaudioSessionSamplingRate == audio->sample_rate &&
+                audioManager.avaudioSessionNumOutputChannels == audio->channels;
     }
     return NO;
 }
@@ -482,15 +482,15 @@ static int interrupt_callback(void *ctx);
 	   
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
-        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-//        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
+//        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
     if ([self validAudio]) {
         int64_t ts = (int64_t)(seconds / _audioTimeBase);
-        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-//        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
+//        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
+        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
     }
 }
@@ -779,15 +779,9 @@ static int interrupt_callback(void *ctx);
         cyPlayerError videoErr = cyPlayerErrorOpenCodec;
         cyPlayerError audioErr = cyPlayerErrorOpenCodec;
         
-        if (self.decodeType & CYVideoDecodeTypeVideo)
-        {
-            videoErr = [self openVideoStream];
-        }
+        videoErr = [self openVideoStream];
         
-        if (self.decodeType & CYVideoDecodeTypeAudio)
-        {
-            audioErr = [self openAudioStream];
-        }
+        audioErr = [self openAudioStream];
         
         _subtitleStream = -1;
         
@@ -870,6 +864,10 @@ static int interrupt_callback(void *ctx);
     cyPlayerError errCode = cyPlayerErrorStreamNotFound;
     _videoStream = -1;
     _artworkStream = -1;
+    if (!(self.decodeType & CYVideoDecodeTypeVideo))
+    {
+        return cyPlayerErrorStreamNotFound;
+    }
     _videoStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_VIDEO);
     for (NSNumber *n in _videoStreams) {
         
@@ -946,6 +944,10 @@ static int interrupt_callback(void *ctx);
 {
     cyPlayerError errCode = cyPlayerErrorStreamNotFound;
     _audioStream = -1;
+    if (!(self.decodeType & CYVideoDecodeTypeAudio))
+    {
+        return cyPlayerErrorStreamNotFound;
+    }
     _audioStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_AUDIO);
     for (NSNumber *n in _audioStreams) {
     
@@ -973,26 +975,16 @@ static int interrupt_callback(void *ctx);
     if (!audioCodecIsSupported(codecCtx)) {
 
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-//        swrContext = swr_alloc_set_opts(swrContext,
-//                                        av_get_default_channel_layout((int)(audioManager.numOutputChannels)),
-//                                        AV_SAMPLE_FMT_S16,
-//                                        audioManager.samplingRate,
-//                                        av_get_default_channel_layout(codecCtx->channels),
-//                                        codecCtx->sample_fmt,
-//                                        codecCtx->sample_rate,
-//                                        0,
-//                                        NULL);
-        
-//        if (!swrContext ||
-//            swr_init(swrContext)) {//swrContext在swr_convert之前必须初始化
-//            if (swrContext)
-//            {
-//                swr_free(&swrContext);
-//            }
-//             avcodec_free_context(&codecCtx);
-//
-//            return cyPlayerErroReSampler;
-//        }
+
+        audioManager.avcodecContextNumOutputChannels = audioManager.avaudioSessionNumOutputChannels;
+        if (codecCtx->sample_rate < audioManager.avaudioSessionSamplingRate)
+        {
+            audioManager.avcodecContextSamplingRate = codecCtx->sample_rate;
+        }
+        else
+        {
+            audioManager.avcodecContextSamplingRate = audioManager.avaudioSessionSamplingRate;
+        }
         dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
         BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0;
         dispatch_semaphore_signal(_swrContextLock);
@@ -1017,7 +1009,19 @@ static int interrupt_callback(void *ctx);
     _swrContext = swrContext;
     
     AVStream *st = _formatCtx->streams[_audioStream];
-    avStreamFPSTimeBase(st, 0.025, 0, &_audioTimeBase);
+
+    int64_t out_sample_rate;
+    if (_swrContext)
+    {
+        av_opt_get_int(_swrContext, "out_sample_rate", 0, &out_sample_rate);
+        _audioTimeBase = 1.0 / out_sample_rate;
+    }
+    else
+    {
+        avStreamFPSTimeBase(st, 0.025, 0, &_audioTimeBase);
+    }
+    
+    
     
     LoggerAudio(1, @"audio codec smr: %.d fmt: %d chn: %d tb: %f %@",
                 _audioCodecCtx->sample_rate,
@@ -1348,9 +1352,9 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
     
     av_opt_set_sample_fmt(*swr_ctx, "in_sample_fmt", codec->sample_fmt, 0);
     
-    av_opt_set_int(*swr_ctx, "out_channel_layout",    av_get_default_channel_layout((int)(audioManager.numOutputChannels)), 0);
+    av_opt_set_int(*swr_ctx, "out_channel_layout",    av_get_default_channel_layout((int)(audioManager.avcodecContextNumOutputChannels)), 0);
     
-    av_opt_set_int(*swr_ctx, "out_sample_rate",       audioManager.samplingRate, 0);
+    av_opt_set_int(*swr_ctx, "out_sample_rate",       audioManager.avcodecContextSamplingRate, 0);
     
     av_opt_set_sample_fmt(*swr_ctx, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);// AV_SAMPLE_FMT_S16
     
@@ -1397,7 +1401,7 @@ int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     
-    long int dst_bufsize = len * audioManager.numOutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+    long int dst_bufsize = len * audioManager.avcodecContextNumOutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
     
 //    LoggerAudio(1, @" dst_bufsize:%d", (int)dst_bufsize);
     
@@ -1421,14 +1425,14 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     
-    const NSUInteger numChannels = audioManager.numOutputChannels;
+    const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
     NSInteger numFrames;
     
     void * audioData;
     int out_linesize;
     
     const int bufSize = av_samples_get_buffer_size(&out_linesize,
-                                                   (int)audioManager.numOutputChannels,
+                                                   (int)audioManager.avcodecContextNumOutputChannels,
                                                    _audioFrame->nb_samples,
                                                    AV_SAMPLE_FMT_S16,
                                                    1);
@@ -1436,8 +1440,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
     if (_swrContext) {
         
-        const NSUInteger ratio = MAX(1, audioManager.samplingRate / _audioCodecCtx->sample_rate) *
-        MAX(1, audioManager.numOutputChannels / _audioCodecCtx->channels) * 2;
+        const NSUInteger ratio = MAX(1, audioManager.avcodecContextSamplingRate / _audioCodecCtx->sample_rate) *
+        MAX(1, audioManager.avcodecContextNumOutputChannels / _audioCodecCtx->channels) * 2;
     
         if (!_swrBuffer || _swrBufferSize < bufSize) {
             _swrBufferSize = bufSize;
@@ -1499,7 +1503,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         // sometimes ffmpeg can't determine the duration of audio frame
         // especially of wma/wmv format
         // so in this case must compute duration
-        frame.duration = frame.samples.length / (sizeof(float) * numChannels * audioManager.samplingRate);
+        frame.duration = frame.samples.length / (sizeof(float) * numChannels * audioManager.avcodecContextSamplingRate);
     }
     
 #if 0
@@ -1849,7 +1853,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 {
     dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-    int64_t audioChannel = av_get_default_channel_layout((int)(audioManager.numOutputChannels));
+    int64_t audioChannel = av_get_default_channel_layout((int)(audioManager.avcodecContextNumOutputChannels));
     int64_t swrcontext_channel;
     av_opt_get_int(_swrContext, "out_channel_layout", 0, &swrcontext_channel);
     if (audioChannel != swrcontext_channel)

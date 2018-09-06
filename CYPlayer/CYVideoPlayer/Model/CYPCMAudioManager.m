@@ -91,14 +91,17 @@ typedef struct Wavehead
     
     int dataSize = (int)[data length];
     unsigned char * dataBytes = (unsigned char *)[data bytes];
-    [self.player openAudioFromQueue:dataBytes withLength:dataSize];
-//    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
-//    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
-//    if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
-//        [NSThread sleepForTimeInterval:0.01];
-//    }else if (self.player.m_numqueued > 35){
-//        [NSThread sleepForTimeInterval:0.025];
-//    }
+    int aBit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
+    int aChannel = (int)(self.avcodecContextNumOutputChannels);
+//    [self.player openAudioFromQueue:dataBytes withLength:dataSize];
+    [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:self.avcodecContextSamplingRate andWithAbit:aBit andWithAchannel:aChannel];
+    //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
+    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
+    if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
+        [NSThread sleepForTimeInterval:0.01];
+    }else if (self.player.m_numqueued > 35){
+        [NSThread sleepForTimeInterval:0.025];
+    }
 }
 
 
@@ -108,7 +111,7 @@ typedef struct Wavehead
     {
         _player = [[CYOpenALPlayer alloc] init];
         int aBit = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16) * 8;
-        int aChannel = (int)[self numOutputChannels];
+        int aChannel = (int)(self.avcodecContextNumOutputChannels);
         //样本数openal的表示方法
         ALenum format = 0;
         if (aBit == 8)
@@ -134,7 +137,8 @@ typedef struct Wavehead
                 format = AL_FORMAT_STEREO16;
             }
         }
-        [_player initOpenAL:format :self.samplingRate];
+//        [_player initOpenAL:format :self.samplingRate];
+        [_player initOpenAL];
     }
     return _player;
 }
@@ -169,13 +173,13 @@ typedef struct Wavehead
     return self.player.isPlaying;
 }
 
-- (double)samplingRate
+- (double)avaudioSessionSamplingRate
 {
     double result = [AVAudioSession sharedInstance].sampleRate;
     return result;
 }
 
-- (NSInteger)numOutputChannels
+- (NSInteger)avaudioSessionNumOutputChannels
 {
     double result = [AVAudioSession sharedInstance].outputNumberOfChannels;
     return result;

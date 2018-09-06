@@ -30,8 +30,20 @@
 
 @property (nonatomic,strong) CYOpenALPlayer *player;
 
-@property (readonly) NSInteger          numOutputChannels;
-@property (readonly) double             samplingRate;
+
+/**
+ 设备自有属性
+ */
+@property (readonly) NSInteger          avaudioSessionNumOutputChannels;
+@property (readonly) double             avaudioSessionSamplingRate;
+
+
+/**
+ *资源原有属性, 重采样时使用,
+ *原资源采样率过低(例如8000->44100)会造成视频音频同步困难
+ */
+@property (nonatomic, readwrite) NSInteger          avcodecContextNumOutputChannels;
+@property (nonatomic, readwrite) double             avcodecContextSamplingRate;
 
 /**
  * 初始化播放器，并传入音频的本地路径
