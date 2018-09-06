@@ -1107,7 +1107,7 @@ CYPCMAudioManagerDelegate>
                                     
                                     [audioManager setData:audioFrame.samples];//播放
                                 }
-                                else if (delta > 0)//音频慢了
+                                else if (delta > limit_val)//音频慢了
                                 {
                                     if (strongSelf->_audioFrames.count)
                                     {
