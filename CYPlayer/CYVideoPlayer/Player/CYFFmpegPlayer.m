@@ -84,8 +84,8 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
-#define NETWORK_MIN_BUFFERED_DURATION 3.0
-#define NETWORK_MAX_BUFFERED_DURATION 6.0
+#define NETWORK_MIN_BUFFERED_DURATION 2.0
+#define NETWORK_MAX_BUFFERED_DURATION 4.0
 
 @interface CYFFmpegPlayer ()<
 CYVideoPlayerControlViewDelegate,
@@ -1096,6 +1096,7 @@ CYPCMAudioManagerDelegate>
                             {
                                 const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
                                 //音视频播放同步
+                                strongSelf->_currentAudioFramePos = audioFrame.position;
                                 CGFloat limit_val = 1.0 / weakSelf.decoder.fps;
                                 if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
                                 {
@@ -1302,9 +1303,10 @@ CYPCMAudioManagerDelegate>
 {
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     if (_buffered &&
-        (_videoBufferedDuration > _minBufferedDuration) &&
-        (_audioBufferedDuration > _minBufferedDuration)) {
-        
+        (((_videoBufferedDuration > _minBufferedDuration) &&
+          (_audioBufferedDuration > _minBufferedDuration)) ||
+         _decoder.isEOF))
+    {
         _tickCorrectionTime = 0;
         _buffered = NO;
         _gestureHandling = NO;
@@ -1312,8 +1314,28 @@ CYPCMAudioManagerDelegate>
     }
     
     CGFloat interval = 0;
-    if (!_buffered)
-        interval = [self presentFrame];
+    
+    
+    if (_moviePosition - _currentAudioFramePos < -(1.0 / _decoder.fps))
+    {
+        CYVideoFrame *frame;
+        
+        @synchronized(_videoFrames) {
+            
+            if (_videoFrames.count > 0) {
+                
+                frame = _videoFrames[0];
+                [_videoFrames removeObjectAtIndex:0];
+                _videoBufferedDuration -= frame.duration;
+                _moviePosition = frame.position;
+            }
+        }
+    }
+    else
+    {
+        if (!_buffered)
+            interval = [self presentFrame];
+    }
     
     if (self.playing) {
         

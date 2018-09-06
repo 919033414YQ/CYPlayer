@@ -2,10 +2,10 @@
 //  CYPlayerDecoder.m
 //  cyplayer
 //
-//  Created by Kolyvan on 15.10.12.
+//  Created by yellowei on 15.10.12.
 //  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
 //
-//  https://github.com/kolyvan/cyplayer
+//  https://github.com/yellowei/cyplayer
 //  this file is part of CYPlayer
 //  CYPlayer is licenced under the LGPL v3, see lgpl-3.0.txt
 
