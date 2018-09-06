@@ -1338,14 +1338,14 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     /* set options */
-    
+
     if (codec->channel_layout)
     {
         av_opt_set_int(*swr_ctx, "in_channel_layout",    codec->channel_layout, 0);
     }
     else
     {
-        av_opt_set_int(*swr_ctx, "in_channel_layout",    AV_CH_LAYOUT_MONO, 0);
+        av_opt_set_int(*swr_ctx, "in_channel_layout",    av_get_default_channel_layout(codec->channels), 0);
     }
     
     av_opt_set_int(*swr_ctx, "in_sample_rate",       codec->sample_rate, 0);
