@@ -583,7 +583,9 @@ exit:
 }
 
 - (void)render: (CYVideoFrame *) frame
-{        
+{
+    NSLock * lock = [[NSLock alloc] init];
+    [lock lock];
     static const GLfloat texCoords[] = {
         0.0f, 1.0f,
         1.0f, 1.0f,
@@ -627,6 +629,7 @@ exit:
     
     glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
     [_context presentRenderbuffer:GL_RENDERBUFFER];
+    [lock unlock];
 }
 
 @end

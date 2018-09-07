@@ -242,14 +242,14 @@ CYPCMAudioManagerDelegate>
     
     if (!_videoQueue)
     {
-        _videoQueue  = dispatch_queue_create("CYPlayer Video", DISPATCH_QUEUE_SERIAL);
-//        _videoQueue  = dispatch_get_main_queue();
+//        _videoQueue = dispatch_queue_create("CYPlayer Video", DISPATCH_QUEUE_SERIAL);
+        _videoQueue  = dispatch_get_main_queue();
     }
     
     if (!_audioQueue)
     {
-//        _audioQueue  = dispatch_queue_create("CYPlayer Audio", DISPATCH_QUEUE_SERIAL);
-        _audioQueue  = dispatch_get_main_queue();
+        _audioQueue = dispatch_queue_create("CYPlayer Audio", DISPATCH_QUEUE_SERIAL);
+//        _audioQueue  = dispatch_get_main_queue();
     }
     
     _moviePosition = 0;
@@ -1370,6 +1370,7 @@ CYPCMAudioManagerDelegate>
         }
         interval = [self presentVideoFrame];
     }
+
     if (self.playing)
     {
         const NSTimeInterval correction = [self tickCorrection];
@@ -1486,6 +1487,7 @@ CYPCMAudioManagerDelegate>
 
 - (void)audioTick
 {
+    __weak typeof(&*self)weakSelf = self;
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     if (_buffered &&
         (((_videoBufferedDuration > _minBufferedDuration) ||
@@ -1494,9 +1496,8 @@ CYPCMAudioManagerDelegate>
     {
         _tickCorrectionTime = 0;
         _buffered = NO;
-        [self play];
-        __weak typeof(&*self)weakSelf = self;
         dispatch_async(_videoQueue, ^{
+            [weakSelf play];
             [weakSelf videoTick];
         });
     }
@@ -1524,11 +1525,16 @@ CYPCMAudioManagerDelegate>
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
-                    [self _itemPlayEnd];
+                    dispatch_async(_videoQueue, ^{
+                        [weakSelf _itemPlayEnd];
+                    });
+                    
                     return;
                 }
                 
-                [self _itemPlayFailed];
+                dispatch_async(_videoQueue, ^{
+                    [weakSelf _itemPlayFailed];
+                });
                 
                 return;
             }
@@ -1541,7 +1547,9 @@ CYPCMAudioManagerDelegate>
                 }
                 
                 if (self.state != CYFFmpegPlayerPlayState_Buffing) {
-                    [self _buffering];
+                    dispatch_async(_videoQueue, ^{
+                        [weakSelf _buffering];
+                    });
                 }
                 
             }
@@ -1555,10 +1563,14 @@ CYPCMAudioManagerDelegate>
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
-                    [self _itemPlayEnd];
+                    dispatch_async(_videoQueue, ^{
+                        [weakSelf _itemPlayEnd];
+                    });
                     return;
                 }
-                [self _itemPlayFailed];
+                dispatch_async(_videoQueue, ^{
+                    [weakSelf _itemPlayFailed];
+                });
                 return;
             }
         }
@@ -1575,16 +1587,23 @@ CYPCMAudioManagerDelegate>
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
         dispatch_after(popTime, _audioQueue, ^(void){
-            [self audioTick];
+            [weakSelf audioTick];
         });
     }
     
-    if ((_tickCounter++ % 3) == 0 && _isDraging == NO) {
-        const CGFloat duration = _decoder.duration;
-        const CGFloat position = _currentAudioFramePos -_decoder.startTime;
-        [self _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
-        [self _refreshingTimeLabelWithCurrentTime:position duration:duration];
-    }
+    dispatch_async(_videoQueue, ^{
+        __strong typeof(&*self)strongSelf = weakSelf;
+        if (strongSelf)
+        {
+            if ((strongSelf->_tickCounter++ % 3) == 0 && strongSelf->_isDraging == NO) {
+                const CGFloat duration = strongSelf->_decoder.duration;
+                const CGFloat position = strongSelf->_currentAudioFramePos - strongSelf->_decoder.startTime;
+                [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
+                [weakSelf _refreshingTimeLabelWithCurrentTime:position duration:duration];
+            }
+        }
+    });
+    
 }
 
 

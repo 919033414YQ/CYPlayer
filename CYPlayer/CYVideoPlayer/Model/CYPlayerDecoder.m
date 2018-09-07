@@ -441,6 +441,8 @@ static int interrupt_callback(void *ctx);
     NSInteger           _subtitleASSEvents;
     FILE                *_out_fb;
     NSInteger           _fileCount;
+    int                 _dstWidth;
+    int                 _dstHeight;
 }
 @end
 
@@ -498,21 +500,24 @@ static int interrupt_callback(void *ctx);
 
 - (NSUInteger) frameWidth
 {
-    NSUInteger width = _videoCodecCtx->width;
-    if (width > [UIScreen mainScreen].bounds.size.width)
-    {
-        width = [UIScreen mainScreen].bounds.size.width;
+    if (_dstWidth > 0) {
+        return _dstWidth;
     }
+    NSUInteger width = _videoCodecCtx->width;
+    NSUInteger height = _videoCodecCtx->height;
+    get_video_scale_max_size(_videoCodecCtx, &width, &height);
     return width ? width : 0;
 }
 
 - (NSUInteger) frameHeight
 {
-    NSUInteger height = _videoCodecCtx->height;
-    if (height > [UIScreen mainScreen].bounds.size.height)
+    if (_dstHeight > 0)
     {
-        height = [UIScreen mainScreen].bounds.size.height;
+        return _dstHeight;
     }
+    NSUInteger width = _videoCodecCtx->width;
+    NSUInteger height = _videoCodecCtx->height;
+    get_video_scale_max_size(_videoCodecCtx, &width, &height);
     return height ? height : 0;
 }
 
@@ -846,6 +851,8 @@ static int interrupt_callback(void *ctx);
     
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
     av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
+    av_dict_set(&_options, "r", "2", 0);
+    
     
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
@@ -1250,11 +1257,13 @@ int video_direction(AVCodecContext *videoCodecCtx)
 
 void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
 {
-    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
-    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
+    CGFloat scr_scale = 1;//[UIScreen mainScreen].scale;
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * scr_scale;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * scr_scale;
     
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
+
     CGFloat ori_scale = (CGFloat)(*width) / (CGFloat)(*height);
     switch (video_direction(videoCodecCtx))
     {
@@ -1296,7 +1305,18 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     CYVideoFrame *frame;
     int width = _videoCodecCtx->width;
     int height = _videoCodecCtx->height;
-    get_video_scale_max_size(_videoCodecCtx, &width, &height);
+    if (!(_dstWidth > 0 && _dstHeight > 0))
+    {
+        get_video_scale_max_size(_videoCodecCtx, &width, &height);
+        _dstWidth = width;
+        _dstHeight = height;
+    }
+    else
+    {
+        width = _dstWidth;
+        height = _dstHeight;
+    }
+    
     if (_videoFrameFormat == CYVideoFrameFormatYUV) {
         
         if (_videoCodecCtx->width != width)//宽高发生了改变
@@ -1307,12 +1327,12 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 LoggerVideo(0, @"fail setup video scaler");
                 return nil;
             }
-            
+//            const int lineSize[8]  = { width, width / 2, width / 2, 0, 0, 0, 0, 0 };
             sws_scale(_swsContext,
                       (const uint8_t **)_videoFrame->data,
                       _videoFrame->linesize,
                       0,
-                      _videoCodecCtx->height,
+                      _videoFrame->height,
                       _picture.data,
                       _picture.linesize);
             
@@ -1814,7 +1834,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     BOOL finished = NO;
     
     while (!finished && _formatCtx) {
-        NSLog(@"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;
             av_packet_unref(&packet);
@@ -1969,7 +1989,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     BOOL finished = NO;
     
     while (!finished && _formatCtx) {
-        NSLog(@"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;
             av_packet_unref(&packet);
