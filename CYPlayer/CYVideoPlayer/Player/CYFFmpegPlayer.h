@@ -9,9 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "CYPlayerGestureControl.h"
+#import "CYPlayerDecoder.h"
 
 @class
-CYPlayerDecoder,
+//CYPlayerDecoder,
 CYVideoPlayerSettings,
 CYPrompt,
 CYVideoFrame,

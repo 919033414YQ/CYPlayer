@@ -141,7 +141,7 @@ CYPCMAudioManagerDelegate>
 }
 
 @property (readwrite) BOOL playing;
-@property (nonatomic, strong, readwrite) NSLock * decodingLock;
+@property (readwrite) BOOL decoding;
 @property (readwrite, strong) CYArtworkFrame *artworkFrame;
 
 @property (nonatomic, strong) UIView * presentView;
@@ -242,13 +242,14 @@ CYPCMAudioManagerDelegate>
     
     if (!_videoQueue)
     {
-//        _videoQueue  = dispatch_queue_create("CYPlayer Video", DISPATCH_QUEUE_SERIAL);
-        _videoQueue  = dispatch_get_main_queue();
+        _videoQueue  = dispatch_queue_create("CYPlayer Video", DISPATCH_QUEUE_SERIAL);
+//        _videoQueue  = dispatch_get_main_queue();
     }
     
     if (!_audioQueue)
     {
-        _audioQueue  = dispatch_queue_create("CYPlayer Audio", DISPATCH_QUEUE_SERIAL);
+//        _audioQueue  = dispatch_queue_create("CYPlayer Audio", DISPATCH_QUEUE_SERIAL);
+        _audioQueue  = dispatch_get_main_queue();
     }
     
     _moviePosition = 0;
@@ -256,7 +257,6 @@ CYPCMAudioManagerDelegate>
     
     _parameters = parameters;
     
-    _decodingLock = [[NSLock alloc] init];
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
     CYVideoDecodeType type = CYVideoDecodeTypeVideo;
     if (canUseAudio)
@@ -305,7 +305,14 @@ CYPCMAudioManagerDelegate>
     [[CYPCMAudioManager audioManager] stopAndCleanBuffer];
     
     while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
-        [self presentFrame];
+
+        @synchronized(_videoFrames) {
+            if (_videoFrames.count > 0)
+            {
+                [_videoFrames removeObjectAtIndex:0];
+            }
+        }
+        
         const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
         [_decoder decodeFrames:duration];
         @synchronized(_audioFrames) {
@@ -609,7 +616,8 @@ CYPCMAudioManagerDelegate>
         {
             [weakSelf enableAudio:YES];
         }
-        [weakSelf tick];
+        [weakSelf audioTick];
+        [weakSelf videoTick];
     });
     
     
@@ -1074,6 +1082,7 @@ CYPCMAudioManagerDelegate>
 
 - (void) enableAudio: (BOOL) on
 {
+    return;
 #ifdef UseCYPCMAudioManager
     if (on && _decoder.validAudio) {
         __weak typeof(&*self)weakSelf = self;
@@ -1096,19 +1105,20 @@ CYPCMAudioManagerDelegate>
                         {
                             if (strongSelf->_decoder.validVideo)
                             {
-//                                if (strongSelf->_audioFrames.count)
-//                                {
-//                                    [strongSelf->_audioFrames removeObjectAtIndex:0];
-//                                    strongSelf->_audioBufferedDuration -= audioFrame.duration;
-//                                    strongSelf->_currentAudioFramePos = audioFrame.position;
-//                                }
-//
-//                                [audioManager setData:audioFrame.samples];//播放
-//                                continue;
+                                if (strongSelf->_audioFrames.count)
+                                {
+                                    [strongSelf->_audioFrames removeObjectAtIndex:0];
+                                    strongSelf->_audioBufferedDuration -= audioFrame.duration;
+                                    strongSelf->_currentAudioFramePos = audioFrame.position;
+                                }
+
+                                [audioManager setData:audioFrame.samples];//播放
+                                continue;
                                 const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
                                 //音视频播放同步
                                 strongSelf->_currentAudioFramePos = audioFrame.position;
                                 CGFloat limit_val = 1.0 / weakSelf.decoder.fps;
+                                if (limit_val < 0.2) { limit_val = 0.2; }
                                 if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
                                 {
                                     if (strongSelf->_audioFrames.count)
@@ -1215,7 +1225,11 @@ CYPCMAudioManagerDelegate>
 
 - (void) asyncDecodeFrames
 {
-    [self.decodingLock lock];
+    if (self.decoding)
+    {
+        return;
+    }
+    self.decoding = YES;
     
     __weak CYFFmpegPlayer *weakSelf = self;
     __weak CYPlayerDecoder *weakDecoder = _decoder;
@@ -1240,11 +1254,12 @@ CYPCMAudioManagerDelegate>
                         NSArray *frames = nil;
                         if (strongSelf->_positionUpdating)//正在跳播
                         {
-                            frames = [weakDecoder decodeTargetFrames:duration :_targetPosition];
+                            frames = [weakDecoder decodeTargetFrames:duration :strongSelf->_targetPosition];
                         }
                         else
                         {
                             frames = [weakDecoder decodeFrames:duration];
+//                            frames = [weakDecoder decodeTargetFrames:duration :strongSelf->_currentAudioFramePos];
                         }
                         
                         if (frames.count) {
@@ -1256,7 +1271,7 @@ CYPCMAudioManagerDelegate>
                 }
             }
             
-            [weakSelf.decodingLock unlock];
+            weakSelf.decoding = NO;
         }
     });
 }
@@ -1340,7 +1355,30 @@ CYPCMAudioManagerDelegate>
         }
     }
     
-    return self.playing && _videoBufferedDuration < _maxBufferedDuration && _audioBufferedDuration < _maxBufferedDuration;
+    return self.playing && (_videoBufferedDuration < _maxBufferedDuration || _audioBufferedDuration < _maxBufferedDuration);
+}
+
+- (void) videoTick
+{
+    __weak typeof(&*self)weakSelf = self;
+    CGFloat interval = 0;
+    if (!_buffered)
+    {
+        if (_positionUpdating )
+        {
+            _positionUpdating = NO;
+        }
+        interval = [self presentVideoFrame];
+    }
+    if (self.playing)
+    {
+        const NSTimeInterval correction = [self tickCorrection];
+        const NSTimeInterval time = MAX(interval + correction, 0.01);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_after(popTime, _videoQueue, ^(void){
+            [weakSelf videoTick];
+        });
+    }
 }
 
 - (void) tick
@@ -1367,7 +1405,7 @@ CYPCMAudioManagerDelegate>
         {
             _positionUpdating = NO;
         }
-        interval = [self presentFrame];
+        interval = [self presentVideoFrame];
     }
     
     if (self.playing) {
@@ -1375,13 +1413,7 @@ CYPCMAudioManagerDelegate>
         const NSUInteger leftFrames =
         (_decoder.validVideo ? _videoFrames.count : 0) +
         (_decoder.validAudio ? _audioFrames.count : 0);
-//
-//        CYAudioFrame * aF = [_audioFrames firstObject];
-//        CYVideoFrame * vF = [_videoFrames firstObject];
-//        CGFloat speed = vF.duration > aF.duration ? (vF.duration / aF.duration) :(aF.duration / vF.duration);
-//        CGFloat targetDuration = speed * (vF.duration < aF.duration ? vF.duration : aF.duration);
-//        CGFloat current_audio_position = aF.position;
-//
+
         if ( leftFrames == 0 )
         {
             if (_decoder.isEOF) {
@@ -1452,6 +1484,110 @@ CYPCMAudioManagerDelegate>
     }
 }
 
+- (void)audioTick
+{
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    if (_buffered &&
+        (((_videoBufferedDuration > _minBufferedDuration) ||
+          (_audioBufferedDuration > _minBufferedDuration)) ||
+         _decoder.isEOF))
+    {
+        _tickCorrectionTime = 0;
+        _buffered = NO;
+        [self play];
+        __weak typeof(&*self)weakSelf = self;
+        dispatch_async(_videoQueue, ^{
+            [weakSelf videoTick];
+        });
+    }
+    
+    CGFloat interval = 0;
+    if (!_buffered)
+    {
+        if (_positionUpdating )
+        {
+            _positionUpdating = NO;
+        }
+        interval = [self presentAudioFrame];
+    }
+    
+    if (self.playing) {
+        
+        const NSUInteger leftFrames =
+        (_decoder.validVideo ? _videoFrames.count : 0) +
+        (_decoder.validAudio ? _audioFrames.count : 0);
+        
+        if ( leftFrames == 0 )
+        {
+            if (_decoder.isEOF) {
+                if (_decoder.duration - _decoder.position <= 1.0 &&
+                    _decoder.duration > 0 &&
+                    _decoder.duration != NSNotFound)
+                {
+                    [self _itemPlayEnd];
+                    return;
+                }
+                
+                [self _itemPlayFailed];
+                
+                return;
+            }
+            
+            if (_minBufferedDuration > 0) {
+                
+                if (!_buffered)
+                {
+                    _buffered = YES;
+                }
+                
+                if (self.state != CYFFmpegPlayerPlayState_Buffing) {
+                    [self _buffering];
+                }
+                
+            }
+        }
+        else if (_videoFrames.count == 0 &&
+                 _audioFrames.count != 0 &&
+                 _decoder.validVideo == YES)//资源是一个视频, 视频没了, 但是还有音频
+        {
+            if (_decoder.isEOF) {
+                if (_decoder.duration - _decoder.position <= 1.0 &&
+                    _decoder.duration > 0 &&
+                    _decoder.duration != NSNotFound)
+                {
+                    [self _itemPlayEnd];
+                    return;
+                }
+                [self _itemPlayFailed];
+                return;
+            }
+        }
+        
+        if (!leftFrames ||
+            !(_videoBufferedDuration > _minBufferedDuration) ||
+            !(_audioBufferedDuration > _minBufferedDuration))
+        {
+            
+            [self asyncDecodeFrames];
+        }
+        
+        const NSTimeInterval correction = [self tickCorrection];
+        const NSTimeInterval time = MAX(interval + correction, 0.01);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_after(popTime, _audioQueue, ^(void){
+            [self audioTick];
+        });
+    }
+    
+    if ((_tickCounter++ % 3) == 0 && _isDraging == NO) {
+        const CGFloat duration = _decoder.duration;
+        const CGFloat position = _currentAudioFramePos -_decoder.startTime;
+        [self _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
+        [self _refreshingTimeLabelWithCurrentTime:position duration:duration];
+    }
+}
+
+
 - (CGFloat) tickCorrection
 {
     if (_buffered)
@@ -1483,7 +1619,35 @@ CYPCMAudioManagerDelegate>
     return correction;
 }
 
-- (CGFloat) presentFrame
+- (CGFloat) presentAudioFrame
+{
+    CGFloat interval = 0;
+    
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    audioManager.delegate = self;
+    
+    @synchronized(_audioFrames)
+    {
+        NSUInteger count = _audioFrames.count;
+        CYAudioFrame * audioFrame = [_audioFrames firstObject];
+        if ([audioFrame isKindOfClass: NSClassFromString(@"CYAudioFrame")] &&
+            count > 0)
+        {
+            if (_decoder.validVideo)
+            {
+                [_audioFrames removeObjectAtIndex:0];
+                _audioBufferedDuration -= audioFrame.duration;
+                _currentAudioFramePos = audioFrame.position;
+                interval = audioFrame.duration;
+                [audioManager setData:audioFrame.samples];//播放
+            }
+        }
+    }
+    
+    return interval;
+}
+
+- (CGFloat) presentVideoFrame
 {
     CGFloat interval = 0;
     
@@ -1496,13 +1660,30 @@ CYPCMAudioManagerDelegate>
             if (_videoFrames.count > 0) {
                 
                 frame = _videoFrames[0];
-                [_videoFrames removeObjectAtIndex:0];
-                _videoBufferedDuration -= frame.duration;
+                CGFloat delta = _moviePosition - _currentAudioFramePos;
+                _moviePosition = frame.position;
+                CGFloat limit_val = 1;1.0 / _decoder.fps;
+                if (limit_val < 0.2) { limit_val = 0.2; }
+                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
+                {
+
+                    [_videoFrames removeObjectAtIndex:0];
+                    _videoBufferedDuration -= frame.duration;
+                    interval = [self presentVideoFrame:frame];//呈现视频
+                }
+                else if (delta > limit_val)//视频快了
+                {
+
+
+                }
+                else//视频慢了
+                {
+                    [_videoFrames removeObjectAtIndex:0];
+                    _videoBufferedDuration -= frame.duration;
+//                    interval = [self presentVideoFrame:frame];//呈现视频
+                }
             }
         }
-        
-        if (frame)
-            interval = [self presentVideoFrame:frame];
         
     } else if (_decoder.validAudio) {
         
@@ -1653,7 +1834,7 @@ CYPCMAudioManagerDelegate>
                 if (strongSelf) {
                     [strongSelf setMoviePositionFromDecoder];
                     weakSelf.playing = YES;
-                    [strongSelf tick];
+                    [strongSelf audioTick];
                     strongSelf->_isDraging = NO;
                 }
             });
@@ -1673,7 +1854,7 @@ CYPCMAudioManagerDelegate>
                 if (strongSelf) {
                     
                     [strongSelf setMoviePositionFromDecoder];
-                    [strongSelf presentFrame];
+                    [strongSelf presentVideoFrame];
                     strongSelf->_isDraging = NO;
                 }
             });

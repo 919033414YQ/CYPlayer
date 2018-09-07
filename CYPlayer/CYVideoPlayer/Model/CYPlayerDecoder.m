@@ -15,6 +15,7 @@
 #import "CYPCMAudioManager.h"
 #import "CYLogger.h"
 #import "CYOpenALPlayer.h"
+#import "pixfmt.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -497,12 +498,22 @@ static int interrupt_callback(void *ctx);
 
 - (NSUInteger) frameWidth
 {
-    return _videoCodecCtx ? _videoCodecCtx->width : 0;
+    NSUInteger width = _videoCodecCtx->width;
+    if (width > [UIScreen mainScreen].bounds.size.width)
+    {
+        width = [UIScreen mainScreen].bounds.size.width;
+    }
+    return width ? width : 0;
 }
 
 - (NSUInteger) frameHeight
 {
-    return _videoCodecCtx ? _videoCodecCtx->height : 0;
+    NSUInteger height = _videoCodecCtx->height;
+    if (height > [UIScreen mainScreen].bounds.size.height)
+    {
+        height = [UIScreen mainScreen].bounds.size.height;
+    }
+    return height ? height : 0;
 }
 
 - (CGFloat) sampleRate
@@ -812,7 +823,7 @@ static int interrupt_callback(void *ctx);
 - (cyPlayerError) openInput: (NSString *) path
 {
     AVFormatContext *formatCtx = NULL;
-    
+
     if (_interruptCallback) {
         
         formatCtx = avformat_alloc_context();
@@ -1010,13 +1021,13 @@ static int interrupt_callback(void *ctx);
     
     AVStream *st = _formatCtx->streams[_audioStream];
 
-    int64_t out_sample_rate;
-    if (_swrContext)
-    {
-        av_opt_get_int(_swrContext, "out_sample_rate", 0, &out_sample_rate);
-        _audioTimeBase = 1.0 / out_sample_rate;
-    }
-    else
+//    int64_t out_sample_rate;
+//    if (_swrContext)
+//    {
+//        av_opt_get_int(_swrContext, "out_sample_rate", 0, &out_sample_rate);
+//        _audioTimeBase = 1.0 / out_sample_rate;
+//    }
+//    else
     {
         avStreamFPSTimeBase(st, 0.025, 0, &_audioTimeBase);
     }
@@ -1189,14 +1200,14 @@ static int interrupt_callback(void *ctx);
     }
 }
 
-- (BOOL) setupScaler
+- (BOOL) setupScalerWidth:(int)width Heigth:(int)height DstFormat:(int)format
 {
     [self closeScaler];
     
     _pictureValid = avpicture_alloc(&_picture,
-                                    AV_PIX_FMT_RGB24,
-                                    _videoCodecCtx->width,
-                                    _videoCodecCtx->height) == 0;
+                                    format,
+                                    width,
+                                    height) == 0;
     
 	if (!_pictureValid)
         return NO;
@@ -1205,13 +1216,76 @@ static int interrupt_callback(void *ctx);
                                        _videoCodecCtx->width,
                                        _videoCodecCtx->height,
                                        _videoCodecCtx->pix_fmt,
-                                       _videoCodecCtx->width,
-                                       _videoCodecCtx->height,
-                                       AV_PIX_FMT_RGB24,
+                                       width,
+                                       height,
+                                       format,
                                        SWS_FAST_BILINEAR,
                                        NULL, NULL, NULL);
         
     return _swsContext != NULL;
+}
+
+
+/**
+ 获取视频方向, 1为横向, 2为纵向, 3为正方形
+
+ @param videoCodecCtx videoCodecCtx
+ @return  1为横向, 2为纵向, 3为正方形
+ */
+int video_direction(AVCodecContext *videoCodecCtx)
+{
+    CGFloat width = videoCodecCtx->width;
+    CGFloat height = videoCodecCtx->height;
+    
+    if (width > height) {
+        return 1;
+    }else if (height > width) {
+        return 2;
+    }else if (width == height) {
+        return 3;
+    }else {
+        return 0;
+    }
+}
+
+void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
+{
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
+    
+    *width = videoCodecCtx->width;
+    *height = videoCodecCtx->height;
+    CGFloat ori_scale = (CGFloat)(*width) / (CGFloat)(*height);
+    switch (video_direction(videoCodecCtx))
+    {
+        case 1://横向
+        {
+            if (*width > scr_height) {
+                *width = scr_height;
+                *height = scr_height / ori_scale;
+            }
+        }
+            break;
+        case 2://纵向
+        {
+            if (*width > scr_width) {
+                *width = scr_width;
+                *height = scr_height * ori_scale;
+            }
+        }
+            break;
+        case 3:
+        {
+            if (*width > scr_width) {
+                *width = scr_width;
+                *height = scr_width;
+            }
+        }
+            break;
+            
+        default:
+            break;
+    }
 }
 
 - (CYVideoFrame *) handleVideoFrame
@@ -1220,32 +1294,74 @@ static int interrupt_callback(void *ctx);
         return nil;
     
     CYVideoFrame *frame;
-    
+    int width = _videoCodecCtx->width;
+    int height = _videoCodecCtx->height;
+    get_video_scale_max_size(_videoCodecCtx, &width, &height);
     if (_videoFrameFormat == CYVideoFrameFormatYUV) {
+        
+        if (_videoCodecCtx->width != width)//宽高发生了改变
+        {
+            if (!_swsContext &&
+                ![self setupScalerWidth:width Heigth:height DstFormat:_videoCodecCtx->pix_fmt]) {
+                
+                LoggerVideo(0, @"fail setup video scaler");
+                return nil;
+            }
             
-        CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
-        
-        yuvFrame.luma = copyFrameData(_videoFrame->data[0],
-                                      _videoFrame->linesize[0],
-                                      _videoCodecCtx->width,
-                                      _videoCodecCtx->height);
-        
-        yuvFrame.chromaB = copyFrameData(_videoFrame->data[1],
-                                         _videoFrame->linesize[1],
-                                         _videoCodecCtx->width / 2,
-                                         _videoCodecCtx->height / 2);
-        
-        yuvFrame.chromaR = copyFrameData(_videoFrame->data[2],
-                                         _videoFrame->linesize[2],
-                                         _videoCodecCtx->width / 2,
-                                         _videoCodecCtx->height / 2);
-        
-        frame = yuvFrame;
-    
+            sws_scale(_swsContext,
+                      (const uint8_t **)_videoFrame->data,
+                      _videoFrame->linesize,
+                      0,
+                      _videoCodecCtx->height,
+                      _picture.data,
+                      _picture.linesize);
+            
+            CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+            
+            yuvFrame.luma = copyFrameData(_picture.data[0],
+                                          _picture.linesize[0],
+                                          width,
+                                          height);
+            
+            yuvFrame.chromaB = copyFrameData(_picture.data[1],
+                                             _picture.linesize[1],
+                                             width / 2,
+                                             height / 2);
+            
+            yuvFrame.chromaR = copyFrameData(_picture.data[2],
+                                             _picture.linesize[2],
+                                             width / 2,
+                                             height / 2);
+            
+            frame = yuvFrame;
+        }
+        else
+        {
+            CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+            
+            yuvFrame.luma = copyFrameData(_videoFrame->data[0],
+                                          _videoFrame->linesize[0],
+                                          width,
+                                          height);
+            
+            yuvFrame.chromaB = copyFrameData(_videoFrame->data[1],
+                                             _videoFrame->linesize[1],
+                                             width / 2,
+                                             height / 2);
+            
+            yuvFrame.chromaR = copyFrameData(_videoFrame->data[2],
+                                             _videoFrame->linesize[2],
+                                             width / 2,
+                                             height / 2);
+            
+            frame = yuvFrame;
+        }
+       
+
     } else {
-    
+        
         if (!_swsContext &&
-            ![self setupScaler]) {
+            ![self setupScalerWidth:width Heigth:height DstFormat:AV_PIX_FMT_RGB24]) {
             
             LoggerVideo(0, @"fail setup video scaler");
             return nil;
@@ -1264,12 +1380,12 @@ static int interrupt_callback(void *ctx);
         
         rgbFrame.linesize = _picture.linesize[0];
         rgbFrame.rgb = [NSData dataWithBytes:_picture.data[0]
-                                    length:rgbFrame.linesize * _videoCodecCtx->height];
+                                    length:rgbFrame.linesize * height];
         frame = rgbFrame;
     }    
-    
-    frame.width = _videoCodecCtx->width;
-    frame.height = _videoCodecCtx->height;
+
+    frame.width = width;
+    frame.height = height;
     frame.position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
     
     const int64_t frameDuration = av_frame_get_pkt_duration(_videoFrame);
@@ -1498,7 +1614,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     frame.duration = av_frame_get_pkt_duration(_audioFrame) * _audioTimeBase;
 //    frame.samples = data;
     frame.samples = [NSData dataWithBytes:audioData length:numFrames];
-    
+
     if (frame.duration == 0) {
         // sometimes ffmpeg can't determine the duration of audio frame
         // especially of wma/wmv format
@@ -1726,16 +1842,6 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 
                 if (gotframe) {
                     
-//                    if (!_disableDeinterlacing &&
-//                        _videoFrame->interlaced_frame) {
-//
-//                        avpicture_deinterlace((AVPicture*)_videoFrame,
-//                                              (AVPicture*)_videoFrame,
-//                                              _videoCodecCtx->pix_fmt,
-//                                              _videoCodecCtx->width,
-//                                              _videoCodecCtx->height);
-//                    }
-                    
                     CYVideoFrame *frame = [self handleVideoFrame];
                     if (frame) {
                         
@@ -1870,45 +1976,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             break;
         }
         
-        if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
-            
-            int pktSize = packet.size;
-            
-            while (pktSize > 0 && _videoCodecCtx) {
-                
-                int gotframe = 0;
-                //                int len = avcodec_decode_video2(_videoCodecCtx,
-                //                                                _videoFrame,
-                //                                                &gotframe,
-                //                                                &packet);
-                int len = avcodec_send_packet(_videoCodecCtx, &packet);
-                gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
-                
-                if (len < 0) {
-                    LoggerVideo(0, @"decode video error, skip packet");
-                    break;
-                }
-                
-                if (gotframe) {
-                    CYVideoFrame *frame = [self handleVideoFrame];
-                    if (frame && frame.position >= targetPos) {
-                        
-                        [result addObject:frame];
-                        
-                        _position = frame.position;
-                        decodedDuration += frame.duration;
-                        if (decodedDuration > minDuration)
-                            finished = YES;
-                    }
-                }
-                
-                if (0 == len)
-                    break;
-                
-                pktSize -= len;
-            }
-            
-        } else if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
+         if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
             
             int pktSize = packet.size;
             
@@ -1924,18 +1992,21 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 }
                 
                 if (gotframe) {
-                    
-                    CYAudioFrame * frame = [self handleAudioFrame];
-                    if (frame && frame.position >= targetPos) {
-                        
-                        [result addObject:frame];
-                        
-                        if (_videoStream == -1) {
+                    CGFloat curr_position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
+                    if (curr_position >= targetPos)
+                    {
+                        CYAudioFrame * frame = [self handleAudioFrame];
+                        if (frame) {
                             
-                            _position = frame.position;
-                            decodedDuration += frame.duration;
-                            if (decodedDuration > minDuration)
-                                finished = YES;
+                            [result addObject:frame];
+                            
+                            if (_videoStream == -1) {
+                                
+                                _position = frame.position;
+                                decodedDuration += frame.duration;
+                                if (decodedDuration > minDuration)
+                                    finished = YES;
+                            }
                         }
                     }
                 }
@@ -1946,7 +2017,49 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 pktSize -= len;
             }
             
-        } else if (packet.stream_index == _artworkStream) {
+         } else if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
+             
+             int pktSize = packet.size;
+             
+             while (pktSize > 0 && _videoCodecCtx) {
+                 
+                 int gotframe = 0;
+                 //                int len = avcodec_decode_video2(_videoCodecCtx,
+                 //                                                _videoFrame,
+                 //                                                &gotframe,
+                 //                                                &packet);
+                 int len = avcodec_send_packet(_videoCodecCtx, &packet);
+                 gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
+                 
+                 if (len < 0) {
+                     LoggerVideo(0, @"decode video error, skip packet");
+                     break;
+                 }
+                 
+                 if (gotframe) {
+                     CGFloat curr_position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
+                     if (curr_position >= targetPos)
+                     {
+                         CYVideoFrame *frame = [self handleVideoFrame];
+                         if (frame) {
+                             
+                             [result addObject:frame];
+                             
+                             _position = frame.position;
+                             decodedDuration += frame.duration;
+                             if (decodedDuration > minDuration)
+                                 finished = YES;
+                         }
+                     }
+                 }
+                 
+                 if (0 == len)
+                     break;
+                 
+                 pktSize -= len;
+             }
+             
+         } else if (packet.stream_index == _artworkStream) {
             
             if (packet.size) {
                 
@@ -1973,12 +2086,16 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                     break;
                 }
                 if (gotsubtitle) {
-                    CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
-                    if (frame && frame.position >= targetPos) {
-                        [result addObject:frame];
+                    CGFloat curr_position = subtitle.pts / AV_TIME_BASE + subtitle.start_display_time;
+                    if (curr_position >= targetPos)
+                    {
+                        CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
+                        if (frame) {
+                            [result addObject:frame];
+                        }
                     }
-                    avsubtitle_free(&subtitle);
                 }
+                avsubtitle_free(&subtitle);
                 
                 if (0 == len)
                     break;
