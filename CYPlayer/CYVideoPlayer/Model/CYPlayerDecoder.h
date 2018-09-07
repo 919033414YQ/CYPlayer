@@ -130,6 +130,7 @@ typedef enum {
 
 - (NSArray *) decodeFrames: (CGFloat) minDuration;
 
+- (NSArray *) decodeTargetFrames: (CGFloat) minDuration :(CGFloat)targetPos;
 
 @end
 

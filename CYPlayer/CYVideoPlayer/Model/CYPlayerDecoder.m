@@ -1698,7 +1698,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     BOOL finished = NO;
     
     while (!finished && _formatCtx) {
-        
+        NSLog(@"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;
             av_packet_unref(&packet);
@@ -1842,6 +1842,152 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         av_packet_unref(&packet);
 //        av_free_packet(&packet);
 	}
+    av_packet_unref(&packet);
+    
+    return result;
+}
+
+
+- (NSArray *) decodeTargetFrames: (CGFloat) minDuration :(CGFloat)targetPos
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return nil;
+    
+    NSMutableArray *result = [NSMutableArray array];
+    
+    AVPacket packet;
+    
+    CGFloat decodedDuration = 0;
+    
+    BOOL finished = NO;
+    
+    while (!finished && _formatCtx) {
+        NSLog(@"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        if (av_read_frame(_formatCtx, &packet) < 0) {
+            _isEOF = YES;
+            av_packet_unref(&packet);
+            break;
+        }
+        
+        if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
+            
+            int pktSize = packet.size;
+            
+            while (pktSize > 0 && _videoCodecCtx) {
+                
+                int gotframe = 0;
+                //                int len = avcodec_decode_video2(_videoCodecCtx,
+                //                                                _videoFrame,
+                //                                                &gotframe,
+                //                                                &packet);
+                int len = avcodec_send_packet(_videoCodecCtx, &packet);
+                gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
+                
+                if (len < 0) {
+                    LoggerVideo(0, @"decode video error, skip packet");
+                    break;
+                }
+                
+                if (gotframe) {
+                    CYVideoFrame *frame = [self handleVideoFrame];
+                    if (frame && frame.position >= targetPos) {
+                        
+                        [result addObject:frame];
+                        
+                        _position = frame.position;
+                        decodedDuration += frame.duration;
+                        if (decodedDuration > minDuration)
+                            finished = YES;
+                    }
+                }
+                
+                if (0 == len)
+                    break;
+                
+                pktSize -= len;
+            }
+            
+        } else if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
+            
+            int pktSize = packet.size;
+            
+            while (pktSize > 0 && _audioCodecCtx) {
+                
+                int gotframe = 0;
+                int len = avcodec_send_packet(_audioCodecCtx, &packet);
+                gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
+                
+                if (len < 0) {
+                    LoggerAudio(0, @"decode audio error, skip packet");
+                    break;
+                }
+                
+                if (gotframe) {
+                    
+                    CYAudioFrame * frame = [self handleAudioFrame];
+                    if (frame && frame.position >= targetPos) {
+                        
+                        [result addObject:frame];
+                        
+                        if (_videoStream == -1) {
+                            
+                            _position = frame.position;
+                            decodedDuration += frame.duration;
+                            if (decodedDuration > minDuration)
+                                finished = YES;
+                        }
+                    }
+                }
+                
+                if (0 == len)
+                    break;
+                
+                pktSize -= len;
+            }
+            
+        } else if (packet.stream_index == _artworkStream) {
+            
+            if (packet.size) {
+                
+                CYArtworkFrame *frame = [[CYArtworkFrame alloc] init];
+                frame.picture = [NSData dataWithBytes:packet.data length:packet.size];
+                [result addObject:frame];
+            }
+            
+        } else if (packet.stream_index == _subtitleStream) {
+            
+            int pktSize = packet.size;
+            
+            while (pktSize > 0) {
+                
+                AVSubtitle subtitle;
+                int gotsubtitle = 0;
+                int len = avcodec_decode_subtitle2(_subtitleCodecCtx,
+                                                   &subtitle,
+                                                   &gotsubtitle,
+                                                   &packet);
+                
+                if (len < 0) {
+                    LoggerStream(0, @"decode subtitle error, skip packet");
+                    break;
+                }
+                if (gotsubtitle) {
+                    CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
+                    if (frame && frame.position >= targetPos) {
+                        [result addObject:frame];
+                    }
+                    avsubtitle_free(&subtitle);
+                }
+                
+                if (0 == len)
+                    break;
+                
+                pktSize -= len;
+            }
+        }
+        av_packet_unref(&packet);
+    }
     av_packet_unref(&packet);
     
     return result;

@@ -3,7 +3,7 @@
 //  cyplayer
 //
 //  Created by yellowei on 22.10.12.
-//  Copyright (c) 2012 Konstantin Boukreev . All rights reserved.
+//  Copyright (c) 2018 yellowei . All rights reserved.
 //
 //  https://github.com/yellowei/cyplayer
 //  this file is part of CYPlayer
