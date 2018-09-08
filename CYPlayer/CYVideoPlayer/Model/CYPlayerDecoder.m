@@ -851,7 +851,7 @@ static int interrupt_callback(void *ctx);
     
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
     av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
-    av_dict_set(&_options, "r", "2", 0);
+    av_dict_set(&_options, "re", "20", 0);
     
     
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
@@ -1257,29 +1257,58 @@ int video_direction(AVCodecContext *videoCodecCtx)
 
 void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
 {
-    CGFloat scr_scale = 1;//[UIScreen mainScreen].scale;
-    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * scr_scale;
-    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * scr_scale;
+    
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
     
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
 
-    CGFloat ori_scale = (CGFloat)(*width) / (CGFloat)(*height);
+    CGFloat ori_scale = round( ((CGFloat)(*width) / (CGFloat)(*height)) * 100.0 ) / 100.0;
     switch (video_direction(videoCodecCtx))
     {
         case 1://横向
         {
             if (*width > scr_height) {
-                *width = scr_height;
-                *height = scr_height / ori_scale;
+                CGFloat scr_scale = round( (scr_height / scr_width) * 100.0 ) / 100.0;
+                if (scr_scale < ori_scale)
+                {
+                    *width = scr_height;
+                    *height = round(scr_height / ori_scale);
+                }
+                else if (scr_scale > ori_scale)
+                {
+                    *height = scr_width;
+                    *width = round(scr_width * ori_scale);
+                }
+                else
+                {
+                    *width = scr_height;
+                    *height = scr_width;
+                }
             }
         }
             break;
         case 2://纵向
         {
             if (*width > scr_width) {
-                *width = scr_width;
-                *height = scr_height * ori_scale;
+                CGFloat scr_scale = round( (scr_width / scr_height) * 100.0 ) / 100.0;
+                
+                if (scr_scale > ori_scale)
+                {
+                    *height = scr_height;
+                    *width = round(scr_height * ori_scale);
+                }
+                else if (scr_scale < ori_scale)
+                {
+                    *width = scr_width;
+                    *height = round(scr_width / ori_scale);
+                }
+                else
+                {
+                    *width = scr_width;
+                    *height = scr_height;
+                }
             }
         }
             break;

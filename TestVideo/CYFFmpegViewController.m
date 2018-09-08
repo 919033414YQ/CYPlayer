@@ -8,7 +8,7 @@
 
 #import "CYFFmpegViewController.h"
 #import "CYFFmpegPlayer.h"
-#import <Masonry.h>
+#import <Masonry/Masonry.h>
 #import "UIViewController+CYExtension.h"
 
 #define kiPad  ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) //ipad
@@ -21,6 +21,7 @@
 }
 
 @property (nonatomic, strong) UIView * contentView;
+@property (nonatomic, strong) UIButton * infoBtn;
 
 @end
 
@@ -112,7 +113,21 @@
         }
     };
     
-    [self.navigationController setNavigationBarHidden:YES];
+    [self addInfoBtn];
+}
+
+- (void)addInfoBtn
+{
+    self.infoBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+    [self.infoBtn setTitle:@"info" forState:UIControlStateNormal];
+    [self.view addSubview:self.infoBtn];
+    [self.infoBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [self.infoBtn addTarget:self action:@selector(onInfoBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.infoBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.infoBtn.superview.mas_centerX);
+        make.width.height.equalTo(@50);
+        make.top.equalTo(self.contentView.mas_bottom).offset(20);
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -122,16 +137,14 @@
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    [vc stop];
-    // Dispose of any resources that can be recreated.
-}
-
 - (void)viewWillDisappear:(BOOL)animated
 {
-    [super viewWillDisappear:animated];
-    [vc stop];
+    [self.navigationController setNavigationBarHidden:NO];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 - (void)dealloc
@@ -140,15 +153,16 @@
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+# pragma mark - Event
+- (void)onInfoBtnClick:(UIButton *)sender
+{
+    if (vc.decoder)
+    {
+        NSString * info = [[vc.decoder info] description];
+        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Info" message:(info.length ? info : @"") delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
 }
-*/
 
 
 # pragma mark - 系统横竖屏切换调用
