@@ -1330,7 +1330,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
 {
     if (!_videoFrame->data[0])
         return nil;
-    
+ 
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     CYVideoFrame *frame;
     int width = _videoCodecCtx->width;
     int height = _videoCodecCtx->height;
@@ -1357,6 +1358,9 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 return nil;
             }
 //            const int lineSize[8]  = { width, width / 2, width / 2, 0, 0, 0, 0, 0 };
+           
+            
+            //在这写入要计算时间的代码
             sws_scale(_swsContext,
                       (const uint8_t **)_videoFrame->data,
                       _videoFrame->linesize,
@@ -1364,6 +1368,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                       _videoFrame->height,
                       _picture.data,
                       _picture.linesize);
+
             
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
@@ -1383,6 +1388,9 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                                              height / 2);
             
             frame = yuvFrame;
+            
+           
+
         }
         else
         {
@@ -1459,8 +1467,10 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame.position,
                 frame.duration,
                 av_frame_get_pkt_pos(_videoFrame));
+
+    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    NSLog(@"Linked in %f ms", linkTime *1000.0);
 #endif
-    
     return frame;
 }
 

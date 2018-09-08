@@ -102,6 +102,7 @@ CYPCMAudioManagerDelegate>
     dispatch_queue_t    _asyncDecodeQueue;
     dispatch_queue_t    _videoQueue;
     dispatch_queue_t    _audioQueue;
+    dispatch_queue_t    _progressQueue;
     NSMutableArray      *_videoFrames;
     NSMutableArray      *_audioFrames;
     NSMutableArray      *_subtitles;
@@ -240,6 +241,12 @@ CYPCMAudioManagerDelegate>
     
     [self _itemPrepareToPlay];
     
+    if (!_progressQueue)
+    {
+        //        _progressQueue = dispatch_queue_create("CYPlayer Progress", DISPATCH_QUEUE_SERIAL);
+        _progressQueue  = dispatch_get_main_queue();
+    }
+    
     if (!_videoQueue)
     {
 //        _videoQueue = dispatch_queue_create("CYPlayer Video", DISPATCH_QUEUE_SERIAL);
@@ -331,6 +338,12 @@ CYPCMAudioManagerDelegate>
         // Not needed as of ARC.
         //        dispatch_release(_asyncDecodeQueue);
         _asyncDecodeQueue = NULL;
+    }
+    
+    if (_progressQueue) {
+        // Not needed as of ARC.
+        //        dispatch_release(_asyncDecodeQueue);
+        _progressQueue = NULL;
     }
     
     if (_videoQueue) {
@@ -611,12 +624,15 @@ CYPCMAudioManagerDelegate>
     
     __weak typeof(&*self)weakSelf = self;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
-    dispatch_after(popTime, _videoQueue, ^(void){
+    dispatch_after(popTime, _progressQueue, ^(void){
+        
+        [weakSelf progressTick];
+        
         if (weakSelf.decoder.validAudio)
         {
-            [weakSelf enableAudio:YES];
+            [weakSelf audioTick];
         }
-        [weakSelf audioTick];
+        
         [weakSelf videoTick];
     });
     
@@ -1244,7 +1260,7 @@ CYPCMAudioManagerDelegate>
             
             BOOL good = YES;
             while (good && !weakSelf.stopped) {
-                
+                CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
                 good = NO;
                 
                 @autoreleasepool {
@@ -1269,6 +1285,8 @@ CYPCMAudioManagerDelegate>
                         frames = nil;
                     }
                 }
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+                NSLog(@"Linked in %f ms", linkTime *1000.0);
             }
             
             weakSelf.decoding = NO;
@@ -1394,18 +1412,7 @@ CYPCMAudioManagerDelegate>
         });
     }
     
-    dispatch_async(_videoQueue, ^{
-        __strong typeof(&*self)strongSelf = weakSelf;
-        if (strongSelf)
-        {
-            if ((strongSelf->_tickCounter++ % 3) == 0 && strongSelf->_isDraging == NO) {
-                const CGFloat duration = strongSelf->_decoder.duration;
-                const CGFloat position = strongSelf->_moviePosition - strongSelf->_decoder.startTime;
-                [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
-                [weakSelf _refreshingTimeLabelWithCurrentTime:position duration:duration];
-            }
-        }
-    });
+    
 }
 
 
@@ -1414,18 +1421,6 @@ CYPCMAudioManagerDelegate>
 {
     __weak typeof(&*self)weakSelf = self;
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-    if (_buffered &&
-        (((_videoBufferedDuration > _minBufferedDuration) ||
-          (_audioBufferedDuration > _minBufferedDuration)) ||
-         _decoder.isEOF))
-    {
-        _tickCorrectionTime = 0;
-        _buffered = NO;
-        dispatch_async(_videoQueue, ^{
-            [weakSelf play];
-            [weakSelf videoTick];
-        });
-    }
     
     CGFloat interval = 0;
     if (!_buffered)
@@ -1437,6 +1432,41 @@ CYPCMAudioManagerDelegate>
         interval = [self presentAudioFrame];
     }
     
+    if (self.playing) {
+        const NSUInteger leftFrames =
+        (_decoder.validVideo ? _videoFrames.count : 0) +
+        (_decoder.validAudio ? _audioFrames.count : 0);
+        
+        if (!leftFrames ||
+            !(_videoBufferedDuration > _maxBufferedDuration) ||
+            !(_audioBufferedDuration > _maxBufferedDuration))
+        {
+            
+            [self asyncDecodeFrames];
+        }
+        const NSTimeInterval correction = [self tickCorrection];
+        const NSTimeInterval time = MAX(interval + correction, 0.01);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_after(popTime, _audioQueue, ^(void){
+            [weakSelf audioTick];
+        });
+    }
+}
+
+- (void)progressTick
+{
+    __weak typeof(&*self)weakSelf = self;
+    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+    if (_buffered &&
+        (((_videoBufferedDuration > _minBufferedDuration) ||
+          (_audioBufferedDuration > _minBufferedDuration)) ||
+         _decoder.isEOF))
+    {
+        _tickCorrectionTime = 0;
+        _buffered = NO;
+        [self play];
+    }
+ 
     if (self.playing) {
         
         const NSUInteger leftFrames =
@@ -1450,16 +1480,12 @@ CYPCMAudioManagerDelegate>
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
-                    dispatch_async(_videoQueue, ^{
-                        [weakSelf _itemPlayEnd];
-                    });
+                    [self _itemPlayEnd];
                     
                     return;
                 }
                 
-                dispatch_async(_videoQueue, ^{
-                    [weakSelf _itemPlayFailed];
-                });
+                [self _itemPlayFailed];
                 
                 return;
             }
@@ -1472,9 +1498,7 @@ CYPCMAudioManagerDelegate>
                 }
                 
                 if (self.state != CYFFmpegPlayerPlayState_Buffing) {
-                    dispatch_async(_videoQueue, ^{
-                        [weakSelf _buffering];
-                    });
+                    [self _buffering];
                 }
                 
             }
@@ -1488,14 +1512,10 @@ CYPCMAudioManagerDelegate>
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
-                    dispatch_async(_videoQueue, ^{
-                        [weakSelf _itemPlayEnd];
-                    });
+                    [self _itemPlayEnd];
                     return;
                 }
-                dispatch_async(_videoQueue, ^{
-                    [weakSelf _itemPlayFailed];
-                });
+                [self _itemPlayFailed];
                 return;
             }
         }
@@ -1504,17 +1524,32 @@ CYPCMAudioManagerDelegate>
             !(_videoBufferedDuration > _maxBufferedDuration) ||
             !(_audioBufferedDuration > _maxBufferedDuration))
         {
-
             [self asyncDecodeFrames];
         }
-        
+        CGFloat interval = 0;
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
-        dispatch_after(popTime, _audioQueue, ^(void){
-            [weakSelf audioTick];
+        dispatch_after(popTime, _progressQueue, ^(void){
+            [weakSelf progressTick];
         });
     }
+    
+    dispatch_async(_progressQueue, ^{
+        __strong typeof(&*self)strongSelf = weakSelf;
+        if (strongSelf)
+        {
+            if ((strongSelf->_tickCounter++ % 3) == 0 && strongSelf->_isDraging == NO) {
+                const CGFloat duration = strongSelf->_decoder.duration;
+                const CGFloat position = strongSelf->_moviePosition - strongSelf->_decoder.startTime;
+                const CGFloat loadedPosition = weakSelf.decoder.position;
+                [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
+                [weakSelf _refreshingTimeLabelWithCurrentTime:position duration:duration];
+                [weakSelf _refreshingTimeProgressSliderWithLoadedTime:loadedPosition duration:duration];
+            }
+        }
+    });
+    
 }
 
 
@@ -1594,23 +1629,23 @@ CYPCMAudioManagerDelegate>
                 _moviePosition = frame.position;
                 CGFloat limit_val = 1;1.0 / _decoder.fps;
                 if (limit_val < 0.2) { limit_val = 0.2; }
-                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
+//                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
+//                {
+//
+//                    [_videoFrames removeObjectAtIndex:0];
+//                    _videoBufferedDuration -= frame.duration;
+//                    interval = [self presentVideoFrame:frame];//呈现视频
+//                }
+//                else if (delta > limit_val)//视频快了
+//                {
+//
+//
+//                }
+//                else//视频慢了
                 {
-
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
                     interval = [self presentVideoFrame:frame];//呈现视频
-                }
-                else if (delta > limit_val)//视频快了
-                {
-
-
-                }
-                else//视频慢了
-                {
-                    [_videoFrames removeObjectAtIndex:0];
-                    _videoBufferedDuration -= frame.duration;
-//                    interval = [self presentVideoFrame:frame];//呈现视频
                 }
             }
         }
@@ -1734,6 +1769,7 @@ CYPCMAudioManagerDelegate>
     }
     _positionUpdating = YES;
     _buffered = YES;
+    [self pause];
     __weak CYFFmpegPlayer *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         [weakSelf _startLoading];
@@ -1763,8 +1799,7 @@ CYPCMAudioManagerDelegate>
                 __strong CYFFmpegPlayer *strongSelf = weakSelf;
                 if (strongSelf) {
                     [strongSelf setMoviePositionFromDecoder];
-                    weakSelf.playing = YES;
-                    [strongSelf audioTick];
+                    [weakSelf play];
                     strongSelf->_isDraging = NO;
                 }
             });
@@ -2275,6 +2310,10 @@ CYPCMAudioManagerDelegate>
 
 - (void)_refreshingTimeProgressSliderWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
     self.controlView.bottomProgressSlider.value = self.controlView.bottomControlView.progressSlider.value = currentTime / duration;
+}
+
+- (void)_refreshingTimeProgressSliderWithLoadedTime:(NSTimeInterval)loadedTime duration:(NSTimeInterval)duration {
+    self.controlView.bottomControlView.progressSlider.bufferProgress = loadedTime / duration;
 }
 
 
