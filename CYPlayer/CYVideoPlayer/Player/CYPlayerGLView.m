@@ -283,8 +283,8 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
     CYVideoFrameYUV *yuvFrame = (CYVideoFrameYUV *)frame;
     
     assert(yuvFrame.luma.length == yuvFrame.width * yuvFrame.height);
-    assert(yuvFrame.chromaB.length == (yuvFrame.width * yuvFrame.height) / 4);
-    assert(yuvFrame.chromaR.length == (yuvFrame.width * yuvFrame.height) / 4);
+    assert(yuvFrame.chromaB.length == ((yuvFrame.width / 2) * (yuvFrame.height / 2)));
+    assert(yuvFrame.chromaR.length == ((yuvFrame.width / 2) * (yuvFrame.height / 2)));
 
     const NSUInteger frameWidth = frame.width;
     const NSUInteger frameHeight = frame.height;    

@@ -131,6 +131,10 @@ CYPCMAudioManagerDelegate>
     BOOL                _positionUpdating;
     CGFloat             _targetPosition;
     
+    //缓冲到内存的进度
+    CGFloat             _videoRAMBufferPostion;
+    CGFloat             _audioRAMBufferPostion;
+    
 #ifdef DEBUG
     UILabel             *_messageLabel;
     NSTimeInterval      _debugStartTime;
@@ -143,6 +147,7 @@ CYPCMAudioManagerDelegate>
 
 @property (readwrite) BOOL playing;
 @property (readwrite) BOOL decoding;
+@property (readwrite) BOOL unarchiving;
 @property (readwrite, strong) CYArtworkFrame *artworkFrame;
 
 @property (nonatomic, strong) UIView * presentView;
@@ -359,7 +364,6 @@ CYPCMAudioManagerDelegate>
     }
     
     LoggerStream(1, @"%@ dealloc", self);
-    [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
 }
 
 - (void)loadView {
@@ -1239,6 +1243,7 @@ CYPCMAudioManagerDelegate>
     LoggerStream(1, @"applicationWillResignActive");
 }
 
+
 - (void) asyncDecodeFrames
 {
     if (self.decoding)
@@ -1277,6 +1282,10 @@ CYPCMAudioManagerDelegate>
                             frames = [weakDecoder decodeFrames:duration];
 //                            frames = [weakDecoder decodeTargetFrames:duration :strongSelf->_currentAudioFramePos];
                         }
+                        
+//                        for (CYPlayerFrame * frame in frames) {
+//                            [weakSelf archiveFrame:frame];
+//                        }
                         
                         if (frames.count) {
                             
@@ -3166,6 +3175,156 @@ CYPCMAudioManagerDelegate>
 
 - (void)hiddenTitle {
     [self.prompt hidden];
+}
+
+# pragma mark - Test
+- (NSString*)localBufferPath
+{
+    NSFileManager * fileManager = [NSFileManager defaultManager];
+    NSArray *Paths=NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES );
+    NSString *MyDocpath=[Paths objectAtIndex:0];
+    MyDocpath = [MyDocpath stringByAppendingPathComponent:@"CYPlayer"];
+    if (self.decoder)
+    {
+        NSString * fileName = [self.decoder.path lastPathComponent];
+        MyDocpath = [MyDocpath stringByAppendingPathComponent:fileName];
+    }
+    BOOL isDir = NO;
+    // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+    BOOL existed = [fileManager fileExistsAtPath:MyDocpath isDirectory:&isDir];
+    if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
+        [fileManager createDirectoryAtPath:MyDocpath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    return MyDocpath;
+}
+
+
+- (void)archiveFrame:(CYPlayerFrame *)frame
+{
+    //归档
+    NSFileManager * fileManager = [NSFileManager defaultManager];
+    //1:准备路径
+    NSString *path = [self localBufferPath];
+    if (frame.type == CYPlayerFrameTypeAudio) {
+        path = [path stringByAppendingPathComponent:@"audio"];
+        BOOL isDir = NO;
+        // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+        BOOL existed = [fileManager fileExistsAtPath:path isDirectory:&isDir];
+        if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
+            [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSNumber * posi_tmp = [NSNumber numberWithDouble:frame.position];
+        path = [path stringByAppendingPathComponent:[posi_tmp stringValue]];
+    }else if (frame.type == CYPlayerFrameTypeVideo) {
+        path = [path stringByAppendingPathComponent:@"video"];
+        BOOL isDir = NO;
+        // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+        BOOL existed = [fileManager fileExistsAtPath:path isDirectory:&isDir];
+        if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
+            [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSNumber * posi_tmp = [NSNumber numberWithDouble:frame.position];
+        path = [path stringByAppendingPathComponent:[posi_tmp stringValue]];
+    }else if (frame.type == CYPlayerFrameTypeArtwork) {
+        path = [path stringByAppendingPathComponent:@"artwork"];
+        BOOL isDir = NO;
+        // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+        BOOL existed = [fileManager fileExistsAtPath:path isDirectory:&isDir];
+        if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
+            [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSNumber * posi_tmp = [NSNumber numberWithDouble:frame.position];
+        path = [path stringByAppendingPathComponent:[posi_tmp stringValue]];
+    }else if (frame.type == CYPlayerFrameTypeSubtitle) {
+        path = [path stringByAppendingPathComponent:@"subtitle"];
+        BOOL isDir = NO;
+        // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+        BOOL existed = [fileManager fileExistsAtPath:path isDirectory:&isDir];
+        if ( !(isDir == YES && existed == YES) ) {//如果文件夹不存在
+            [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSNumber * posi_tmp = [NSNumber numberWithDouble:frame.position];
+        path = [path stringByAppendingPathComponent:[posi_tmp stringValue]];
+    }
+    
+    //2:准备存储数据对象(用可变数组进行接收)
+    NSMutableData *data = [NSMutableData new];
+    //3:创建归档对象
+    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc]initForWritingWithMutableData:data];
+    //4:开始归档
+    [archiver encodeObject:frame forKey:@"frame"];
+    //5:完成归档
+    [archiver finishEncoding];
+    //6:写入文件
+    BOOL result = [data writeToFile:path atomically:YES];
+    if (!result) {
+        NSLog(@"归档失败postion:%f", frame.position);
+    }
+}
+
+- (NSArray *)unarchiveFrameWithPostion:(CGFloat)position type:(CYPlayerFrameType)type
+{
+    NSMutableArray * frames = [[NSMutableArray alloc] initWithCapacity:60];
+    
+    //1:准备路径
+    //    NSString *path = [self localBufferPath];
+    //    if (type == CYPlayerFrameTypeAudio) {
+    //        path = [path stringByAppendingPathComponent:@"audio"];
+    //        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"%f",frame.position]];
+    //    }else if (frame.type == CYPlayerFrameTypeVideo) {
+    //        path = [path stringByAppendingPathComponent:@"video"];
+    //        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"%f",frame.position]];
+    //    }
+    
+    return frames;
+}
+
+
+- (void) asyncUnarchiveFrames
+{
+    if (self.unarchiving)
+    {
+        return;
+    }
+    self.unarchiving = YES;
+    
+    __weak CYFFmpegPlayer *weakSelf = self;
+    __weak CYPlayerDecoder *weakDecoder = _decoder;
+    
+    const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
+    dispatch_async(_asyncDecodeQueue, ^{
+        __strong CYFFmpegPlayer *strongSelf = weakSelf;
+        if (strongSelf)
+        {
+            if (!weakSelf.playing)
+                return;
+            
+            BOOL good = YES;
+            while (good && !weakSelf.stopped) {
+                CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+                good = NO;
+                
+                @autoreleasepool {
+                    
+                    if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
+                        
+                        //                        NSArray *[frames = [weakSelf unarchiveFrameWithPostion:<#(CGFloat)#> type:<#(CYPlayerFrameType)#>
+                        
+                        //                        if (frames.count) {
+                        //
+                        //                            good = [weakSelf addFrames:frames];
+                        //                        }
+                        //                        frames = nil;
+                    }
+                }
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+                NSLog(@"Linked in %f ms", linkTime *1000.0);
+            }
+            
+            weakSelf.unarchiving = NO;
+        }
+    });
 }
 
 @end

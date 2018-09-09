@@ -301,6 +301,7 @@ static int interrupt_callback(void *ctx);
 @end
 
 @implementation CYPlayerFrame
+
 @end
 
 @interface CYAudioFrame()
@@ -309,6 +310,29 @@ static int interrupt_callback(void *ctx);
 
 @implementation CYAudioFrame
 - (CYPlayerFrameType) type { return CYPlayerFrameTypeAudio; }
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super init]) {
+    
+        self.position = [aDecoder decodeDoubleForKey:@"position"];
+        
+        self.duration = [aDecoder decodeDoubleForKey:@"duration"];
+        
+        self.samples = [aDecoder decodeObjectForKey:@"samples"];
+    }
+    return self;
+}
+
+
+-(void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeDouble:self.position forKey:@"position"];
+    
+    [aCoder encodeDouble:self.duration forKey:@"duration"];
+    
+    [aCoder encodeObject:self.samples forKey:@"samples"];
+}
 @end
 
 @interface CYVideoFrame()
@@ -358,6 +382,42 @@ static int interrupt_callback(void *ctx);
     
     return image;
 }
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super init]) {
+        
+        self.position = [aDecoder decodeDoubleForKey:@"position"];
+        
+        self.duration = [aDecoder decodeDoubleForKey:@"duration"];
+        
+        self.width = [aDecoder decodeIntegerForKey:@"width"];
+        
+        self.height = [aDecoder decodeIntegerForKey:@"height"];
+        
+        self.linesize = [aDecoder decodeIntegerForKey:@"linesize"];
+        
+        self.rgb = [aDecoder decodeObjectForKey:@"rgb"];
+        
+    }
+    return self;
+}
+
+
+-(void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeDouble:self.position forKey:@"position"];
+    
+    [aCoder encodeDouble:self.duration forKey:@"duration"];
+    
+    [aCoder encodeInteger:self.width forKey:@"width"];
+    
+    [aCoder encodeInteger:self.height forKey:@"height"];
+    
+    [aCoder encodeInteger:self.linesize forKey:@"linesize"];
+    
+    [aCoder encodeObject:self.rgb forKey:@"rgb"];
+}
 @end
 
 @interface CYVideoFrameYUV()
@@ -368,6 +428,45 @@ static int interrupt_callback(void *ctx);
 
 @implementation CYVideoFrameYUV
 - (CYVideoFrameFormat) format { return CYVideoFrameFormatYUV; }
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super init]) {
+        
+        self.position = [aDecoder decodeDoubleForKey:@"position"];
+        
+        self.duration = [aDecoder decodeDoubleForKey:@"duration"];
+        
+        self.width = [aDecoder decodeIntegerForKey:@"width"];
+        
+        self.height = [aDecoder decodeIntegerForKey:@"height"];
+        
+        self.luma = [aDecoder decodeObjectForKey:@"luma"];
+        
+        self.chromaB = [aDecoder decodeObjectForKey:@"chromaB"];
+        
+        self.chromaR = [aDecoder decodeObjectForKey:@"chromaR"];
+    }
+    return self;
+}
+
+
+-(void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeDouble:self.position forKey:@"position"];
+    
+    [aCoder encodeDouble:self.duration forKey:@"duration"];
+    
+    [aCoder encodeDouble:self.width forKey:@"width"];
+    
+    [aCoder encodeDouble:self.height forKey:@"height"];
+    
+    [aCoder encodeObject:self.luma forKey:@"luma"];
+    
+    [aCoder encodeObject:self.chromaB forKey:@"chromaB"];
+    
+    [aCoder encodeObject:self.chromaR forKey:@"chromaR"];
+}
 @end
 
 @interface CYArtworkFrame()
@@ -398,6 +497,29 @@ static int interrupt_callback(void *ctx);
     return image;
 
 }
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super init]) {
+        
+        self.position = [aDecoder decodeDoubleForKey:@"position"];
+        
+        self.duration = [aDecoder decodeDoubleForKey:@"duration"];
+        
+        self.picture = [aDecoder decodeObjectForKey:@"picture"];
+    }
+    return self;
+}
+
+
+-(void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeDouble:self.position forKey:@"position"];
+    
+    [aCoder encodeDouble:self.duration forKey:@"duration"];
+    
+    [aCoder encodeObject:self.picture forKey:@"picture"];
+}
 @end
 
 @interface CYSubtitleFrame()
@@ -406,6 +528,29 @@ static int interrupt_callback(void *ctx);
 
 @implementation CYSubtitleFrame
 - (CYPlayerFrameType) type { return CYPlayerFrameTypeSubtitle; }
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super init]) {
+        
+        self.position = [aDecoder decodeDoubleForKey:@"position"];
+        
+        self.duration = [aDecoder decodeDoubleForKey:@"duration"];
+        
+        self.text = [aDecoder decodeObjectForKey:@"text"];
+    }
+    return self;
+}
+
+
+-(void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeDouble:self.position forKey:@"position"];
+    
+    [aCoder encodeDouble:self.duration forKey:@"duration"];
+    
+    [aCoder encodeObject:self.text forKey:@"text"];
+}
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -850,16 +995,23 @@ static int interrupt_callback(void *ctx);
     }
     
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
-    av_dict_set(&_options, "stimeout", "3000000", 0);//设置超时3秒
-    av_dict_set(&_options, "re", "20", 0);
+    av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
+//    av_dict_set(&_options, "re", "25", 0);
+//    av_dict_set_int(&_options, "video_track_timescale", 25, 0);
+//    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
+//    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
-    
+    if ([path hasPrefix:@"rtsp"] || [path hasPrefix:@"rtmp"]) {
+        // There is total different meaning for 'timeout' option in rtmp
+        av_dict_set(&_options, "stimeout", NULL, 0);
+    }
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         
         if (formatCtx)
             avformat_free_context(formatCtx);
         return cyPlayerErrorOpenFile;
     }
+//    avformat_write_header(formatCtx, &_options);
     
     if (avformat_find_stream_info(formatCtx, NULL) < 0) {
         
@@ -1264,13 +1416,13 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
 
-    CGFloat ori_scale = round( ((CGFloat)(*width) / (CGFloat)(*height)) * 100.0 ) / 100.0;
+    CGFloat ori_scale = round( ((CGFloat)(*width) / (CGFloat)(*height)) * 1000.0 ) / 1000.0;
     switch (video_direction(videoCodecCtx))
     {
         case 1://横向
         {
             if (*width > scr_height) {
-                CGFloat scr_scale = round( (scr_height / scr_width) * 100.0 ) / 100.0;
+                CGFloat scr_scale = round( (scr_height / scr_width) * 1000.0 ) / 1000.0;
                 if (scr_scale < ori_scale)
                 {
                     *width = scr_height;
@@ -1292,7 +1444,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         case 2://纵向
         {
             if (*width > scr_width) {
-                CGFloat scr_scale = round( (scr_width / scr_height) * 100.0 ) / 100.0;
+                CGFloat scr_scale = round( (scr_width / scr_height) * 1000.0 ) / 1000.0;
                 
                 if (scr_scale > ori_scale)
                 {
@@ -1331,8 +1483,58 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     if (!_videoFrame->data[0])
         return nil;
  
-    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     CYVideoFrame *frame;
+    
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+    
+    CGFloat position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
+    CGFloat duration = 0.0;
+    
+    const int64_t frameDuration = av_frame_get_pkt_duration(_videoFrame);
+    if (frameDuration) {
+        
+        duration = frameDuration * _videoTimeBase;
+        duration += _videoFrame->repeat_pict * _videoTimeBase * 0.5;
+        
+    } else {
+        // sometimes, ffmpeg unable to determine a frame duration
+        // as example yuvj420p stream from web camera
+        duration = 1.0 / _fps;
+    }
+    
+    //判断是否丢弃帧
+//    if ( _fps >= 25.0)
+//    {
+//        CGFloat fps_scale =  _fps / 25.0;
+//
+//        duration *= fps_scale;
+//
+//    }
+    
+//    if ((_position > position) &&
+//        _position != 0)
+//    {
+//        switch (_videoFrameFormat) {
+//            case CYVideoFrameFormatYUV:
+//            {
+//                frame = [[CYVideoFrameYUV alloc] init];
+//                frame.position = position;
+//                frame.duration = duration;
+//            }
+//                return frame;
+//
+//            default:
+//            {
+//                frame = [[CYVideoFrameRGB alloc] init];
+//                frame.position = position;
+//                frame.duration = duration;
+//            }
+//                return frame;;
+//        }
+//    }
+
+    
+    
     int width = _videoCodecCtx->width;
     int height = _videoCodecCtx->height;
     if (!(_dstWidth > 0 && _dstHeight > 0))
@@ -1443,24 +1645,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
 
     frame.width = width;
     frame.height = height;
-    frame.position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
-    
-    const int64_t frameDuration = av_frame_get_pkt_duration(_videoFrame);
-    if (frameDuration) {
-        
-        frame.duration = frameDuration * _videoTimeBase;
-        frame.duration += _videoFrame->repeat_pict * _videoTimeBase * 0.5;
-        
-        //if (_videoFrame->repeat_pict > 0) {
-        //    LoggerVideo(0, @"_videoFrame.repeat_pict %d", _videoFrame->repeat_pict);
-        //}
-        
-    } else {
-        
-        // sometimes, ffmpeg unable to determine a frame duration
-        // as example yuvj420p stream from web camera
-        frame.duration = 1.0 / _fps;
-    }    
+    frame.position = position;
+    frame.duration = duration;
     
 #if 0
     LoggerVideo(2, @"VFD: %.4f %.4f | %lld ",
@@ -1639,7 +1825,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 //            }
 //            size_t size = fwrite(outbuf[0], 1, bufSize, _out_fb);
 //            fclose(_out_fb);
-////            _fileCount++;
+//            //            _fileCount++;
 //        }
         
         if (numFrames < 0) {
@@ -1880,6 +2066,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             break;
         }
         
+        
         if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
            
             int pktSize = packet.size;
@@ -1887,10 +2074,6 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             while (pktSize > 0 && _videoCodecCtx) {
                             
                 int gotframe = 0;
-//                int len = avcodec_decode_video2(_videoCodecCtx,
-//                                                _videoFrame,
-//                                                &gotframe,
-//                                                &packet);
                 int len = avcodec_send_packet(_videoCodecCtx, &packet);
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
                 
@@ -1906,8 +2089,12 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                         
                         [result addObject:frame];
                         
-                        _position = frame.position;
-                        decodedDuration += frame.duration;
+                        if (frame.position >= _position)
+                        {
+                            _position = _position + frame.duration;
+                            decodedDuration += frame.duration;
+                        }
+                        
                         if (decodedDuration > minDuration)
                             finished = YES;
                     }
@@ -1926,10 +2113,6 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             while (pktSize > 0 && _audioCodecCtx) {
                 
                 int gotframe = 0;
-//                int len = avcodec_decode_audio4(_audioCodecCtx,
-//                                                _audioFrame,
-//                                                &gotframe,
-//                                                &packet);
                 
                 int len = avcodec_send_packet(_audioCodecCtx, &packet);
                 gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
