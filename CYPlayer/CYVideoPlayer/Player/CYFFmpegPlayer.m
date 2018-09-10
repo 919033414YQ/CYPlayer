@@ -270,7 +270,7 @@ CYPCMAudioManagerDelegate>
     _parameters = parameters;
     
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
-    CYVideoDecodeType type = CYVideoDecodeTypeAudio;
+    CYVideoDecodeType type = CYVideoDecodeTypeVideo;
     if (canUseAudio)
     {
         type |= CYVideoDecodeTypeAudio;
