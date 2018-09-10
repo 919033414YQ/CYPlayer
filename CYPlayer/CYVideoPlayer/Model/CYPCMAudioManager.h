@@ -10,6 +10,8 @@
 #import<AVFoundation/AVFoundation.h>
 #import "CYOpenALPlayer.h"
 
+#define CYPCMAudioManagerNormalSampleRate [CYPCMAudioManager audioManager].avaudioSessionSamplingRate //44100 48000
+
 @class CYPCMAudioManager;
 
 //typedef void(^CYPCMAudioManageriNeedBu)(<#arguments#>);

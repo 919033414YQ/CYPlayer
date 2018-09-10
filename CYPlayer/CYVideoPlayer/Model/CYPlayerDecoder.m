@@ -16,6 +16,7 @@
 #import "CYLogger.h"
 #import "CYOpenALPlayer.h"
 #import "pixfmt.h"
+#import <objc/runtime.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1012,6 @@ static int interrupt_callback(void *ctx);
             avformat_free_context(formatCtx);
         return cyPlayerErrorOpenFile;
     }
-//    avformat_write_header(formatCtx, &_options);
     
     if (avformat_find_stream_info(formatCtx, NULL) < 0) {
         
@@ -1147,14 +1147,15 @@ static int interrupt_callback(void *ctx);
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
 
         audioManager.avcodecContextNumOutputChannels = audioManager.avaudioSessionNumOutputChannels;
-        if (codecCtx->sample_rate < audioManager.avaudioSessionSamplingRate)
+        if (codecCtx->sample_rate < CYPCMAudioManagerNormalSampleRate)
         {
             audioManager.avcodecContextSamplingRate = codecCtx->sample_rate;
         }
         else
         {
-            audioManager.avcodecContextSamplingRate = audioManager.avaudioSessionSamplingRate;
+            audioManager.avcodecContextSamplingRate = CYPCMAudioManagerNormalSampleRate;
         }
+
         dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
         BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0;
         dispatch_semaphore_signal(_swrContextLock);
@@ -1503,35 +1504,39 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
     
     //判断是否丢弃帧
-//    if ( _fps >= 25.0)
-//    {
-//        CGFloat fps_scale =  _fps / 25.0;
-//
-//        duration *= fps_scale;
-//
-//    }
+    if ( _fps >= 25.0)
+    {
+        CGFloat fps_scale =  _fps / 25.0;
+
+        duration *= fps_scale;
+
+    }
     
-//    if ((_position > position) &&
-//        _position != 0)
-//    {
-//        switch (_videoFrameFormat) {
-//            case CYVideoFrameFormatYUV:
-//            {
-//                frame = [[CYVideoFrameYUV alloc] init];
-//                frame.position = position;
-//                frame.duration = duration;
-//            }
-//                return frame;
-//
-//            default:
-//            {
-//                frame = [[CYVideoFrameRGB alloc] init];
-//                frame.position = position;
-//                frame.duration = duration;
-//            }
-//                return frame;;
-//        }
-//    }
+    if ((_position > position) &&
+        _position != 0)
+    {
+        switch (_videoFrameFormat) {
+            case CYVideoFrameFormatYUV:
+            {
+                frame = [[CYVideoFrameYUV alloc] init];
+                frame.position = position;
+                frame.duration = duration;
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+                NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+            }
+                return nil;
+
+            default:
+            {
+                frame = [[CYVideoFrameRGB alloc] init];
+                frame.position = position;
+                frame.duration = duration;
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+                NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+            }
+                return nil;;
+        }
+    }
 
     
     
@@ -1647,7 +1652,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     frame.height = height;
     frame.position = position;
     frame.duration = duration;
-    
+    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
 #if 0
     LoggerVideo(2, @"VFD: %.4f %.4f | %lld ",
                 frame.position,
@@ -1783,10 +1789,14 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 {
     if (!_audioFrame->data[0])
         return nil;
+ 
+    CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-    
     const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
+    CGFloat position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
+    CGFloat duration = av_frame_get_pkt_duration(_audioFrame) * _audioTimeBase;;
+    
     NSInteger numFrames;
     
     void * audioData;
@@ -1855,17 +1865,16 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
 //    vDSP_vsmul(data.mutableBytes, 1, &scale, data.mutableBytes, 1, numElements);
     
     CYAudioFrame *frame = [[CYAudioFrame alloc] init];
-    frame.position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
-    frame.duration = av_frame_get_pkt_duration(_audioFrame) * _audioTimeBase;
 //    frame.samples = data;
     frame.samples = [NSData dataWithBytes:audioData length:numFrames];
-
-    if (frame.duration == 0) {
+    if (duration == 0) {
         // sometimes ffmpeg can't determine the duration of audio frame
         // especially of wma/wmv format
         // so in this case must compute duration
-        frame.duration = frame.samples.length / (sizeof(float) * numChannels * audioManager.avcodecContextSamplingRate);
+        duration = frame.samples.length / (sizeof(float) * numChannels * audioManager.avcodecContextSamplingRate);
     }
+    frame.position = position;
+    frame.duration = duration;
     
 #if 0
     LoggerAudio(2, @"AFD: %.4f %.4f | %.4f ",
@@ -1873,7 +1882,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 frame.duration,
                 frame.samples.length / (8.0 * 44100.0));
 #endif
-    
+    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+    NSLog(@"Linked handleAudioFrame in %f ms", linkTime *1000.0);
     return frame;
 }
 
@@ -2060,12 +2070,14 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     while (!finished && _formatCtx) {
         
+        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;
             av_packet_unref(&packet);
             break;
         }
-        
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
         
         if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
            
@@ -2131,8 +2143,13 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                                                 
                         if (_videoStream == -1) {
                             
-                            _position = frame.position;
-                            decodedDuration += frame.duration;
+//                            _position = frame.position;
+//                            decodedDuration += frame.duration;
+                            if (frame.position >= _position)
+                            {
+                                _position = _position + frame.duration;
+                                decodedDuration += frame.duration;
+                            }
                             if (decodedDuration > minDuration)
                                 finished = YES;
                         }
