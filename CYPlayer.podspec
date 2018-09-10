@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "1.5.6"
+s.version      = "1.6.0"
 s.summary      = 'A iOS video player, using AVPlayer&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'
@@ -61,14 +61,6 @@ ss.frameworks  = "VideoToolbox", "CoreMedia","AudioToolbox"
 ss.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer/CYFrameworks/FFmpeg-iOS/include"' }
 end
 
-# s.subspec 'CYFFmpeg' do |ss|
-# ss.source_files = 	'CYPlayer/CYFrameworks/FFmpeg.framework/Headers/*.{h}'
-# ss.vendored_frameworks = "CYPlayer/CYFrameworks/FFmpeg.framework"
-# ss.public_header_files = "CYPlayer/CYFrameworks/FFmpeg.framework/Headers/*.{h}"
-# ss.dependency 'CYPlayer/CYSMBClient'
-# ss.libraries = 'z', 'iconv', 'bz2'
-# ss.frameworks  = "Foundation"
-# end
 
 # s.subspec 'CYTest' do |ss|
 # ss.source_files = 'CYPlayer/CYTest/*.{h,m}'

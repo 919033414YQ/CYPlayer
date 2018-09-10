@@ -91,6 +91,7 @@
 		0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0E5FA237210062C5002A7597 /* cyplayer.bundle */; };
 		0E7FA51C213CF42400D1F16B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51B213CF42300D1F16B /* AVFoundation.framework */; };
 		0E7FA51E213CF43600D1F16B /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51D213CF43600D1F16B /* OpenAL.framework */; };
+		0EA91120214674F700149858 /* libx264.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EA9111F214674F700149858 /* libx264.a */; };
 		0ECD4C0B2111A2D30078D24A /* CYFFmpegViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA24221007479002A7597 /* CYFFmpegViewController.m */; };
 		0ECD4C102111A33C0078D24A /* CYFFmpegPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */; };
 		0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */; };
@@ -104,7 +105,6 @@
 		0ED08602212ADAAB0057BE9F /* libavdevice.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED085FA212ADAAB0057BE9F /* libavdevice.a */; };
 		0ED08603212ADAAB0057BE9F /* libswresample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED085FB212ADAAB0057BE9F /* libswresample.a */; };
 		0ED08604212ADAAB0057BE9F /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED085FC212ADAAB0057BE9F /* libswscale.a */; };
-		0ED0860B212ADB520057BE9F /* libx264.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED0860A212ADB520057BE9F /* libx264.a */; };
 		0ED08616212ADB770057BE9F /* libfdk-aac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED08615212ADB770057BE9F /* libfdk-aac.a */; };
 		0EEAC86A212568EB0017CF3B /* CYTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EEAC869212568EB0017CF3B /* CYTest.m */; };
 		0EEE12A32126C5F1001995BF /* FFmpeg Structure.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 0EEE12A22126C5EE001995BF /* FFmpeg Structure.jpg */; };
@@ -138,7 +138,7 @@
 		0E190AE8210ADCF2007DE6CB /* CYPlayer.mindnode */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CYPlayer.mindnode; sourceTree = "<group>"; };
 		0E2406C320FE0EDC008BEAB5 /* PlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerViewController.m; sourceTree = "<group>"; };
 		0E2406C420FE0EDD008BEAB5 /* PlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerViewController.h; sourceTree = "<group>"; };
-		0E2406FB20FE15D7008BEAB5 /* CYPlayer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CYPlayer.podspec; sourceTree = "<group>"; };
+		0E2406FB20FE15D7008BEAB5 /* CYPlayer.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CYPlayer.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		0E24070020FE1630008BEAB5 /* UIImagePickerController+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImagePickerController+Extension.m"; sourceTree = "<group>"; };
 		0E24070120FE1630008BEAB5 /* UIView+CYUIFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+CYUIFactory.h"; sourceTree = "<group>"; };
 		0E24070220FE1630008BEAB5 /* UIImagePickerController+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImagePickerController+Extension.h"; sourceTree = "<group>"; };
@@ -300,6 +300,9 @@
 		0E5FA24221007479002A7597 /* CYFFmpegViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegViewController.m; sourceTree = "<group>"; };
 		0E7FA51B213CF42300D1F16B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		0E7FA51D213CF43600D1F16B /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		0EA9111C214674F700149858 /* x264_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264_config.h; sourceTree = "<group>"; };
+		0EA9111D214674F700149858 /* x264.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264.h; sourceTree = "<group>"; };
+		0EA9111F214674F700149858 /* libx264.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libx264.a; sourceTree = "<group>"; };
 		0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegPlayer.m; sourceTree = "<group>"; };
 		0ECD4C0D2111A33C0078D24A /* CYFFmpegPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYFFmpegPlayer.h; sourceTree = "<group>"; };
 		0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerGLView.m; sourceTree = "<group>"; };
@@ -317,9 +320,6 @@
 		0ED085FA212ADAAB0057BE9F /* libavdevice.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libavdevice.a; sourceTree = "<group>"; };
 		0ED085FB212ADAAB0057BE9F /* libswresample.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libswresample.a; sourceTree = "<group>"; };
 		0ED085FC212ADAAB0057BE9F /* libswscale.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libswscale.a; sourceTree = "<group>"; };
-		0ED08607212ADB520057BE9F /* x264_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264_config.h; sourceTree = "<group>"; };
-		0ED08608212ADB520057BE9F /* x264.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264.h; sourceTree = "<group>"; };
-		0ED0860A212ADB520057BE9F /* libx264.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libx264.a; sourceTree = "<group>"; };
 		0ED0860F212ADB770057BE9F /* aacdecoder_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aacdecoder_lib.h; sourceTree = "<group>"; };
 		0ED08610212ADB770057BE9F /* machine_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = machine_type.h; sourceTree = "<group>"; };
 		0ED08611212ADB770057BE9F /* aacenc_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aacenc_lib.h; sourceTree = "<group>"; };
@@ -478,6 +478,7 @@
 			files = (
 				0E7FA51E213CF43600D1F16B /* OpenAL.framework in Frameworks */,
 				0E7FA51C213CF42400D1F16B /* AVFoundation.framework in Frameworks */,
+				0EA91120214674F700149858 /* libx264.a in Frameworks */,
 				0ED085FE212ADAAB0057BE9F /* libavfilter.a in Frameworks */,
 				0ED085FD212ADAAB0057BE9F /* libavutil.a in Frameworks */,
 				0ED08604212ADAAB0057BE9F /* libswscale.a in Frameworks */,
@@ -495,7 +496,6 @@
 				0E343E652107134900DF4564 /* libz.tbd in Frameworks */,
 				0E2D308F2124490C00D6763D /* libwbclient.a in Frameworks */,
 				0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */,
-				0ED0860B212ADB520057BE9F /* libx264.a in Frameworks */,
 				0E2D30922124490C00D6763D /* libtdb.a in Frameworks */,
 				0E2D30912124490C00D6763D /* libtalloc.a in Frameworks */,
 				0ED085FF212ADAAB0057BE9F /* libavcodec.a in Frameworks */,
@@ -934,11 +934,37 @@
 			path = DEBUG;
 			sourceTree = "<group>";
 		};
+		0EA9111A214674F700149858 /* x264-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				0EA9111B214674F700149858 /* include */,
+				0EA9111E214674F700149858 /* lib */,
+			);
+			path = "x264-iOS";
+			sourceTree = "<group>";
+		};
+		0EA9111B214674F700149858 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				0EA9111C214674F700149858 /* x264_config.h */,
+				0EA9111D214674F700149858 /* x264.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		0EA9111E214674F700149858 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				0EA9111F214674F700149858 /* libx264.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
 		0ECD4C1F2111E0250078D24A /* CYFrameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0EA9111A214674F700149858 /* x264-iOS */,
 				0ED0860C212ADB770057BE9F /* fdk-aac-ios */,
-				0ED08605212ADB520057BE9F /* x264-iOS */,
 				0EF5753B212A73EE0057ECB3 /* FFmpeg-iOS */,
 				0E2D30852124490C00D6763D /* Smbclient */,
 			);
@@ -956,32 +982,6 @@
 				0ED085FA212ADAAB0057BE9F /* libavdevice.a */,
 				0ED085FB212ADAAB0057BE9F /* libswresample.a */,
 				0ED085FC212ADAAB0057BE9F /* libswscale.a */,
-			);
-			path = lib;
-			sourceTree = "<group>";
-		};
-		0ED08605212ADB520057BE9F /* x264-iOS */ = {
-			isa = PBXGroup;
-			children = (
-				0ED08606212ADB520057BE9F /* include */,
-				0ED08609212ADB520057BE9F /* lib */,
-			);
-			path = "x264-iOS";
-			sourceTree = "<group>";
-		};
-		0ED08606212ADB520057BE9F /* include */ = {
-			isa = PBXGroup;
-			children = (
-				0ED08607212ADB520057BE9F /* x264_config.h */,
-				0ED08608212ADB520057BE9F /* x264.h */,
-			);
-			path = include;
-			sourceTree = "<group>";
-		};
-		0ED08609212ADB520057BE9F /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				0ED0860A212ADB520057BE9F /* libx264.a */,
 			);
 			path = lib;
 			sourceTree = "<group>";
@@ -1671,7 +1671,7 @@
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
 					"\"${PODS_ROOT}/Headers/Public/Masonry\"",
-					"\"$(SRCROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include\"/**",
+					"\"$(SRCROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include\"",
 				);
 				INFOPLIST_FILE = TestVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -1704,7 +1704,7 @@
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
 					"\"${PODS_ROOT}/Headers/Public/Masonry\"",
-					"\"$(SRCROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include\"/**",
+					"\"$(SRCROOT)/CYPlayer/CYFrameworks/FFmpeg-iOS/include\"",
 				);
 				INFOPLIST_FILE = TestVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;

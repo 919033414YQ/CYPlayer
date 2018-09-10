@@ -997,14 +997,15 @@ static int interrupt_callback(void *ctx);
     
     av_dict_set(&_options, "rtsp_transport", "tcp", 0);//设置tcp or udp，默认一般优先tcp再尝试udp
     av_dict_set(&_options, "timeout", "3000000", 0);//设置超时3秒
-//    av_dict_set(&_options, "re", "25", 0);
+    av_dict_set(&_options, "re", "25", 0);
+    av_dict_set(&_options, "r", "25", 0);
 //    av_dict_set_int(&_options, "video_track_timescale", 25, 0);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
     if ([path hasPrefix:@"rtsp"] || [path hasPrefix:@"rtmp"]) {
         // There is total different meaning for 'timeout' option in rtmp
-        av_dict_set(&_options, "stimeout", NULL, 0);
+        av_dict_set(&_options, "timeout", NULL, 0);
     }
     if (avformat_open_input(&formatCtx, [path cStringUsingEncoding: NSUTF8StringEncoding], NULL, &_options) < 0) {
         

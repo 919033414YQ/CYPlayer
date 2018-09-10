@@ -1496,10 +1496,24 @@ CYPCMAudioManagerDelegate>
                     
                     return;
                 }
-                
-                [self _itemPlayFailed];
-                
-                return;
+                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"])
+                {
+                    [self _pause];
+                    CGFloat interval = 0;
+                    const NSTimeInterval correction = [self tickCorrection];
+                    const NSTimeInterval time = MAX(interval + correction, 0.01);
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+                    dispatch_after(popTime, _progressQueue, ^(void){
+                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
+                    });
+                    return;
+                }
+                else
+                {
+                    [self _itemPlayFailed];
+                    
+                    return;
+                }
             }
             
             if (_minBufferedDuration > 0) {
@@ -1527,7 +1541,24 @@ CYPCMAudioManagerDelegate>
                     [self _itemPlayEnd];
                     return;
                 }
-                [self _itemPlayFailed];
+                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"])
+                {
+                    [self _pause];
+                    CGFloat interval = 0;
+                    const NSTimeInterval correction = [self tickCorrection];
+                    const NSTimeInterval time = MAX(interval + correction, 0.01);
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+                    dispatch_after(popTime, _progressQueue, ^(void){
+                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
+                    });
+                    return;
+                }
+                else
+                {
+                    [self _itemPlayFailed];
+                    
+                    return;
+                }
                 return;
             }
         }
@@ -2319,7 +2350,10 @@ CYPCMAudioManagerDelegate>
 }
 
 - (void)_refreshingTimeLabelWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
-    if (currentTime > duration || duration == NSNotFound)
+    if (currentTime == NSNotFound || isnan(currentTime)) {
+        return;
+    }
+    if (currentTime > duration || duration == NSNotFound || isnan(duration))
     {
         self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
         self.controlView.bottomControlView.durationTimeLabel.text = @"LIVE?";
@@ -2332,11 +2366,19 @@ CYPCMAudioManagerDelegate>
 }
 
 - (void)_refreshingTimeProgressSliderWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
-    self.controlView.bottomProgressSlider.value = self.controlView.bottomControlView.progressSlider.value = currentTime / duration;
+    CGFloat progress = currentTime / duration;
+    if (isnan(progress) || progress == NSNotFound) {
+        progress = 0.0;
+    }
+    self.controlView.bottomProgressSlider.value = self.controlView.bottomControlView.progressSlider.value = progress;
 }
 
 - (void)_refreshingTimeProgressSliderWithLoadedTime:(NSTimeInterval)loadedTime duration:(NSTimeInterval)duration {
-    self.controlView.bottomControlView.progressSlider.bufferProgress = loadedTime / duration;
+    CGFloat progress = loadedTime / duration;
+    if (isnan(progress) || progress == NSNotFound) {
+        progress = 0.0;
+    }
+    self.controlView.bottomControlView.progressSlider.bufferProgress = progress;
 }
 
 
