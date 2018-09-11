@@ -135,6 +135,8 @@ CYPCMAudioManagerDelegate>
     CGFloat             _videoRAMBufferPostion;
     CGFloat             _audioRAMBufferPostion;
     
+    //判断失败的时间
+    CFAbsoluteTime      _cantPlayStartTime;
 #ifdef DEBUG
     UILabel             *_messageLabel;
     NSTimeInterval      _debugStartTime;
@@ -1515,6 +1517,25 @@ CYPCMAudioManagerDelegate>
                     return;
                 }
             }
+            else
+            {
+                if (_cantPlayStartTime <= 0)
+                {
+                    _cantPlayStartTime = CFAbsoluteTimeGetCurrent();
+                }
+                CFAbsoluteTime currTime = CFAbsoluteTimeGetCurrent();
+                NSString * currTimeStr = [NSString stringWithFormat:@"%f", currTime * 1000.0];
+                CGFloat curr = [currTimeStr doubleValue];
+                NSString * cantPlayStartTimeStr = [NSString stringWithFormat:@"%f", _cantPlayStartTime * 1000.0];
+                CGFloat cant = [cantPlayStartTimeStr doubleValue];
+                CGFloat durationTime = curr - cant;
+                if (durationTime >= 10.0 * 1000)
+                {
+                    [self _itemPlayFailed];
+                    _cantPlayStartTime = 0.0;
+                    return;
+                }
+            }
             
             if (_minBufferedDuration > 0) {
                 
@@ -1529,9 +1550,12 @@ CYPCMAudioManagerDelegate>
                 
             }
         }
-        else if (_videoFrames.count == 0 &&
-                 _audioFrames.count != 0 &&
-                 _decoder.validVideo == YES)//资源是一个视频, 视频没了, 但是还有音频
+        else if ((_videoFrames.count == 0 &&
+                  _audioFrames.count != 0 &&
+                  _decoder.validVideo == YES) ||
+                 ((_audioFrames.count == 0 &&
+                   _videoFrames.count != 0 &&
+                   _decoder.validAudio == YES)))
         {
             if (_decoder.isEOF) {
                 if (_decoder.duration - _decoder.position <= 1.0 &&
@@ -1680,19 +1704,19 @@ CYPCMAudioManagerDelegate>
                 _moviePosition = frame.position;
                 CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
                 if (limit_val < 0.2) { limit_val = 0.2; }
-                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
-                {
-
-                    [_videoFrames removeObjectAtIndex:0];
-                    _videoBufferedDuration -= frame.duration;
-                    interval = [self presentVideoFrame:frame];//呈现视频
-                }
-                else if (delta > limit_val)//视频快了
-                {
-
-
-                }
-                else//视频慢了
+//                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
+//                {
+//
+//                    [_videoFrames removeObjectAtIndex:0];
+//                    _videoBufferedDuration -= frame.duration;
+//                    interval = [self presentVideoFrame:frame];//呈现视频
+//                }
+//                else if (delta > limit_val)//视频快了
+//                {
+//
+//
+//                }
+//                else//视频慢了
                 {
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
@@ -1833,12 +1857,9 @@ CYPCMAudioManagerDelegate>
     position = MAX(position, 0);
     _targetPosition = position;
     
-    
-    
-    dispatch_async(_asyncDecodeQueue, ^{
-        
-        if (playMode) {
-            
+    if (playMode)
+    {
+        dispatch_async(_asyncDecodeQueue, ^{
             {
                 __strong CYFFmpegPlayer *strongSelf = weakSelf;
                 if (!strongSelf) return;
@@ -1854,9 +1875,11 @@ CYPCMAudioManagerDelegate>
                     strongSelf->_isDraging = NO;
                 }
             });
-            
-        } else {
-            
+        });
+    }
+    else
+    {
+        dispatch_async(_asyncDecodeQueue, ^{
             {
                 __strong CYFFmpegPlayer *strongSelf = weakSelf;
                 if (!strongSelf) return;
@@ -1874,8 +1897,8 @@ CYPCMAudioManagerDelegate>
                     strongSelf->_isDraging = NO;
                 }
             });
-        }
-    });
+        });
+    }
 }
 
 - (void) setDecoderPosition: (CGFloat) position

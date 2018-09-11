@@ -563,13 +563,35 @@ static int interrupt_callback(void *ctx);
 	AVCodecContext      *_videoCodecCtx;
     AVCodecContext      *_audioCodecCtx;
     AVCodecContext      *_subtitleCodecCtx;
+    
+    //Handle Video Frames
     AVFrame             *_videoFrame;
+    AVFrame             *_videoFrame1;
+    AVFrame             *_videoFrame2;
+    AVFrame             *_videoFrame3;
+    AVFrame             *_videoFrame4;
+    AVPicture           _picture;
+    AVPicture           _picture1;
+    AVPicture           _picture2;
+    AVPicture           _picture3;
+    AVPicture           _picture4;
+    BOOL                _pictureValid;
+    BOOL                _pictureValid1;
+    BOOL                _pictureValid2;
+    BOOL                _pictureValid3;
+    BOOL                _pictureValid4;
+    //Handle Audio Frames
     AVFrame             *_audioFrame;
+    AVFrame             *_audioFrame1;
+    AVFrame             *_audioFrame2;
+    AVFrame             *_audioFrame3;
+    AVFrame             *_audioFrame4;
+
     NSInteger           _videoStream;
     NSInteger           _audioStream;
     NSInteger           _subtitleStream;
-	AVPicture           _picture;
-    BOOL                _pictureValid;
+	
+    
     struct SwsContext   *_swsContext;
     CGFloat             _videoTimeBase;
     CGFloat             _audioTimeBase;
@@ -1085,8 +1107,12 @@ static int interrupt_callback(void *ctx);
         return cyPlayerErrorOpenCodec;
         
     _videoFrame = av_frame_alloc();
+    _videoFrame1 = av_frame_alloc();
+    _videoFrame2 = av_frame_alloc();
+    _videoFrame3 = av_frame_alloc();
+    _videoFrame4 = av_frame_alloc();
 
-    if (!_videoFrame) {
+    if (!_videoFrame || !_videoFrame1 || !_videoFrame2 || !_videoFrame3 || !_videoFrame4) {
         avcodec_free_context(&codecCtx);
         return cyPlayerErrorAllocateFrame;
     }
@@ -1167,8 +1193,12 @@ static int interrupt_callback(void *ctx);
         }
     }
     _audioFrame = av_frame_alloc();
+    _audioFrame1 = av_frame_alloc();
+    _audioFrame2 = av_frame_alloc();
+    _audioFrame3 = av_frame_alloc();
+    _audioFrame4 = av_frame_alloc();
 
-    if (!_audioFrame) {
+    if (!_audioFrame || !_audioFrame1 || !_audioFrame2 || !_audioFrame3 || !_audioFrame4) {
         if (swrContext)
         {
             swr_free(&swrContext);
@@ -1296,13 +1326,27 @@ static int interrupt_callback(void *ctx);
     [self closeScaler];
     
     if (_videoFrame) {
-        
         av_free(_videoFrame);
         _videoFrame = NULL;
     }
+    if (_videoFrame1) {
+        av_free(_videoFrame1);
+        _videoFrame1 = NULL;
+    }
+    if (_videoFrame2) {
+        av_free(_videoFrame2);
+        _videoFrame2 = NULL;
+    }
+    if (_videoFrame3) {
+        av_free(_videoFrame3);
+        _videoFrame3 = NULL;
+    }
+    if (_videoFrame4) {
+        av_free(_videoFrame4);
+        _videoFrame4 = NULL;
+    }
     
     if (_videoCodecCtx) {
-        
         avcodec_free_context(&_videoCodecCtx);
         _videoCodecCtx = NULL;
     }
@@ -1326,13 +1370,27 @@ static int interrupt_callback(void *ctx);
     }
         
     if (_audioFrame) {
-        
         av_free(_audioFrame);
         _audioFrame = NULL;
     }
+    if (_audioFrame1) {
+        av_free(_audioFrame1);
+        _audioFrame1 = NULL;
+    }
+    if (_audioFrame2) {
+        av_free(_audioFrame2);
+        _audioFrame2 = NULL;
+    }
+    if (_audioFrame3) {
+        av_free(_audioFrame3);
+        _audioFrame3 = NULL;
+    }
+    if (_audioFrame4) {
+        av_free(_audioFrame4);
+        _audioFrame4 = NULL;
+    }
     
     if (_audioCodecCtx) {
-        
         avcodec_free_context(&_audioCodecCtx);
         _audioCodecCtx = NULL;
     }
@@ -1360,18 +1418,34 @@ static int interrupt_callback(void *ctx);
         avpicture_free(&_picture);
         _pictureValid = NO;
     }
+    if (_pictureValid1) {
+        avpicture_free(&_picture1);
+        _pictureValid1 = NO;
+    }
+    if (_pictureValid2) {
+        avpicture_free(&_picture2);
+        _pictureValid2 = NO;
+    }
+    if (_pictureValid3) {
+        avpicture_free(&_picture3);
+        _pictureValid3 = NO;
+    }
+    if (_pictureValid4) {
+        avpicture_free(&_picture4);
+        _pictureValid4 = NO;
+    }
 }
 
-- (BOOL) setupScalerWidth:(int)width Heigth:(int)height DstFormat:(int)format
+- (BOOL) setupScalerWithPicture:(AVPicture *)picture isValid:(BOOL *)isValid Width:(int)width Heigth:(int)height DstFormat:(int)format
 {
     [self closeScaler];
     
-    _pictureValid = avpicture_alloc(&_picture,
+    *isValid = avpicture_alloc(picture,
                                     format,
                                     width,
                                     height) == 0;
     
-	if (!_pictureValid)
+	if (!(*isValid))
         return NO;
 
 	_swsContext = sws_getCachedContext(_swsContext,
@@ -1481,23 +1555,23 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
 }
 
-- (CYVideoFrame *) handleVideoFrame
+- (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
-    if (!_videoFrame->data[0])
+    if (!videoFrame->data[0])
         return nil;
  
     CYVideoFrame *frame;
     
     CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     
-    CGFloat position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
+    CGFloat position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
     CGFloat duration = 0.0;
     
-    const int64_t frameDuration = av_frame_get_pkt_duration(_videoFrame);
+    const int64_t frameDuration = av_frame_get_pkt_duration(videoFrame);
     if (frameDuration) {
         
         duration = frameDuration * _videoTimeBase;
-        duration += _videoFrame->repeat_pict * _videoTimeBase * 0.5;
+        duration += videoFrame->repeat_pict * _videoTimeBase * 0.5;
         
     } else {
         // sometimes, ffmpeg unable to determine a frame duration
@@ -1561,7 +1635,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         if (_videoCodecCtx->width != width)//宽高发生了改变
         {
             if (!_swsContext &&
-                ![self setupScalerWidth:width Heigth:height DstFormat:_videoCodecCtx->pix_fmt]) {
+                ![self setupScalerWithPicture:picture isValid:isPictureValid Width:width Heigth:height DstFormat:_videoCodecCtx->pix_fmt]) {
                 
                 LoggerVideo(0, @"fail setup video scaler");
                 return nil;
@@ -1571,28 +1645,28 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             
             //在这写入要计算时间的代码
             sws_scale(_swsContext,
-                      (const uint8_t **)_videoFrame->data,
-                      _videoFrame->linesize,
+                      (const uint8_t **)videoFrame->data,
+                      videoFrame->linesize,
                       0,
-                      _videoFrame->height,
-                      _picture.data,
-                      _picture.linesize);
+                      videoFrame->height,
+                      (*picture).data,
+                      (*picture).linesize);
 
             
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
-            yuvFrame.luma = copyFrameData(_picture.data[0],
-                                          _picture.linesize[0],
+            yuvFrame.luma = copyFrameData((*picture).data[0],
+                                          (*picture).linesize[0],
                                           width,
                                           height);
             
-            yuvFrame.chromaB = copyFrameData(_picture.data[1],
-                                             _picture.linesize[1],
+            yuvFrame.chromaB = copyFrameData((*picture).data[1],
+                                             (*picture).linesize[1],
                                              width / 2,
                                              height / 2);
             
-            yuvFrame.chromaR = copyFrameData(_picture.data[2],
-                                             _picture.linesize[2],
+            yuvFrame.chromaR = copyFrameData((*picture).data[2],
+                                             (*picture).linesize[2],
                                              width / 2,
                                              height / 2);
             
@@ -1605,18 +1679,18 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         {
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
-            yuvFrame.luma = copyFrameData(_videoFrame->data[0],
-                                          _videoFrame->linesize[0],
+            yuvFrame.luma = copyFrameData(videoFrame->data[0],
+                                          videoFrame->linesize[0],
                                           width,
                                           height);
             
-            yuvFrame.chromaB = copyFrameData(_videoFrame->data[1],
-                                             _videoFrame->linesize[1],
+            yuvFrame.chromaB = copyFrameData(videoFrame->data[1],
+                                             videoFrame->linesize[1],
                                              width / 2,
                                              height / 2);
             
-            yuvFrame.chromaR = copyFrameData(_videoFrame->data[2],
-                                             _videoFrame->linesize[2],
+            yuvFrame.chromaR = copyFrameData(videoFrame->data[2],
+                                             videoFrame->linesize[2],
                                              width / 2,
                                              height / 2);
             
@@ -1627,25 +1701,25 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     } else {
         
         if (!_swsContext &&
-            ![self setupScalerWidth:width Heigth:height DstFormat:AV_PIX_FMT_RGB24]) {
+            ![self setupScalerWithPicture:picture isValid:isPictureValid Width:width Heigth:height DstFormat:AV_PIX_FMT_RGB24]) {
             
             LoggerVideo(0, @"fail setup video scaler");
             return nil;
         }
         
         sws_scale(_swsContext,
-                  (const uint8_t **)_videoFrame->data,
-                  _videoFrame->linesize,
+                  (const uint8_t **)videoFrame->data,
+                  videoFrame->linesize,
                   0,
                   _videoCodecCtx->height,
-                  _picture.data,
-                  _picture.linesize);
+                  (*picture).data,
+                  (*picture).linesize);
         
         
         CYVideoFrameRGB *rgbFrame = [[CYVideoFrameRGB alloc] init];
         
-        rgbFrame.linesize = _picture.linesize[0];
-        rgbFrame.rgb = [NSData dataWithBytes:_picture.data[0]
+        rgbFrame.linesize = (*picture).linesize[0];
+        rgbFrame.rgb = [NSData dataWithBytes:(*picture).data[0]
                                     length:rgbFrame.linesize * height];
         frame = rgbFrame;
     }    
@@ -1660,7 +1734,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     LoggerVideo(2, @"VFD: %.4f %.4f | %lld ",
                 frame.position,
                 frame.duration,
-                av_frame_get_pkt_pos(_videoFrame));
+                av_frame_get_pkt_pos(videoFrame));
 
     CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
     NSLog(@"Linked in %f ms", linkTime *1000.0);
@@ -1787,17 +1861,17 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     }
 }
 
-- (CYAudioFrame *) handleAudioFrame
+- (CYAudioFrame *) handleAudioFrame:(AVFrame *)audioFrame
 {
-    if (!_audioFrame->data[0])
+    if (!audioFrame->data[0])
         return nil;
  
     CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
-    CGFloat position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
-    CGFloat duration = av_frame_get_pkt_duration(_audioFrame) * _audioTimeBase;;
+    CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase;
+    CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase;;
     
     NSInteger numFrames;
     
@@ -1806,7 +1880,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     const int bufSize = av_samples_get_buffer_size(&out_linesize,
                                                    (int)audioManager.avcodecContextNumOutputChannels,
-                                                   _audioFrame->nb_samples,
+                                                   audioFrame->nb_samples,
                                                    AV_SAMPLE_FMT_S16,
                                                    1);
 
@@ -1825,7 +1899,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         
         Byte *outbuf[2] = { _swrBuffer, 0 };
         
-        numFrames = audio_swr_resampling_audio(_swrContext, _audioFrame, outbuf);
+        numFrames = audio_swr_resampling_audio(_swrContext, audioFrame, outbuf);
         
 //        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
 //        if (_swrContext ) {
@@ -1853,7 +1927,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             return nil;
         }
         
-        audioData = _audioFrame->extended_data;
+        audioData = audioFrame->extended_data;
         numFrames = out_linesize;
     }
     dispatch_semaphore_signal(_swrContextLock);
@@ -2056,7 +2130,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     return _videoFrameFormat == format;
 }
 
-- (NSArray *) decodeFrames: (CGFloat) minDuration
+- (NSArray *) old_decodeFrames: (CGFloat) minDuration
 {
     if (_videoStream == -1 &&
         _audioStream == -1)
@@ -2097,7 +2171,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 
                 if (gotframe) {
                     
-                    CYVideoFrame *frame = [self handleVideoFrame];
+                    CYVideoFrame *frame = [self handleVideoFrame:_videoFrame Picture:&_picture isPictureValid:&_pictureValid];
                     if (frame) {
                         
                         [result addObject:frame];
@@ -2137,7 +2211,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 
                 if (gotframe) {
                     
-                    CYAudioFrame * frame = [self handleAudioFrame];
+                    CYAudioFrame * frame = [self handleAudioFrame:_audioFrame];
                     if (frame) {
                         
                         [result addObject:frame];
@@ -2213,6 +2287,240 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     return result;
 }
 
+- (NSArray *) decodeFrames: (CGFloat) minDuration
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return nil;
+    
+    NSMutableArray *result = [NSMutableArray array];
+    
+    AVPacket packet;
+    
+    CGFloat decodedDuration = 0;
+    
+    BOOL finished = NO;
+    
+    while (!finished && _formatCtx) {
+        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+        if (av_read_frame(_formatCtx, &packet) < 0) {
+            _isEOF = YES;
+            av_packet_unref(&packet);
+            break;
+        }
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+        
+        CYPlayerFrame * frame = [self handlePacket:packet audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid];
+        if (frame)
+        {
+            [result addObject:frame];
+            if (_videoStream == -1) {
+                if (frame.position >= _position)
+                {
+                    _position = _position + frame.duration;
+                    decodedDuration += frame.duration;
+                }
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+            else
+            {
+                if (frame.type == CYPlayerFrameTypeVideo)
+                {
+                    if (frame.position >= _position)
+                    {
+                        _position = _position + frame.duration;
+                        decodedDuration += frame.duration;
+                    }
+                }
+                
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+        }
+        
+        
+        av_packet_unref(&packet);
+    }
+    av_packet_unref(&packet);
+    
+    return result;
+}
+
+- (NSArray *) decodeFrames5: (CGFloat) minDuration
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return nil;
+    
+    NSMutableArray *result = [NSMutableArray array];
+    
+    AVPacket packet;
+    
+    CGFloat decodedDuration = 0;
+    
+    BOOL finished = NO;
+    
+    while (!finished && _formatCtx) {
+        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+        if (av_read_frame(_formatCtx, &packet) < 0) {
+            _isEOF = YES;
+            av_packet_unref(&packet);
+            break;
+        }
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+        
+        CYPlayerFrame * frame = [self handlePacket:packet audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid];
+        if (frame)
+        {
+            [result addObject:frame];
+            if (_videoStream == -1) {
+                if (frame.position >= _position)
+                {
+                    _position = _position + frame.duration;
+                    decodedDuration += frame.duration;
+                }
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+            else
+            {
+                if (frame.type == CYPlayerFrameTypeVideo)
+                {
+                    if (frame.position >= _position)
+                    {
+                        _position = _position + frame.duration;
+                        decodedDuration += frame.duration;
+                    }
+                }
+                
+                if (decodedDuration > minDuration)
+                    finished = YES;
+            }
+        }
+        
+        
+        av_packet_unref(&packet);
+    }
+    av_packet_unref(&packet);
+    
+    return result;
+}
+
+- (CYPlayerFrame *)handlePacket:(AVPacket)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
+{
+    CYPlayerFrame * result_frame = nil;
+    if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
+        
+        int pktSize = packet.size;
+        
+        while (pktSize > 0 && _videoCodecCtx) {
+            
+            int gotframe = 0;
+            int len = avcodec_send_packet(_videoCodecCtx, &packet);
+            gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
+            
+            if (len < 0) {
+                LoggerVideo(0, @"decode video error, skip packet");
+                break;
+            }
+            
+            if (gotframe) {
+                
+                CYVideoFrame *frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
+                if (frame) {
+                    
+                    result_frame = frame;
+                }
+            }
+            
+            if (0 == len)
+                break;
+            
+            pktSize -= len;
+        }
+        
+    } else if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
+        
+        int pktSize = packet.size;
+        
+        while (pktSize > 0 && _audioCodecCtx) {
+            
+            int gotframe = 0;
+            
+            int len = avcodec_send_packet(_audioCodecCtx, &packet);
+            gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
+            
+            if (len < 0) {
+                LoggerAudio(0, @"decode audio error, skip packet");
+                break;
+            }
+            
+            if (gotframe) {
+                
+                CYAudioFrame * frame = [self handleAudioFrame:audioFrame];
+                if (frame) {
+                    
+                    result_frame = frame;
+                }
+            }
+            
+            if (0 == len)
+                break;
+            
+            pktSize -= len;
+        }
+        
+    } else if (packet.stream_index == _artworkStream) {
+        
+        if (packet.size) {
+            
+            CYArtworkFrame *frame = [[CYArtworkFrame alloc] init];
+            frame.picture = [NSData dataWithBytes:packet.data length:packet.size];
+            if (frame)
+            {
+                result_frame = frame;
+            }
+        }
+        
+    } else if (packet.stream_index == _subtitleStream) {
+        
+        int pktSize = packet.size;
+        
+        while (pktSize > 0) {
+            
+            AVSubtitle subtitle;
+            int gotsubtitle = 0;
+            int len = avcodec_decode_subtitle2(_subtitleCodecCtx,
+                                               &subtitle,
+                                               &gotsubtitle,
+                                               &packet);
+            
+            if (len < 0) {
+                LoggerStream(0, @"decode subtitle error, skip packet");
+                break;
+            }
+            
+            if (gotsubtitle) {
+                
+                CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
+                if (frame) {
+                    result_frame = frame;
+                }
+                avsubtitle_free(&subtitle);
+            }
+            
+            if (0 == len)
+                break;
+            
+            pktSize -= len;
+        }
+    }
+
+    return result_frame;
+}
 
 - (NSArray *) decodeTargetFrames: (CGFloat) minDuration :(CGFloat)targetPos
 {
@@ -2255,7 +2563,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                     CGFloat curr_position = av_frame_get_best_effort_timestamp(_audioFrame) * _audioTimeBase;
                     if (curr_position >= targetPos)
                     {
-                        CYAudioFrame * frame = [self handleAudioFrame];
+                        CYAudioFrame * frame = [self handleAudioFrame:_audioFrame];
                         if (frame) {
                             
                             [result addObject:frame];
@@ -2300,7 +2608,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                      CGFloat curr_position = av_frame_get_best_effort_timestamp(_videoFrame) * _videoTimeBase;
                      if (curr_position >= targetPos)
                      {
-                         CYVideoFrame *frame = [self handleVideoFrame];
+                         CYVideoFrame *frame = [self handleVideoFrame:_videoFrame Picture:&_picture isPictureValid:&_pictureValid];
                          if (frame) {
                              
                              [result addObject:frame];
