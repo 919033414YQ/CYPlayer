@@ -12,6 +12,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#define CYPlayerDecoderMaxFPS 20
+
 extern NSString * cyplayerErrorDomain;
 
 typedef BOOL(^CYPlayerDecoderInterruptCallback)(void);

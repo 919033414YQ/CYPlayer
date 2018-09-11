@@ -784,6 +784,7 @@ static int interrupt_callback(void *ctx);
                     NSString *s = [NSString stringWithCString:buf encoding:NSUTF8StringEncoding];
                     if ([s hasPrefix:@"Video: "])
                         s = [s substringFromIndex:@"Video: ".length];
+                    s = [s stringByAppendingString:[NSString stringWithFormat:@", %.0f FPS", _fps]];
                     [ma addObject:s];
                     avcodec_free_context(&codecCtx_tmp);
                 }
@@ -1505,9 +1506,9 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
     
     //判断是否丢弃帧
-    if ( _fps >= 25.0)
+    if ( _fps >= CYPlayerDecoderMaxFPS)
     {
-        CGFloat fps_scale =  _fps / 25.0;
+        CGFloat fps_scale =  _fps / CYPlayerDecoderMaxFPS;
 
         duration *= fps_scale;
 
@@ -2070,7 +2071,6 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     BOOL finished = NO;
     
     while (!finished && _formatCtx) {
-        
         CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
         if (av_read_frame(_formatCtx, &packet) < 0) {
             _isEOF = YES;

@@ -1258,7 +1258,7 @@ CYPCMAudioManagerDelegate>
     __weak CYFFmpegPlayer *weakSelf = self;
     __weak CYPlayerDecoder *weakDecoder = _decoder;
     
-    const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
+    const CGFloat duration = _decoder.isNetwork ? 1.0f : 0.1f;
     dispatch_async(_asyncDecodeQueue, ^{
         __strong CYFFmpegPlayer *strongSelf = weakSelf;
         if (strongSelf)
@@ -1678,21 +1678,21 @@ CYPCMAudioManagerDelegate>
                 frame = _videoFrames[0];
                 CGFloat delta = _moviePosition - _currentAudioFramePos;
                 _moviePosition = frame.position;
-                CGFloat limit_val = 1;1.0 / _decoder.fps;
+                CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
                 if (limit_val < 0.2) { limit_val = 0.2; }
-//                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
-//                {
-//
-//                    [_videoFrames removeObjectAtIndex:0];
-//                    _videoBufferedDuration -= frame.duration;
-//                    interval = [self presentVideoFrame:frame];//呈现视频
-//                }
-//                else if (delta > limit_val)//视频快了
-//                {
-//
-//
-//                }
-//                else//视频慢了
+                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
+                {
+
+                    [_videoFrames removeObjectAtIndex:0];
+                    _videoBufferedDuration -= frame.duration;
+                    interval = [self presentVideoFrame:frame];//呈现视频
+                }
+                else if (delta > limit_val)//视频快了
+                {
+
+
+                }
+                else//视频慢了
                 {
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
@@ -2350,10 +2350,10 @@ CYPCMAudioManagerDelegate>
 }
 
 - (void)_refreshingTimeLabelWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
-    if (currentTime == NSNotFound || isnan(currentTime)) {
+    if (currentTime == NSNotFound || isnan(currentTime) || currentTime == MAXFLOAT) {
         return;
     }
-    if (currentTime > duration || duration == NSNotFound || isnan(duration))
+    if (currentTime > duration || duration == NSNotFound || isnan(duration) || duration == MAXFLOAT)
     {
         self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
         self.controlView.bottomControlView.durationTimeLabel.text = @"LIVE?";
@@ -2367,7 +2367,7 @@ CYPCMAudioManagerDelegate>
 
 - (void)_refreshingTimeProgressSliderWithCurrentTime:(NSTimeInterval)currentTime duration:(NSTimeInterval)duration {
     CGFloat progress = currentTime / duration;
-    if (isnan(progress) || progress == NSNotFound) {
+    if (isnan(progress) || progress == NSNotFound || progress == MAXFLOAT) {
         progress = 0.0;
     }
     self.controlView.bottomProgressSlider.value = self.controlView.bottomControlView.progressSlider.value = progress;
@@ -2375,7 +2375,7 @@ CYPCMAudioManagerDelegate>
 
 - (void)_refreshingTimeProgressSliderWithLoadedTime:(NSTimeInterval)loadedTime duration:(NSTimeInterval)duration {
     CGFloat progress = loadedTime / duration;
-    if (isnan(progress) || progress == NSNotFound) {
+    if (isnan(progress) || progress == NSNotFound || progress == MAXFLOAT) {
         progress = 0.0;
     }
     self.controlView.bottomControlView.progressSlider.bufferProgress = progress;
@@ -2569,7 +2569,10 @@ CYPCMAudioManagerDelegate>
         return strongSelf ? [strongSelf interruptDecoder] : YES;
     };
     
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+        
+//    });
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(&*self)strongSelf = weakSelf;
         
         __block NSError *error = nil;
