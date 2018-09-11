@@ -1477,6 +1477,7 @@ CYPCMAudioManagerDelegate>
          _decoder.isEOF))
     {
         _tickCorrectionTime = 0;
+        _cantPlayStartTime = 0;
         _buffered = NO;
         [self play];
     }
@@ -1529,11 +1530,11 @@ CYPCMAudioManagerDelegate>
                 NSString * cantPlayStartTimeStr = [NSString stringWithFormat:@"%f", _cantPlayStartTime * 1000.0];
                 CGFloat cant = [cantPlayStartTimeStr doubleValue];
                 CGFloat durationTime = curr - cant;
-                if (durationTime >= 10.0 * 1000)
+                if (durationTime >= 10.0 * 1000 && !self.decoding)
                 {
-                    [self _itemPlayFailed];
+                    _interrupted = YES;
                     _cantPlayStartTime = 0.0;
-                    return;
+//                    return;
                 }
             }
             
@@ -2332,6 +2333,7 @@ CYPCMAudioManagerDelegate>
 
 - (void)_itemPrepareToPlay {
     [self _startLoading];
+    _interrupted = NO;
     self.hideControl = YES;
     self.userClickedPause = NO;
     self.hiddenMoreSettingView = YES;
@@ -2343,6 +2345,7 @@ CYPCMAudioManagerDelegate>
 
 - (void)_itemPlayFailed {
     [self _stopLoading];
+    _interrupted = YES;
     [self _pause];
     [self _playFailedState];
     _cyErrorLog(self.error);
@@ -2592,10 +2595,10 @@ CYPCMAudioManagerDelegate>
         return strongSelf ? [strongSelf interruptDecoder] : YES;
     };
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
-        
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+    
 //    });
-//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(&*self)strongSelf = weakSelf;
         
         __block NSError *error = nil;
