@@ -1345,15 +1345,16 @@ CYPCMAudioManagerDelegate>
                                 [weakSelf insertFrames:frames];
                                 if (compeleted)
                                 {
-                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
-                                    {
-                                        weakSelf.decoding = NO;
-                                        [weakSelf concurrentAsyncDecodeFrames];
-                                    }
-                                    else
-                                    {
-                                        weakSelf.decoding = NO;
-                                    }
+                                    weakSelf.decoding = NO;
+//                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
+//                                    {
+//                                        weakSelf.decoding = NO;
+//                                        [weakSelf concurrentAsyncDecodeFrames];
+//                                    }
+//                                    else
+//                                    {
+//                                        weakSelf.decoding = NO;
+//                                    }
                                 }
                             }];
                         }
@@ -1363,15 +1364,16 @@ CYPCMAudioManagerDelegate>
                                 [weakSelf insertFrames:frames];
                                 if (compeleted)
                                 {
-                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
-                                    {
-                                        weakSelf.decoding = NO;
-                                        [weakSelf concurrentAsyncDecodeFrames];
-                                    }
-                                    else
-                                    {
-                                        weakSelf.decoding = NO;
-                                    }
+                                    weakSelf.decoding = NO;
+//                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
+//                                    {
+//                                        weakSelf.decoding = NO;
+//                                        [weakSelf concurrentAsyncDecodeFrames];
+//                                    }
+//                                    else
+//                                    {
+//                                        weakSelf.decoding = NO;
+//                                    }
                                 }
                             }];
                         }
