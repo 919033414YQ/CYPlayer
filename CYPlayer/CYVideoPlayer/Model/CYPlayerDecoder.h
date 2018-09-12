@@ -13,6 +13,7 @@
 #import <UIKit/UIKit.h>
 
 #define CYPlayerDecoderMaxFPS 20
+#define CYPlayerDecoderConCurrentThreadCount 5// range: 1 - 5
 
 extern NSString * cyplayerErrorDomain;
 
@@ -95,11 +96,16 @@ typedef enum {
     
 } CYVideoDecodeType;
 
+
+typedef void(^CYPlayerCompeletionDecode)(NSArray<CYPlayerFrame *> * frames, BOOL compeleted);
+typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
+
 @interface CYPlayerDecoder : NSObject
 
 @property (readonly, nonatomic, strong) NSString *path;
 @property (readonly, nonatomic) BOOL isEOF;
 @property (readwrite,nonatomic) CGFloat position;
+@property (readwrite, nonatomic) CGFloat targetPosition;//每次快进重置这个值, 目的是为了把上次没快进完成的线程结束掉
 @property (readonly, nonatomic) CGFloat duration;
 @property (readonly, nonatomic) CGFloat fps;
 @property (readonly, nonatomic) CGFloat sampleRate;
@@ -134,6 +140,9 @@ typedef enum {
 
 - (NSArray *) decodeTargetFrames: (CGFloat) minDuration :(CGFloat)targetPos;
 
+- (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
+
+- (void) concurrentDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
 @end
 
 @interface CYPlayerSubtitleASSParser : NSObject

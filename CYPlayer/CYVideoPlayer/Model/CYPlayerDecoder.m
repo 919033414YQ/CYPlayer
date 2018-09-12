@@ -586,13 +586,18 @@ static int interrupt_callback(void *ctx);
     AVFrame             *_audioFrame2;
     AVFrame             *_audioFrame3;
     AVFrame             *_audioFrame4;
-
+    //高可用接口
+    dispatch_semaphore_t _avReadFrameLock;
+    dispatch_semaphore_t _avSendAndReceivePacketLock;
+    dispatch_queue_t    _concurrentDecodeQueue;
+    
     NSInteger           _videoStream;
     NSInteger           _audioStream;
     NSInteger           _subtitleStream;
 	
     
     struct SwsContext   *_swsContext;
+    dispatch_semaphore_t _swsContextLock;
     CGFloat             _videoTimeBase;
     CGFloat             _audioTimeBase;
     CGFloat             _position;
@@ -650,7 +655,7 @@ static int interrupt_callback(void *ctx);
 {
     _position = seconds;
     _isEOF = NO;
-	   
+    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / _videoTimeBase);
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
@@ -664,6 +669,7 @@ static int interrupt_callback(void *ctx);
         av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
     }
+    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
 }
 
 - (NSUInteger) frameWidth
@@ -916,6 +922,11 @@ static int interrupt_callback(void *ctx);
     if (self = [super init])
     {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)   name:AVAudioSessionRouteChangeNotification object:nil];
+        _avReadFrameLock = dispatch_semaphore_create(1);//初始化锁
+        _avSendAndReceivePacketLock = dispatch_semaphore_create(1);//初始化锁
+        _swrContextLock = dispatch_semaphore_create(1);//初始化锁
+        _swsContextLock = dispatch_semaphore_create(1);//初始化锁
+        _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -1158,7 +1169,6 @@ static int interrupt_callback(void *ctx);
 
 - (cyPlayerError) openAudioStream: (NSInteger) audioStream
 {
-    _swrContextLock = dispatch_semaphore_create(1);//初始化锁
     AVCodecContext *codecCtx = avcodec_alloc_context3(NULL);
     avcodec_parameters_to_context(codecCtx, _formatCtx->streams[audioStream]->codecpar);
     SwrContext *swrContext = NULL;
@@ -1346,10 +1356,12 @@ static int interrupt_callback(void *ctx);
         _videoFrame4 = NULL;
     }
     
+    dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
     if (_videoCodecCtx) {
         avcodec_free_context(&_videoCodecCtx);
         _videoCodecCtx = NULL;
     }
+    dispatch_semaphore_signal(_avSendAndReceivePacketLock);
 }
 
 - (void) closeAudioStream
@@ -1447,16 +1459,20 @@ static int interrupt_callback(void *ctx);
     
 	if (!(*isValid))
         return NO;
-
-	_swsContext = sws_getCachedContext(_swsContext,
-                                       _videoCodecCtx->width,
-                                       _videoCodecCtx->height,
-                                       _videoCodecCtx->pix_fmt,
-                                       width,
-                                       height,
-                                       format,
-                                       SWS_FAST_BILINEAR,
-                                       NULL, NULL, NULL);
+    
+    if (!_swsContext)
+    {
+        _swsContext = sws_getCachedContext(_swsContext,
+                                           _videoCodecCtx->width,
+                                           _videoCodecCtx->height,
+                                           _videoCodecCtx->pix_fmt,
+                                           width,
+                                           height,
+                                           format,
+                                           SWS_FAST_BILINEAR,
+                                           NULL, NULL, NULL);
+    }
+	
         
     return _swsContext != NULL;
 }
@@ -1598,7 +1614,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame.position = position;
                 frame.duration = duration;
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-                NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+                //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
             }
                 return nil;
 
@@ -1608,7 +1624,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame.position = position;
                 frame.duration = duration;
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-                NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+                //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
             }
                 return nil;;
         }
@@ -1640,18 +1656,32 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 LoggerVideo(0, @"fail setup video scaler");
                 return nil;
             }
+            
+            if (!(*isPictureValid)) {
+                *isPictureValid = avpicture_alloc(picture,
+                                                  _videoCodecCtx->pix_fmt,
+                                                  width,
+                                                  height) == 0;
+                
+                if (*isPictureValid == NO)
+                {
+                    LoggerVideo(0, @"fail setup video picture");
+                    return nil;
+                }
+            }
 //            const int lineSize[8]  = { width, width / 2, width / 2, 0, 0, 0, 0, 0 };
            
             
             //在这写入要计算时间的代码
+            dispatch_semaphore_wait(_swsContextLock, DISPATCH_TIME_FOREVER);
             sws_scale(_swsContext,
                       (const uint8_t **)videoFrame->data,
                       videoFrame->linesize,
                       0,
                       videoFrame->height,
-                      (*picture).data,
-                      (*picture).linesize);
-
+                      picture->data,
+                      picture->linesize);
+            dispatch_semaphore_signal(_swsContextLock);
             
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
@@ -1707,6 +1737,20 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             return nil;
         }
         
+        if (!(*isPictureValid)) {
+            *isPictureValid = avpicture_alloc(picture,
+                                              AV_PIX_FMT_RGB24,
+                                              width,
+                                              height) == 0;
+            
+            if (*isPictureValid == NO)
+            {
+                LoggerVideo(0, @"fail setup video picture");
+                return nil;
+            }
+        }
+        
+        dispatch_semaphore_wait(_swsContextLock, DISPATCH_TIME_FOREVER);
         sws_scale(_swsContext,
                   (const uint8_t **)videoFrame->data,
                   videoFrame->linesize,
@@ -1714,7 +1758,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                   _videoCodecCtx->height,
                   (*picture).data,
                   (*picture).linesize);
-        
+        dispatch_semaphore_signal(_swsContextLock);
         
         CYVideoFrameRGB *rgbFrame = [[CYVideoFrameRGB alloc] init];
         
@@ -1729,7 +1773,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     frame.position = position;
     frame.duration = duration;
     CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-    NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
+    //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
 #if 0
     LoggerVideo(2, @"VFD: %.4f %.4f | %lld ",
                 frame.position,
@@ -1737,8 +1781,9 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 av_frame_get_pkt_pos(videoFrame));
 
     CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-    NSLog(@"Linked in %f ms", linkTime *1000.0);
+    //NSLog(@"Linked in %f ms", linkTime *1000.0);
 #endif
+    
     return frame;
 }
 
@@ -1959,7 +2004,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
                 frame.samples.length / (8.0 * 44100.0));
 #endif
     CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-    NSLog(@"Linked handleAudioFrame in %f ms", linkTime *1000.0);
+    //NSLog(@"Linked handleAudioFrame in %f ms", linkTime *1000.0);
     return frame;
 }
 
@@ -2152,7 +2197,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             break;
         }
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+        //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
         
         if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
            
@@ -2295,7 +2340,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     NSMutableArray *result = [NSMutableArray array];
     
-    AVPacket packet;
+    AVPacket * packet = av_packet_alloc();
     
     CGFloat decodedDuration = 0;
     
@@ -2303,13 +2348,16 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     while (!finished && _formatCtx) {
         CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
-        if (av_read_frame(_formatCtx, &packet) < 0) {
+        dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+        if (av_read_frame(_formatCtx, packet) < 0) {
             _isEOF = YES;
-            av_packet_unref(&packet);
+            av_packet_unref(packet);
+            dispatch_semaphore_signal(_avReadFrameLock);//放行
             break;
         }
+        dispatch_semaphore_signal(_avReadFrameLock);//放行
         CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+        //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
         
         CYPlayerFrame * frame = [self handlePacket:packet audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid];
         if (frame)
@@ -2341,86 +2389,260 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         }
         
         
-        av_packet_unref(&packet);
+        av_packet_unref(packet);
     }
-    av_packet_unref(&packet);
+    av_packet_unref(packet);
     
     return result;
 }
 
-- (NSArray *) decodeFrames5: (CGFloat) minDuration
+- (void) asyncDecodeFrames:(CGFloat)minDuration audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid compeletionHandler:(CYPlayerCompeletionThread)compeletion
+{
+    __weak typeof(&*self)weakSelf = self;
+    dispatch_async(_concurrentDecodeQueue, ^{
+        __strong typeof(&*weakSelf)strongSelf = weakSelf;
+        
+        if (!strongSelf) { return; }
+        NSMutableArray *result = [NSMutableArray array];
+        
+        AVPacket * packet = av_packet_alloc();
+        
+        CGFloat decodedDuration = 0;
+        
+        BOOL finished = NO;
+        CGFloat curr_targetPos = weakSelf.targetPosition;
+        while (!finished && strongSelf->_formatCtx && curr_targetPos == weakSelf.targetPosition) {
+            NSLog(@"%f", curr_targetPos);
+            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+            ///读取下一帧开始
+            dispatch_semaphore_wait(strongSelf->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
+            if (av_read_frame(strongSelf->_formatCtx, packet) < 0) {
+                strongSelf->_isEOF = YES;
+                av_packet_unref(packet);
+                dispatch_semaphore_signal(strongSelf->_avReadFrameLock);//放行
+                break;
+            }
+            dispatch_semaphore_signal(strongSelf->_avReadFrameLock);//放行
+            ///读取下一帧结束
+            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+            //NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
+            
+            CYPlayerFrame * frame = [weakSelf handlePacket:packet audioFrame:audioFrame videoFrame:videoFrame picture:picture isPictureValid:isPictureValid];
+            if (frame)
+            {
+                [result addObject:frame];
+                if (strongSelf->_videoStream == -1) {
+                    if (frame.position >= strongSelf->_position)
+                    {
+                        strongSelf->_position = strongSelf->_position + frame.duration;
+                        decodedDuration += frame.duration;
+                    }
+                    if (decodedDuration > minDuration)
+                        finished = YES;
+                }
+                else
+                {
+                    if (frame.type == CYPlayerFrameTypeVideo)
+                    {
+                        if (frame.position >= strongSelf->_position)
+                        {
+                            strongSelf->_position = strongSelf->_position + frame.duration;
+                            decodedDuration += frame.duration;
+                        }
+                    }
+                    
+                    if (decodedDuration > minDuration)
+                        finished = YES;
+                }
+            }
+            
+            
+            av_packet_unref(packet);
+        }
+        
+        if (curr_targetPos == weakSelf.targetPosition)
+        {
+            compeletion(result);
+        }
+        else
+        {
+            NSLog(@"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+            compeletion(nil);
+        }
+        
+        
+        av_packet_unref(packet);
+    });
+}
+
+- (void) concurrentDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     if (_videoStream == -1 &&
         _audioStream == -1)
-        return nil;
-    
-    NSMutableArray *result = [NSMutableArray array];
-    
-    AVPacket packet;
-    
-    CGFloat decodedDuration = 0;
-    
-    BOOL finished = NO;
-    
-    while (!finished && _formatCtx) {
-        CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
-        if (av_read_frame(_formatCtx, &packet) < 0) {
-            _isEOF = YES;
-            av_packet_unref(&packet);
-            break;
-        }
-        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-        NSLog(@"Linked av_read_frame in %f ms", linkTime *1000.0);
-        
-        CYPlayerFrame * frame = [self handlePacket:packet audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid];
-        if (frame)
-        {
-            [result addObject:frame];
-            if (_videoStream == -1) {
-                if (frame.position >= _position)
-                {
-                    _position = _position + frame.duration;
-                    decodedDuration += frame.duration;
-                }
-                if (decodedDuration > minDuration)
-                    finished = YES;
-            }
-            else
+        return;
+    self.targetPosition = targetPos;
+    __weak typeof(&*self)weakSelf = self;
+    __block NSInteger compeletedConter = 0;
+    for (int i = 0; i < CYPlayerDecoderConCurrentThreadCount; i++)
+    {
+        switch (i) {
+            case 0:
             {
-                if (frame.type == CYPlayerFrameTypeVideo)
-                {
-                    if (frame.position >= _position)
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:20];
+                    for (CYPlayerFrame * frame in frames)
                     {
-                        _position = _position + frame.duration;
-                        decodedDuration += frame.duration;
+                        if (frame.position >= targetPos)
+                        {
+                            [result addObject:frame];
+                        }
                     }
-                }
-                
-                if (decodedDuration > minDuration)
-                    finished = YES;
+                    compeletedConter++;
+                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
             }
+                break;
+            case 1:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame1 videoFrame:_videoFrame1 picture:&_picture1 isPictureValid:&_pictureValid1 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:20];
+                    for (CYPlayerFrame * frame in frames)
+                    {
+                        if (frame.position >= targetPos)
+                        {
+                            [result addObject:frame];
+                        }
+                    }
+                    compeletedConter++;
+                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 2:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame2 videoFrame:_videoFrame2 picture:&_picture2 isPictureValid:&_pictureValid2 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:20];
+                    for (CYPlayerFrame * frame in frames)
+                    {
+                        if (frame.position >= targetPos)
+                        {
+                            [result addObject:frame];
+                        }
+                    }
+                    compeletedConter++;
+                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 3:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame3 videoFrame:_videoFrame3 picture:&_picture3 isPictureValid:&_pictureValid3 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:20];
+                    for (CYPlayerFrame * frame in frames)
+                    {
+                        if (frame.position >= targetPos)
+                        {
+                            [result addObject:frame];
+                        }
+                    }
+                    compeletedConter++;
+                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 4:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame4 videoFrame:_videoFrame4 picture:&_picture4 isPictureValid:&_pictureValid4 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    NSMutableArray * result = [[NSMutableArray alloc] initWithCapacity:20];
+                    for (CYPlayerFrame * frame in frames)
+                    {
+                        if (frame.position >= targetPos)
+                        {
+                            [result addObject:frame];
+                        }
+                    }
+                    compeletedConter++;
+                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+                
+            default:
+                break;
         }
-        
-        
-        av_packet_unref(&packet);
     }
-    av_packet_unref(&packet);
-    
-    return result;
 }
 
-- (CYPlayerFrame *)handlePacket:(AVPacket)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
+- (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+{
+    if (_videoStream == -1 &&
+        _audioStream == -1)
+        return;
+    __block NSInteger compeletedConter = 0;
+    for (int i = 0; i < CYPlayerDecoderConCurrentThreadCount; i++)
+    {
+        switch (i) {
+            case 0:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    compeletedConter++;
+                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 1:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame1 videoFrame:_videoFrame1 picture:&_picture1 isPictureValid:&_pictureValid1 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    compeletedConter++;
+                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 2:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame2 videoFrame:_videoFrame2 picture:&_picture2 isPictureValid:&_pictureValid2 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    compeletedConter++;
+                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 3:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame3 videoFrame:_videoFrame3 picture:&_picture3 isPictureValid:&_pictureValid3 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    compeletedConter++;
+                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+            case 4:
+            {
+                [self asyncDecodeFrames:minDuration audioFrame:_audioFrame4 videoFrame:_videoFrame4 picture:&_picture4 isPictureValid:&_pictureValid4 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
+                    compeletedConter++;
+                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                }];
+            }
+                break;
+                
+            default:
+                break;
+        }
+    }
+}
+
+- (CYPlayerFrame *)handlePacket:(AVPacket *)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     CYPlayerFrame * result_frame = nil;
-    if (packet.stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
+    CGFloat curr_targetPos = self.targetPosition;
+    if ((*packet).stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
         
-        int pktSize = packet.size;
-        
-        while (pktSize > 0 && _videoCodecCtx) {
+        int pktSize = (*packet).size;
+        while (pktSize > 0 && _videoCodecCtx && curr_targetPos == self.targetPosition) {
             
             int gotframe = 0;
-            int len = avcodec_send_packet(_videoCodecCtx, &packet);
-            gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
+            dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+            int len = avcodec_send_packet(_videoCodecCtx, packet);
+            gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
+            dispatch_semaphore_signal(_avSendAndReceivePacketLock);
             
             if (len < 0) {
                 LoggerVideo(0, @"decode video error, skip packet");
@@ -2442,16 +2664,18 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             pktSize -= len;
         }
         
-    } else if (packet.stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
+    } else if ((*packet).stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
         
-        int pktSize = packet.size;
+        int pktSize = (*packet).size;
         
-        while (pktSize > 0 && _audioCodecCtx) {
+        while (pktSize > 0 && _audioCodecCtx && curr_targetPos == self.targetPosition) {
             
             int gotframe = 0;
             
-            int len = avcodec_send_packet(_audioCodecCtx, &packet);
-            gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
+            dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+            int len = avcodec_send_packet(_audioCodecCtx, packet);
+            gotframe = !avcodec_receive_frame(_audioCodecCtx, audioFrame);
+            dispatch_semaphore_signal(_avSendAndReceivePacketLock);
             
             if (len < 0) {
                 LoggerAudio(0, @"decode audio error, skip packet");
@@ -2473,30 +2697,30 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
             pktSize -= len;
         }
         
-    } else if (packet.stream_index == _artworkStream) {
+    } else if ((*packet).stream_index == _artworkStream) {
         
-        if (packet.size) {
+        if ((*packet).size) {
             
             CYArtworkFrame *frame = [[CYArtworkFrame alloc] init];
-            frame.picture = [NSData dataWithBytes:packet.data length:packet.size];
+            frame.picture = [NSData dataWithBytes:(*packet).data length:(*packet).size];
             if (frame)
             {
                 result_frame = frame;
             }
         }
         
-    } else if (packet.stream_index == _subtitleStream) {
+    } else if ((*packet).stream_index == _subtitleStream) {
         
-        int pktSize = packet.size;
+        int pktSize = (*packet).size;
         
-        while (pktSize > 0) {
+        while (pktSize > 0 && _subtitleCodecCtx && curr_targetPos == self.targetPosition) {
             
             AVSubtitle subtitle;
             int gotsubtitle = 0;
             int len = avcodec_decode_subtitle2(_subtitleCodecCtx,
                                                &subtitle,
                                                &gotsubtitle,
-                                               &packet);
+                                               packet);
             
             if (len < 0) {
                 LoggerStream(0, @"decode subtitle error, skip packet");

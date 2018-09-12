@@ -40,6 +40,8 @@
 
 #define UseCYPCMAudioManager @"UseCYPCMAudioManager"
 
+#define CYPLAYER_MAX_TIMEOUT 20.0 //秒
+
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
 
 #define CYColorWithHEX(hex) [UIColor colorWithRed:(float)((hex & 0xFF0000) >> 16)/255.0 green:(float)((hex & 0xFF00) >> 8)/255.0 blue:(float)(hex & 0xFF)/255.0 alpha:1.0]
@@ -328,7 +330,7 @@ CYPCMAudioManagerDelegate>
         }
         
         const CGFloat duration = _decoder.isNetwork ? .0f : 0.1f;
-        [_decoder decodeFrames:duration];
+//        [_decoder decodeFrames:duration];
         @synchronized(_audioFrames) {
             if (_audioFrames.count > 0)
             {
@@ -626,7 +628,8 @@ CYPCMAudioManagerDelegate>
     _debugStartTime = -1;
 #endif
     
-    [self asyncDecodeFrames];
+//    [self asyncDecodeFrames];
+    [self concurrentAsyncDecodeFrames];
     
     __weak typeof(&*self)weakSelf = self;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC);
@@ -1300,12 +1303,230 @@ CYPCMAudioManagerDelegate>
                     }
                 }
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-                NSLog(@"Linked asyncDecodeFrames in %f ms", linkTime *1000.0);
+                //NSLog(@"Linked asyncDecodeFrames in %f ms", linkTime *1000.0);
             }
             
             weakSelf.decoding = NO;
         }
     });
+}
+
+- (void) concurrentAsyncDecodeFrames
+{
+    if (self.decoding)
+    {
+        return;
+    }
+    self.decoding = YES;
+    
+    __weak CYFFmpegPlayer *weakSelf = self;
+    __weak CYPlayerDecoder *weakDecoder = _decoder;
+    
+    const CGFloat duration = _decoder.isNetwork ? 1.0f : 0.1f;
+    dispatch_async(_asyncDecodeQueue, ^{
+        __strong CYFFmpegPlayer *strongSelf = weakSelf;
+        if (strongSelf)
+        {
+            if (!weakSelf.playing)
+                return;
+            
+//            while ()
+            {
+                CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+                
+                @autoreleasepool {
+                    
+                    if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
+                        
+                        NSArray *frames = nil;
+                        if (strongSelf->_positionUpdating)//正在跳播
+                        {
+                            [weakDecoder concurrentDecodeFrames:duration targetPosition:strongSelf->_targetPosition compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
+                                [weakSelf insertFrames:frames];
+                                if (compeleted)
+                                {
+                                    weakSelf.decoding = NO;
+                                }
+                                //                                if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
+                                //                                {
+                                //                                    weakSelf.decoding = NO;
+                                //                                    [weakSelf concurrentAsyncDecodeFrames];
+                                //                                }
+                                //                                else
+                                //                                {
+                                //                                    weakSelf.decoding = NO;
+                                //                                }
+                            }];
+                        }
+                        else
+                        {
+                            [weakDecoder concurrentDecodeFrames:duration compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
+                                [weakSelf insertFrames:frames];
+                                if (compeleted)
+                                {
+                                    weakSelf.decoding = NO;
+                                }
+                                
+                                //                                if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
+                                //                                {
+                                //                                    weakSelf.decoding = NO;
+                                //                                    [weakSelf concurrentAsyncDecodeFrames];
+                                //                                }
+                                //                                else
+                                //                                {
+                                //                                    weakSelf.decoding = NO;
+                                //                                }
+                            }];
+                        }
+                    }
+                }
+                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+                //NSLog(@"Linked asyncDecodeFrames in %f ms", linkTime *1000.0);
+            }
+            
+            
+        }
+    });
+}
+
+- (void) insertFrames: (NSArray *)frames
+{
+    if (_decoder.validVideo) {
+        
+        @synchronized(_videoFrames) {
+            
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeVideo)
+                {
+                    if (!_positionUpdating)
+                    {
+                        NSInteger targetIndex = _videoFrames.count;
+                        for( int i = 0; i < _videoFrames.count; i ++ )
+                        {
+                            CYVideoFrame * targetFrame = [_videoFrames objectAtIndex:i];
+                            if (frame.position <= targetFrame.position)
+                            {
+                                targetIndex = i;
+                                break;
+                            }
+                        }
+                        [_videoFrames insertObject:frame atIndex:targetIndex];
+                        _videoBufferedDuration += frame.duration;
+                    }
+                    else
+                    {
+                        if (frame.position >= _targetPosition)
+                        {
+                            NSInteger targetIndex = _videoFrames.count;
+                            for( int i = 0; i < _videoFrames.count; i ++ )
+                            {
+                                CYVideoFrame * targetFrame = [_videoFrames objectAtIndex:i];
+                                if (frame.position <= targetFrame.position)
+                                {
+                                    targetIndex = i;
+                                    break;
+                                }
+                            }
+                            [_videoFrames insertObject:frame atIndex:targetIndex];
+                            _videoBufferedDuration += frame.duration;
+                        }
+                    }
+                }
+        }
+    }
+    
+    if (_decoder.validAudio) {
+        
+        @synchronized(_audioFrames) {
+            
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeAudio)
+                {
+                    if (!_positionUpdating)
+                    {
+                        NSInteger targetIndex = _audioFrames.count;
+                        for( int i = 0; i < _audioFrames.count; i ++ )
+                        {
+                            CYAudioFrame * targetFrame = [_audioFrames objectAtIndex:i];
+                            if (frame.position <= targetFrame.position)
+                            {
+                                targetIndex = i;
+                                break;
+                            }
+                        }
+                        [_audioFrames insertObject:frame atIndex:targetIndex];
+                        _audioBufferedDuration += frame.duration;
+                    }
+                    else
+                    {
+                        if (frame.position >= _targetPosition)
+                        {
+                            NSInteger targetIndex = _audioFrames.count;
+                            for( int i = 0; i < _audioFrames.count; i ++ )
+                            {
+                                CYAudioFrame * targetFrame = [_audioFrames objectAtIndex:i];
+                                if (frame.position <= targetFrame.position)
+                                {
+                                    targetIndex = i;
+                                    break;
+                                }
+                            }
+                            [_audioFrames insertObject:frame atIndex:targetIndex];
+                            _audioBufferedDuration += frame.duration;
+                        }
+                    }
+                }
+        }
+        
+        if (!_decoder.validVideo) {
+            
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeArtwork)
+                    self.artworkFrame = (CYArtworkFrame *)frame;
+        }
+    }
+    
+    if (_decoder.validSubtitles) {
+        
+        @synchronized(_subtitles) {
+            
+            for (CYPlayerFrame *frame in frames)
+                if (frame.type == CYPlayerFrameTypeSubtitle)
+                {
+                    if (!_positionUpdating)
+                    {
+                        NSInteger targetIndex = _subtitles.count;
+                        for( int i = 0; i < _subtitles.count; i ++ )
+                        {
+                            CYSubtitleFrame * targetFrame = [_subtitles objectAtIndex:i];
+                            if (frame.position <= targetFrame.position)
+                            {
+                                targetIndex = i;
+                                break;
+                            }
+                        }
+                        [_subtitles insertObject:frame atIndex:targetIndex];
+                    }
+                    else
+                    {
+                        if (frame.position >= _targetPosition)
+                        {
+                            NSInteger targetIndex = _subtitles.count;
+                            for( int i = 0; i < _subtitles.count; i ++ )
+                            {
+                                CYSubtitleFrame * targetFrame = [_subtitles objectAtIndex:i];
+                                if (frame.position <= targetFrame.position)
+                                {
+                                    targetIndex = i;
+                                    break;
+                                }
+                            }
+                            [_subtitles insertObject:frame atIndex:targetIndex];
+                        }
+                    }
+                }
+        }
+    }
 }
 
 - (BOOL) addFrames: (NSArray *)frames
@@ -1414,7 +1635,8 @@ CYPCMAudioManagerDelegate>
             !(_audioBufferedDuration > _maxBufferedDuration))
         {
             
-            [self asyncDecodeFrames];
+//            [self asyncDecodeFrames];
+            [self concurrentAsyncDecodeFrames];
         }
         
         
@@ -1456,7 +1678,8 @@ CYPCMAudioManagerDelegate>
             !(_audioBufferedDuration > _maxBufferedDuration))
         {
             
-            [self asyncDecodeFrames];
+//            [self asyncDecodeFrames];
+            [self concurrentAsyncDecodeFrames];
         }
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
@@ -1530,7 +1753,7 @@ CYPCMAudioManagerDelegate>
                 NSString * cantPlayStartTimeStr = [NSString stringWithFormat:@"%f", _cantPlayStartTime * 1000.0];
                 CGFloat cant = [cantPlayStartTimeStr doubleValue];
                 CGFloat durationTime = curr - cant;
-                if (durationTime >= 10.0 * 1000 && !self.decoding)
+                if (durationTime >= CYPLAYER_MAX_TIMEOUT * 1000)
                 {
                     _interrupted = YES;
                     _cantPlayStartTime = 0.0;
@@ -1592,7 +1815,8 @@ CYPCMAudioManagerDelegate>
             !(_videoBufferedDuration > _maxBufferedDuration) ||
             !(_audioBufferedDuration > _maxBufferedDuration))
         {
-            [self asyncDecodeFrames];
+//            [self asyncDecodeFrames];
+            [self concurrentAsyncDecodeFrames];
         }
         CGFloat interval = 0;
         const NSTimeInterval correction = [self tickCorrection];
@@ -3404,7 +3628,7 @@ CYPCMAudioManagerDelegate>
                     }
                 }
                 CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-                NSLog(@"Linked in %f ms", linkTime *1000.0);
+                //NSLog(@"Linked in %f ms", linkTime *1000.0);
             }
             
             weakSelf.unarchiving = NO;
