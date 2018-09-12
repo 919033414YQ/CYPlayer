@@ -12,7 +12,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#define CYPlayerDecoderMaxFPS 30
+#define CYPlayerDecoderMaxFPS 25
 #define CYPlayerDecoderConCurrentThreadCount 5// range: 1 - 5
 
 extern NSString * cyplayerErrorDomain;

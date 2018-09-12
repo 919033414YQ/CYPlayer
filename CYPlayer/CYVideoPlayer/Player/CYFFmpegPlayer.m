@@ -1345,17 +1345,16 @@ CYPCMAudioManagerDelegate>
                                 [weakSelf insertFrames:frames];
                                 if (compeleted)
                                 {
-                                    weakSelf.decoding = NO;
+                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
+                                    {
+                                        weakSelf.decoding = NO;
+                                        [weakSelf concurrentAsyncDecodeFrames];
+                                    }
+                                    else
+                                    {
+                                        weakSelf.decoding = NO;
+                                    }
                                 }
-                                //                                if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
-                                //                                {
-                                //                                    weakSelf.decoding = NO;
-                                //                                    [weakSelf concurrentAsyncDecodeFrames];
-                                //                                }
-                                //                                else
-                                //                                {
-                                //                                    weakSelf.decoding = NO;
-                                //                                }
                             }];
                         }
                         else
@@ -1364,18 +1363,16 @@ CYPCMAudioManagerDelegate>
                                 [weakSelf insertFrames:frames];
                                 if (compeleted)
                                 {
-                                    weakSelf.decoding = NO;
+                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
+                                    {
+                                        weakSelf.decoding = NO;
+                                        [weakSelf concurrentAsyncDecodeFrames];
+                                    }
+                                    else
+                                    {
+                                        weakSelf.decoding = NO;
+                                    }
                                 }
-                                
-                                //                                if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
-                                //                                {
-                                //                                    weakSelf.decoding = NO;
-                                //                                    [weakSelf concurrentAsyncDecodeFrames];
-                                //                                }
-                                //                                else
-                                //                                {
-                                //                                    weakSelf.decoding = NO;
-                                //                                }
                             }];
                         }
                     }
