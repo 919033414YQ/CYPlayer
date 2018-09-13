@@ -535,7 +535,7 @@ CYPCMAudioManagerDelegate>
 # pragma mark - 公开方法
 - (double)currentTime
 {
-    return self.decoder.position;
+    return self.decoder.validVideo ? _moviePosition : _currentAudioFramePos;
 }
 
 - (NSTimeInterval)totalTime {

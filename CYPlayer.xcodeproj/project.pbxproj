@@ -698,12 +698,12 @@
 		0E24073820FE1630008BEAB5 /* MoreSetting */ = {
 			isa = PBXGroup;
 			children = (
-				0E24073920FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.h */,
-				0E24073A20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.m */,
-				0E24073B20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.m */,
-				0E24073C20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.m */,
 				0E24073D20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.h */,
+				0E24073A20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.m */,
+				0E24073920FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.h */,
+				0E24073C20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.m */,
 				0E24073E20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.h */,
+				0E24073B20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsView.m */,
 			);
 			path = MoreSetting;
 			sourceTree = "<group>";
