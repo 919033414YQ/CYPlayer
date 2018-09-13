@@ -31,6 +31,7 @@ typedef enum {
     cyPlayerErroSetupScaler,
     cyPlayerErroReSampler,
     cyPlayerErroUnsupported,
+    cyPlayerErroOpenFilter
     
 } cyPlayerError;
 
@@ -49,6 +50,23 @@ typedef enum {
     CYVideoFrameFormatYUV,
     
 } CYVideoFrameFormat;
+
+typedef enum {
+    
+    CYPlayerFilter_FILTER_NULL,
+    CYPlayerFilter_FILTER_MIRROR,
+    CYPlayerFilter_FILTER_WATERMARK,
+    CYPlayerFilter_FILTER_NEGATE,
+    CYPlayerFilter_FILTER_EDGE,
+    CYPlayerFilter_FILTER_SPLIT4,
+    CYPlayerFilter_FILTER_VINTAGE,
+    CYPlayerFilter_FILTER_BRIGHTNESS,
+    CYPlayerFilter_FILTER_CONTRAST,
+    CYPlayerFilter_FILTER_SATURATION,
+    CYPlayerFilter_FILTER_EQ,
+    CYPlayerFilter_FILTER_TEST
+
+} CYPlayerFilterType;
 
 @interface CYPlayerFrame : NSObject
 @property (readonly, nonatomic) CYPlayerFrameType type;
@@ -118,6 +136,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 @property (readonly, nonatomic) BOOL validVideo;
 @property (readonly, nonatomic) BOOL validAudio;
 @property (readonly, nonatomic) BOOL validSubtitles;
+@property (readonly, nonatomic) BOOL validFilter;
 @property (readonly, nonatomic, strong) NSDictionary *info;
 @property (readonly, nonatomic, strong) NSString *videoStreamFormatName;
 @property (readonly, nonatomic) BOOL isNetwork;

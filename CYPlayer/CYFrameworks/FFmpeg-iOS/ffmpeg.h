@@ -19,6 +19,8 @@
 #include "avutil.h"
 #include "swscale.h"
 #include "swresample.h"
+#include "buffersrc.h"
+#include "buffersink.h"
 static double FFmpegVersionNumber = 3.4;
 
 #endif /* Header_h */
