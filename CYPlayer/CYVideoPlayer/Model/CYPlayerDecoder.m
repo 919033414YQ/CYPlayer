@@ -17,6 +17,7 @@
 #import "CYOpenALPlayer.h"
 #import "pixfmt.h"
 #import <objc/runtime.h>
+#import "CYVideoPlayerResources.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -667,14 +668,14 @@ static int interrupt_callback(void *ctx);
     _isEOF = NO;
     dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
     if ([self validVideo]) {
-        int64_t ts = (int64_t)(seconds / _videoTimeBase);
+        int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
         av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
     }
     
     if ([self validAudio]) {
-        int64_t ts = (int64_t)(seconds / _audioTimeBase);
+        int64_t ts = (int64_t)(seconds / (_audioTimeBase));
 //        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
         av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
@@ -939,6 +940,7 @@ static int interrupt_callback(void *ctx);
         _swrContextLock = dispatch_semaphore_create(1);//初始化锁
         _swsContextLock = dispatch_semaphore_create(1);//初始化锁
         _concurrentDecodeQueue = dispatch_queue_create("Con-Current Decode Queue", DISPATCH_QUEUE_SERIAL);
+        _rate = 1.0;
     }
     return self;
 }
@@ -1082,7 +1084,7 @@ static int interrupt_callback(void *ctx);
 {
     cyPlayerError errCode = cyPlayerErroOpenFilter;
     _validFilter = NO;
-    if (filters_init(_formatCtx, &_buffersrc_ctx, &_buffersink_ctx, CYPlayerFilter_FILTER_BRIGHTNESS) >= 0)
+    if (filters_init(_formatCtx, &_buffersrc_ctx, &_buffersink_ctx, CYPlayerFilter_FILTER_SPLIT4) >= 0)
     {
         errCode = cyPlayerErrorNone;
         _validFilter = YES;
@@ -1208,6 +1210,7 @@ static int interrupt_callback(void *ctx);
     if (!audioCodecIsSupported(codecCtx)) {
 
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+        [[CYPCMAudioManager audioManager] setPlayRate: 1 / _rate];
 
         audioManager.avcodecContextNumOutputChannels = audioManager.avaudioSessionNumOutputChannels;
         if (codecCtx->sample_rate < CYPCMAudioManagerNormalSampleRate)
@@ -1220,7 +1223,7 @@ static int interrupt_callback(void *ctx);
         }
 
         dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
-        BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx) <= 0;
+        BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx, _rate) <= 0;
         dispatch_semaphore_signal(_swrContextLock);
         if (result)
         {
@@ -1357,18 +1360,29 @@ static int interrupt_callback(void *ctx);
 
 - (void) closeFilter
 {
-    _validFilter = NO;
-    if (_buffersrc_ctx)
-    {
-        avfilter_free(_buffersrc_ctx);
-        _buffersrc_ctx = NULL;
-    }
     
-    if (_buffersink_ctx)
+    if (_validFilter)
     {
-        avfilter_free(_buffersink_ctx);
+        _validFilter = NO;
+        
+        if (_buffersrc_ctx)
+        {
+            avfilter_free(_buffersrc_ctx);
+            _buffersrc_ctx = NULL;
+        }
+        
+        if (_buffersink_ctx)
+        {
+            avfilter_free(_buffersink_ctx);
+            _buffersink_ctx = NULL;
+        }
+    }
+    else
+    {
+        _buffersrc_ctx = NULL;
         _buffersink_ctx = NULL;
     }
+
 }
 
 - (void) closeVideoStream
@@ -1781,7 +1795,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     const int64_t frameDuration = av_frame_get_pkt_duration(videoFrame);
     if (frameDuration) {
         
-        duration = frameDuration * _videoTimeBase;
+        duration = frameDuration * _videoTimeBase * self.rate;
         duration += videoFrame->repeat_pict * _videoTimeBase * 0.5;
         
     } else {
@@ -1989,7 +2003,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
  @param swr_ctx SwrContext 转换参数
  @param codec AVCodecContext
  */
-int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
+int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec, CGFloat rate)
 {
     //    if(codec->sample_fmt == AV_SAMPLE_FMT_S16 || codec->sample_fmt == AV_SAMPLE_FMT_S32 ||codec->sample_fmt == AV_SAMPLE_FMT_U8){
     //
@@ -2066,7 +2080,7 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec)
 }
 
 
-int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t **targetData){
+int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t **targetData, CGFloat rate){
     
     int len = swr_convert(swr_ctx,
                           targetData,
@@ -2110,8 +2124,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
-    CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase;
-    CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase;;
+    CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase * self.rate;
+    CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase * self.rate;
     
     NSInteger numFrames;
     
@@ -2139,7 +2153,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         
         Byte *outbuf[2] = { _swrBuffer, 0 };
         
-        numFrames = audio_swr_resampling_audio(_swrContext, audioFrame, outbuf);
+        numFrames = audio_swr_resampling_audio(_swrContext, audioFrame, outbuf, _rate);
         
         //        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
         //        if (_swrContext ) {
@@ -2289,7 +2303,8 @@ int filters_init(AVFormatContext *ifmt_ctx,
 {
     AVFilter *buffersrc  = avfilter_get_by_name("buffer");
     AVFilter *buffersink = avfilter_get_by_name("buffersink");
-    
+    NSString *image_path = [[NSBundle mainBundle] pathForResource:@"logo" ofType:@"png"];
+    NSString * filter_watermark_tmp = [NSString stringWithFormat:@"movie=%@[watermark];[in][watermark]overlay=100:100",image_path];
     
     char args[512];
     int ret;
@@ -2362,9 +2377,10 @@ int filters_init(AVFormatContext *ifmt_ctx,
     inputs->pad_idx = 0;
     inputs->next = NULL;
     
+    
     const char *filter_descr = "null";
     const char *filter_mirror = "crop=iw/2:ih:0:0,split[left][tmp];[tmp]hflip[right];[left]pad=iw*2[a];[a][right]overlay=w";
-    const char *filter_watermark = "movie=logo.png[wm];[in][wm]overlay=5:5[out]";
+    const char *filter_watermark = [filter_watermark_tmp cStringUsingEncoding:NSUTF8StringEncoding];//"movie=logo.png[wm];[in][wm]overlay=5:5[out]";
     const char *filter_negate = "negate[out]";
     const char *filter_edge = "edgedetect[out]";
     const char *filter_split4 = "scale=iw/2:ih/2[in_tmp];[in_tmp]split=4[in_1][in_2][in_3][in_4];[in_1]pad=iw*2:ih*2[a];[a][in_2]overlay=w[b];[b][in_3]overlay=0:h[d];[d][in_4]overlay=w:h[out]";
@@ -2429,8 +2445,10 @@ int filters_init(AVFormatContext *ifmt_ctx,
         default:
             break;
     }
-    
+//    filter_descr = "setpts=0.5*PTS";
 //    filter_descr = "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]";
+//    filter_descr = filter_test;
+//    filter_descr = "split [main][tmp]; [tmp] crop=iw:ih/2:0:0, vflip [flip]; [main][flip] overlay=0:H/2:enable='between(t,0,15)'";
     if ((ret = avfilter_graph_parse_ptr(filter_graph, filter_descr,
                                         &inputs, &outputs, NULL)) < 0)
         goto error;
@@ -2448,10 +2466,24 @@ error:
     avfilter_inout_free(&inputs);
     avfilter_inout_free(&outputs);
     avcodec_free_context(&codecCtx);
+    avfilter_graph_free(&filter_graph);
     return ret;
 }
 
 #pragma mark - public
+- (void)setRate:(CGFloat)rate
+{
+    _rate = 1 / rate;
+    [[CYPCMAudioManager audioManager] setPlayRate: rate];
+//    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+//    BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx, rate);
+//    if (result)
+//    {
+//        _rate = 1 / rate;
+//        [[CYPCMAudioManager audioManager] setPlayRate: rate];
+//    }
+//    dispatch_semaphore_signal(_swrContextLock);
+}
 
 - (BOOL) setupVideoFrameFormat: (CYVideoFrameFormat) format
 {
@@ -2476,7 +2508,8 @@ error:
     self.targetPosition = targetPos;
     __weak typeof(&*self)weakSelf = self;
     __block NSInteger compeletedConter = 0;
-    for (int i = 0; i < CYPlayerDecoderConCurrentThreadCount; i++)
+    NSInteger threadCount = 1; //CYPlayerDecoderConCurrentThreadCount
+    for (int i = 0; i < threadCount; i++)//同时开多了容易造成decoder结束, 以及网络差的情况下接口延迟大
     {
         switch (i) {
             case 0:
@@ -2491,7 +2524,7 @@ error:
                         }
                     }
                     compeletedConter++;
-                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(result, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2507,7 +2540,7 @@ error:
                         }
                     }
                     compeletedConter++;
-                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(result, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2523,7 +2556,7 @@ error:
                         }
                     }
                     compeletedConter++;
-                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(result, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2539,7 +2572,7 @@ error:
                         }
                     }
                     compeletedConter++;
-                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(result, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2555,7 +2588,7 @@ error:
                         }
                     }
                     compeletedConter++;
-                    compeletion(result, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(result, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2572,14 +2605,15 @@ error:
         _audioStream == -1)
         return;
     __block NSInteger compeletedConter = 0;
-    for (int i = 0; i < CYPlayerDecoderConCurrentThreadCount; i++)
+    NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
+    for (int i = 0; i < threadCount; i++)
     {
         switch (i) {
             case 0:
             {
                 [self asyncDecodeFrames:minDuration audioFrame:_audioFrame videoFrame:_videoFrame picture:&_picture isPictureValid:&_pictureValid compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
                     compeletedConter++;
-                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(frames, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2587,7 +2621,7 @@ error:
             {
                 [self asyncDecodeFrames:minDuration audioFrame:_audioFrame1 videoFrame:_videoFrame1 picture:&_picture1 isPictureValid:&_pictureValid1 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
                     compeletedConter++;
-                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(frames, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2595,7 +2629,7 @@ error:
             {
                 [self asyncDecodeFrames:minDuration audioFrame:_audioFrame2 videoFrame:_videoFrame2 picture:&_picture2 isPictureValid:&_pictureValid2 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
                     compeletedConter++;
-                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(frames, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2603,7 +2637,7 @@ error:
             {
                 [self asyncDecodeFrames:minDuration audioFrame:_audioFrame3 videoFrame:_videoFrame3 picture:&_picture3 isPictureValid:&_pictureValid3 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
                     compeletedConter++;
-                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(frames, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2611,7 +2645,7 @@ error:
             {
                 [self asyncDecodeFrames:minDuration audioFrame:_audioFrame4 videoFrame:_videoFrame4 picture:&_picture4 isPictureValid:&_pictureValid4 compeletionHandler:^(NSArray<CYPlayerFrame *> *frames) {
                     compeletedConter++;
-                    compeletion(frames, compeletedConter == CYPlayerDecoderConCurrentThreadCount);
+                    compeletion(frames, compeletedConter == threadCount);
                 }];
             }
                 break;
@@ -2773,7 +2807,7 @@ error:
     av_opt_get_int(_swrContext, "out_channel_layout", 0, &swrcontext_channel);
     if (audioChannel != swrcontext_channel)
     {
-        BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx);
+        BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx, _rate);
         if (!result)
         {
             

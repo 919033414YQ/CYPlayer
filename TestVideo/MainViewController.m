@@ -28,7 +28,7 @@
     if (self) {
         self.title = @"FFmpegPlayer";
         self.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag: 0];
-        
+        NSString * localV = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"mp4"];
         _remoteMovies = @[
                           @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
                           @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
@@ -46,7 +46,8 @@
                           @"smb://192.168.31.217/Downloads/a.avi",
                           @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/16/27/35/99/215900434383323136.mp4",
                           @"smb://192.168.31.1/XiaoMi-usb0/小蝌蚪找妈妈/heyzo-1578/heyzo_hd_1578_full.mp4",
-                          @"smb://192.168.31.1/XiaoMi-usb0/小蝌蚪找妈妈/heyzo.com-0608-FHD/heyzo_hd_0608_full.mp4"
+                          @"smb://192.168.31.1/XiaoMi-usb0/小蝌蚪找妈妈/heyzo.com-0608-FHD/heyzo_hd_0608_full.mp4",
+                          localV
                           ];
         
     }

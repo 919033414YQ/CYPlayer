@@ -236,7 +236,7 @@
 
 - (void)sliderWillBeginDragging:(CYSlider *)slider {
     if ( slider == _rateSlider ) {
-        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
+//        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
     }
     else if ( slider == _volumeSlider ) {
         if ( _model.needChangeVolume ) _model.needChangeVolume(slider.value);
@@ -248,7 +248,7 @@
 
 - (void)sliderDidDrag:(CYSlider *)slider {
     if ( slider == _rateSlider ) {
-        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
+//        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
     }
     else if ( slider == _volumeSlider ) {
         if ( _model.needChangeVolume ) _model.needChangeVolume(slider.value);

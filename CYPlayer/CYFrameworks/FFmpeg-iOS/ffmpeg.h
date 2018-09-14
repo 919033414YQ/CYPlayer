@@ -21,6 +21,9 @@
 #include "swresample.h"
 #include "buffersrc.h"
 #include "buffersink.h"
+#include "avfiltergraph.h"
+#include "eval.h"
+
 static double FFmpegVersionNumber = 3.4;
 
 #endif /* Header_h */

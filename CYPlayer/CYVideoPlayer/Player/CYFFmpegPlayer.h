@@ -146,6 +146,13 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 @property (nonatomic, copy, readwrite, nullable) void(^controlViewDisplayStatus)(CYFFmpegPlayer *player, BOOL displayed);
 
+/*!
+ *  Call when the rate changes.
+ *
+ *  调速时调用.
+ *  当滑动内部的`rate slider`时候调用. 外部改变`rate`不会调用.
+ **/
+@property (nonatomic, copy, readwrite, nullable) void(^internallyChangedRate)(CYFFmpegPlayer *player, float rate);
 
 /*!
  *  配置播放器, 注意: 这个`block`在子线程运行.

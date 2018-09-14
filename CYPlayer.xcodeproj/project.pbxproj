@@ -84,6 +84,8 @@
 		0E2D30912124490C00D6763D /* libtalloc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D308B2124490C00D6763D /* libtalloc.a */; };
 		0E2D30922124490C00D6763D /* libtdb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D308D2124490C00D6763D /* libtdb.a */; };
 		0E2D30942124493900D6763D /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E2D30932124493900D6763D /* libresolv.tbd */; };
+		0E2D993C214B599D0006EC7E /* test.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 0E2D993B214B599C0006EC7E /* test.mp4 */; };
+		0E2D993E214B67380006EC7E /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 0E2D993D214B67380006EC7E /* logo.png */; };
 		0E343E612107132E00DF4564 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E602107132D00DF4564 /* libiconv.tbd */; };
 		0E343E632107133A00DF4564 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E622107133A00DF4564 /* libbz2.tbd */; };
 		0E343E652107134900DF4564 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E343E642107134900DF4564 /* libz.tbd */; };
@@ -288,6 +290,8 @@
 		0E2D308C2124490C00D6763D /* talloc_stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = talloc_stack.h; sourceTree = "<group>"; };
 		0E2D308D2124490C00D6763D /* libtdb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtdb.a; sourceTree = "<group>"; };
 		0E2D30932124493900D6763D /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		0E2D993B214B599C0006EC7E /* test.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = test.mp4; sourceTree = "<group>"; };
+		0E2D993D214B67380006EC7E /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		0E343E602107132D00DF4564 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		0E343E622107133A00DF4564 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		0E343E642107134900DF4564 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -663,14 +667,14 @@
 				0ECD4C1B2111DFFA0078D24A /* CYPlayerDecoder.h */,
 				0ECD4C1C2111DFFA0078D24A /* CYPlayerDecoder.m */,
 				0E24072920FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.h */,
-				0E24072A20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.h */,
+				0E24072F20FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.m */,
 				0E24072B20FE1630008BEAB5 /* CYVideoPlayerMoreSetting.h */,
 				0E24072C20FE1630008BEAB5 /* CYVideoPlayerAssetCarrier.m */,
-				0E24072D20FE1630008BEAB5 /* CYVideoPlayerSettings.h */,
+				0E24072A20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.h */,
 				0E24072E20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.m */,
-				0E24072F20FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.m */,
-				0E24073020FE1630008BEAB5 /* CYVideoPlayerMoreSetting.m */,
 				0E24073120FE1630008BEAB5 /* CYVideoPlayerAssetCarrier.h */,
+				0E24073020FE1630008BEAB5 /* CYVideoPlayerMoreSetting.m */,
+				0E24072D20FE1630008BEAB5 /* CYVideoPlayerSettings.h */,
 				0E24073220FE1630008BEAB5 /* CYVideoPlayerSettings.m */,
 			);
 			path = Model;
@@ -1227,6 +1231,8 @@
 		84B261A41A46A0AE00C8CAA9 = {
 			isa = PBXGroup;
 			children = (
+				0E2D993B214B599C0006EC7E /* test.mp4 */,
+				0E2D993D214B67380006EC7E /* logo.png */,
 				0E2406FB20FE15D7008BEAB5 /* CYPlayer.podspec */,
 				0E2406FD20FE1630008BEAB5 /* CYPlayer */,
 				84B261AF1A46A0AF00C8CAA9 /* TestVideo */,
@@ -1414,6 +1420,7 @@
 				0E2407E020FE1631008BEAB5 /* README.md in Resources */,
 				84B261BC1A46A0AF00C8CAA9 /* Main.storyboard in Resources */,
 				0E2407ED20FE1631008BEAB5 /* README.md in Resources */,
+				0E2D993E214B67380006EC7E /* logo.png in Resources */,
 				84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */,
 				0E2407A820FE1630008BEAB5 /* README.md in Resources */,
 				0E5FA23D210062C5002A7597 /* cyplayer.bundle in Resources */,
@@ -1421,6 +1428,7 @@
 				0E2406FC20FE15D8008BEAB5 /* CYPlayer.podspec in Resources */,
 				0EEE12A32126C5F1001995BF /* FFmpeg Structure.jpg in Resources */,
 				0E2407DB20FE1631008BEAB5 /* README.md in Resources */,
+				0E2D993C214B599D0006EC7E /* test.mp4 in Resources */,
 				0E2407D920FE1631008BEAB5 /* README.md in Resources */,
 				0E2407E220FE1631008BEAB5 /* README.md in Resources */,
 				84B261BE1A46A0AF00C8CAA9 /* Images.xcassets in Resources */,

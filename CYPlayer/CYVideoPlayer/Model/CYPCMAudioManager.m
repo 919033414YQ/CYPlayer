@@ -154,6 +154,12 @@ typedef struct Wavehead
 //    self.player = nil;
 }
 
+- (void)setPlayRate:(double)playRate
+{
+    _playRate = playRate;
+    self.player.playRate = playRate;
+}
+
 - (void)stopAndCleanBuffer
 {
     [self.player stopSound];

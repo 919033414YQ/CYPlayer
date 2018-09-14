@@ -33,6 +33,8 @@
 @property (nonatomic,strong) CYOpenALPlayer *player;
 
 
+@property(nonatomic,assign) double playRate;                //播放速率
+
 /**
  设备自有属性
  */

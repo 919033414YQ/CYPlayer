@@ -225,6 +225,7 @@ CYPCMAudioManagerDelegate>
     self = [super init];
     if (self) {
         [self setupPlayerWithPath:path parameters:parameters];
+        self.rate = 1.0;
     }
     return self;
 }
@@ -496,11 +497,24 @@ CYPCMAudioManagerDelegate>
     };
     
     _moreSettingFooterViewModel.needChangePlayerRate = ^(float rate) {
-        //        __strong typeof(_self) self = _self;
-        //        if ( !self ) return;
-        //        if ( !self.de ) return;
-        //        self.rate = rate;
-        //        if ( self.internallyChangedRate ) self.internallyChangedRate(self, rate);
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        if ( !self.decoder ) return;
+        if (self.rate == rate) { return; }
+        [self pause];
+        [self _startLoading];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
+            //刷新audioManagr缓存队列中未来得及播放完的数据
+            [[CYPCMAudioManager audioManager] stopAndCleanBuffer];
+            [_self freeBufferedFrames];
+            _self.rate = rate;
+            [_self play];
+        });
+        
+        
+        
+        if ( self.internallyChangedRate ) self.internallyChangedRate(self, rate);
     };
     
     _moreSettingFooterViewModel.needChangeVolume = ^(float volume) {
@@ -640,6 +654,7 @@ CYPCMAudioManagerDelegate>
         if (weakSelf.decoder.validAudio)
         {
             [weakSelf audioTick];
+            [[CYPCMAudioManager audioManager] setPlayRate:weakSelf.rate];
         }
         
         if (weakSelf.decoder.validVideo)
@@ -2880,7 +2895,7 @@ CYPCMAudioManagerDelegate>
                         }
                         
                         LoggerStream(2, @"buffered limit: %.1f - %.1f", strongSelf2->_minBufferedDuration, strongSelf2->_maxBufferedDuration);
-                        [strongSelf2 updatePosition:decoder.position playMode:YES];
+                        [strongSelf2 updatePosition:weakSelf.decoder.validVideo ? strongSelf->_moviePosition : strongSelf->_currentAudioFramePos playMode:YES];
                         [strongSelf2 play];
                         
                         
@@ -3216,8 +3231,8 @@ CYPCMAudioManagerDelegate>
 - (void)setRate:(float)rate {
     if ( self.rate == rate ) return;
     objc_setAssociatedObject(self, @selector(rate), @(rate), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    //    if ( !self.asset ) return;
-    //    self.asset.player.rate = rate;
+    if ( !self.decoder ) return;
+    self.decoder.rate = rate;
     self.userClickedPause = NO;
     _cyAnima(^{
         [self _playState];
@@ -3233,6 +3248,14 @@ CYPCMAudioManagerDelegate>
             [[NSNotificationCenter defaultCenter] postNotificationName:CYSettingsPlayerNotification object:[player settings]];
         });
     }];
+}
+
+- (void)setInternallyChangedRate:(void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
+    objc_setAssociatedObject(self, @selector(internallyChangedRate), internallyChangedRate, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
+    return objc_getAssociatedObject(self, _cmd);
 }
 
 - (void)_clear {
@@ -3337,14 +3360,6 @@ CYPCMAudioManagerDelegate>
 
 - (void)setRateChanged:(void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {
     objc_setAssociatedObject(self, @selector(rateChanged), rateChanged, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void)setInternallyChangedRate:(void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
-    objc_setAssociatedObject(self, @selector(internallyChangedRate), internallyChangedRate, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(CYFFmpegPlayer * _Nonnull, float))internallyChangedRate {
-    return objc_getAssociatedObject(self, _cmd);
 }
 
 - (BOOL)disableRotation {
