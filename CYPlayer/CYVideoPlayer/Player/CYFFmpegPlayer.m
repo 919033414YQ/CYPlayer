@@ -40,7 +40,7 @@
 
 #define UseCYPCMAudioManager @"UseCYPCMAudioManager"
 
-#define CYPLAYER_MAX_TIMEOUT 20.0 //秒
+#define CYPLAYER_MAX_TIMEOUT 120.0 //秒
 
 #define MoreSettingWidth (MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) * 0.382)
 
@@ -1736,7 +1736,7 @@ CYPCMAudioManagerDelegate>
                     
                     return;
                 }
-                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"])
+                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
                 {
                     [self _pause];
                     CGFloat interval = 0;
@@ -1803,7 +1803,7 @@ CYPCMAudioManagerDelegate>
                     [self _itemPlayEnd];
                     return;
                 }
-                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"])
+                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
                 {
                     [self _pause];
                     CGFloat interval = 0;
@@ -1941,8 +1941,8 @@ CYPCMAudioManagerDelegate>
                 frame = _videoFrames[0];
                 CGFloat delta = _moviePosition - _currentAudioFramePos;
                 _moviePosition = frame.position;
-                CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
-                if (limit_val < 0.2) { limit_val = 0.2; }
+//                CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
+//                if (limit_val < 1) { limit_val = 1; }
 //                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
 //                {
 //

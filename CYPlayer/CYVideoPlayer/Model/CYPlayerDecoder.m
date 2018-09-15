@@ -22,6 +22,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
+NSInteger CYPlayerDecoderMaxFPS = 25;
+NSInteger CYPlayerDecoderConCurrentThreadCount = 5;// range: 1 - 5;
 static void FFLog(void* context, int level, const char* format, va_list args);
 
 static NSError * cyplayerError (NSInteger code, id info)
@@ -1053,7 +1055,7 @@ static int interrupt_callback(void *ctx);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
-    if ([path hasPrefix:@"rtsp"] || [path hasPrefix:@"rtmp"]) {
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
     }
@@ -2606,6 +2608,10 @@ error:
         return;
     __block NSInteger compeletedConter = 0;
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
+    {
+        threadCount = 2;
+    }
     for (int i = 0; i < threadCount; i++)
     {
         switch (i) {
