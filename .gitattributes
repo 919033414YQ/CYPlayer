@@ -1,3 +1,6 @@
+*.c linguist-language=Objective-C
+*.cpp linguist-language=Objective-C
+*.h linguist-language=Objective-C
 CYPlayer/CYFrameworks/Smbclient/libsmbclient.a filter=lfs diff=lfs merge=lfs -text
 CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavcodec.a filter=lfs diff=lfs merge=lfs -text
 CYPlayer/CYFrameworks/FFmpeg-iOS/lib/libavformat.a filter=lfs diff=lfs merge=lfs -text
