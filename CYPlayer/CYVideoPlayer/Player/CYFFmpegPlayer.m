@@ -96,6 +96,7 @@ CYPCMAudioManagerDelegate>
 {
     CGFloat             _moviePosition;//播放到的位置
     NSDictionary        *_parameters;
+    NSString            *_path;
     BOOL                _interrupted;
     BOOL                _buffered;
     BOOL                _savedIdleTimer;
@@ -273,6 +274,7 @@ CYPCMAudioManagerDelegate>
     //        self.wantsFullScreenLayout = YES;
     
     _parameters = parameters;
+    _path = path;
     
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
     CYVideoDecodeType type = CYVideoDecodeTypeVideo;
@@ -2822,6 +2824,11 @@ CYPCMAudioManagerDelegate>
 {
     if (self.state == CYFFmpegPlayerPlayState_Prepare)
     {
+        return;
+    }
+    if (!decoder)
+    {
+        [self setupPlayerWithPath:_path];
         return;
     }
     [self _itemPrepareToPlay];
