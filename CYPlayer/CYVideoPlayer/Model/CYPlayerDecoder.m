@@ -1114,7 +1114,7 @@ static int interrupt_callback(void *ctx);
 {
     cyPlayerError errCode = cyPlayerErroOpenFilter;
     _validFilter = NO;
-    if (filters_init(_formatCtx, &_buffersrc_ctx, &_buffersink_ctx, CYPlayerFilter_FILTER_WATERMARK) >= 0)
+    if (filters_init(_formatCtx, &_buffersrc_ctx, &_buffersink_ctx, CYPlayerFilter_FILTER_NULL) >= 0)
     {
         errCode = cyPlayerErrorNone;
         _validFilter = YES;

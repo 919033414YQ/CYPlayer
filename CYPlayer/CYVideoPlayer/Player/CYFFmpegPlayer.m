@@ -678,6 +678,7 @@ CYPCMAudioManagerDelegate>
     self.playing = NO;
     //_interrupted = YES;
     [self enableAudio:NO];
+    [[CYPCMAudioManager audioManager] setPlayRate:0];
     LoggerStream(1, @"pause movie");
 }
 
@@ -690,7 +691,7 @@ CYPCMAudioManagerDelegate>
     _interrupted = YES;
     _generatedPreviewImageInterrupted = YES;
     [self enableAudio:NO];
-    
+    [[CYPCMAudioManager audioManager] setPlayRate:0];//及时停止声音
     LoggerStream(1, @"pause movie");
 }
 

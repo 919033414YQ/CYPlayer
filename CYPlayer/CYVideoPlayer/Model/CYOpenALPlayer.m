@@ -380,7 +380,7 @@
             return 0;
         }
         
-        if (stateVaue != AL_PLAYING)
+        if (stateVaue != AL_PLAYING && self.m_numqueued > 10)
         {
             [self playSound];
         }
