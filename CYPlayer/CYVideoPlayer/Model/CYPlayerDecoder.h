@@ -164,7 +164,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
 
-- (void) concurrentDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
+- (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
 @end
 
 @interface CYPlayerSubtitleASSParser : NSObject

@@ -1358,7 +1358,7 @@ CYPCMAudioManagerDelegate>
                         NSArray *frames = nil;
                         if (strongSelf->_positionUpdating)//正在跳播
                         {
-                            [weakDecoder concurrentDecodeFrames:duration targetPosition:strongSelf->_targetPosition compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
+                            [weakDecoder asyncDecodeFrames:duration targetPosition:strongSelf->_targetPosition compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
                                 [weakSelf insertFrames:frames];
                                 if (compeleted)
                                 {
@@ -1858,7 +1858,7 @@ CYPCMAudioManagerDelegate>
                 CGFloat position = strongSelf->_currentAudioFramePos - strongSelf->_decoder.startTime;
                 if (weakSelf.decoder.validVideo)
                 {
-                    position = strongSelf->_currentAudioFramePos - strongSelf->_decoder.startTime;
+                    position = strongSelf->_moviePosition - strongSelf->_decoder.startTime;
                 }
                 const CGFloat loadedPosition = weakSelf.decoder.position;
                 [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
@@ -2150,6 +2150,7 @@ CYPCMAudioManagerDelegate>
 - (void) setMoviePositionFromDecoder
 {
     _moviePosition = _decoder.position;
+    _currentAudioFramePos = [_decoder position];
 }
 
 - (BOOL) decodeFrames

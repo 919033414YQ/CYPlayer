@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
 NSInteger CYPlayerDecoderMaxFPS = 25;
-NSInteger CYPlayerDecoderConCurrentThreadCount = 5;// range: 1 - 5;
+NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
 static void FFLog(void* context, int level, const char* format, va_list args);
 
 static NSError * cyplayerError (NSInteger code, id info)
@@ -2502,7 +2502,7 @@ error:
 }
 
 
-- (void) concurrentDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
+- (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     if (_videoStream == -1 &&
         _audioStream == -1)
@@ -2610,7 +2610,7 @@ error:
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
     {
-        threadCount = 2;
+        threadCount = 1;
     }
     for (int i = 0; i < threadCount; i++)
     {
@@ -2683,33 +2683,36 @@ error:
             }
             
             if (gotframe) {
-                
-                CYVideoFrame *frame = nil;
-                
-                if (self.validFilter)
+                CGFloat curr_position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
+                if (curr_position >= self.targetPosition)
                 {
-                    if (av_buffersrc_add_frame(_buffersrc_ctx, videoFrame) < 0) {
-                        printf( "Error while feeding the filtergraph\n");
-                        //                    break;
-                    }
-                    AVFrame * pFrame_out = av_frame_alloc();
-                    int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
-                    if (ret < 0)
-                    {
-                        continue;
-                        
-                    }
-                    frame = [self handleVideoFrame:pFrame_out Picture:picture isPictureValid:isPictureValid];
-                    av_frame_free(&pFrame_out);
-                }
-                else
-                {
-                    frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
-                }
-            
-                if (frame) {
+                    CYVideoFrame *frame = nil;
                     
-                    result_frame = frame;
+                    if (self.validFilter)
+                    {
+                        if (av_buffersrc_add_frame(_buffersrc_ctx, videoFrame) < 0) {
+                            printf( "Error while feeding the filtergraph\n");
+                            //                    break;
+                        }
+                        AVFrame * pFrame_out = av_frame_alloc();
+                        int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
+                        if (ret < 0)
+                        {
+                            continue;
+                            
+                        }
+                        frame = [self handleVideoFrame:pFrame_out Picture:picture isPictureValid:isPictureValid];
+                        av_frame_free(&pFrame_out);
+                    }
+                    else
+                    {
+                        frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
+                    }
+                    
+                    if (frame) {
+                        
+                        result_frame = frame;
+                    }
                 }
             }
             
@@ -2738,11 +2741,14 @@ error:
             }
             
             if (gotframe) {
-                
-                CYAudioFrame * frame = [self handleAudioFrame:audioFrame];
-                if (frame) {
-                    
-                    result_frame = frame;
+                CGFloat curr_position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase;
+                if (curr_position >= self.targetPosition)
+                {
+                    CYAudioFrame * frame = [self handleAudioFrame:audioFrame];
+                    if (frame) {
+                        
+                        result_frame = frame;
+                    }
                 }
             }
             
@@ -2783,11 +2789,18 @@ error:
             }
             
             if (gotsubtitle) {
-                
-                CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
-                if (frame) {
-                    result_frame = frame;
+                CGFloat curr_position = subtitle.pts / AV_TIME_BASE + subtitle.start_display_time;
+                if (curr_position >= self.targetPosition)
+                {
+                    CYSubtitleFrame *frame = [self handleSubtitle: &subtitle];
+                    if (frame) {
+                        result_frame = frame;
+                    }
                 }
+            }
+            
+            if (&subtitle != NULL)
+            {
                 avsubtitle_free(&subtitle);
             }
             
@@ -2974,7 +2987,7 @@ error:
         }
         av_packet_unref(&packet);
     }
-    av_packet_unref(&packet);
+    av_packet_free(&packet);
     
     return result;
 }
