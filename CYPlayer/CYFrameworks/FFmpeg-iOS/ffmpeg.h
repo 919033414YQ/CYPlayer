@@ -23,6 +23,7 @@
 #include "buffersink.h"
 #include "avfiltergraph.h"
 #include "eval.h"
+#include "imgutils.h"
 
 static double FFmpegVersionNumber = 3.4;
 

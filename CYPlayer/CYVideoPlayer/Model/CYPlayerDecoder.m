@@ -24,6 +24,34 @@
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
 NSInteger CYPlayerDecoderMaxFPS = 25;
 NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
+
+# pragma mark - struct CYPicture
+
+typedef struct CYPicture {
+    uint8_t *data[AV_NUM_DATA_POINTERS];    ///< pointers to the image data planes
+    int linesize[AV_NUM_DATA_POINTERS];     ///< number of bytes per line
+} CYPicture;
+
+int cypicture_alloc(CYPicture *picture,
+                    enum AVPixelFormat pix_fmt, int width, int height)
+{
+    int ret = av_image_alloc(picture->data, picture->linesize,
+                             width, height, pix_fmt, 1);
+    if (ret < 0) {
+        memset(picture, 0, sizeof(CYPicture));
+        return ret;
+    }
+    
+    return 0;
+}
+
+void cypicture_free(CYPicture *picture)
+{
+    av_freep(&picture->data[0]);
+}
+
+# pragma mark - static methods
+
 static void FFLog(void* context, int level, const char* format, va_list args);
 
 static NSError * cyplayerError (NSInteger code, id info)
@@ -300,7 +328,7 @@ static BOOL isNetworkPath (NSString *path)
 
 static int interrupt_callback(void *ctx);
 
-////////////////////////////////////////////////////////////////////////////////
+# pragma mark - ////////////////////////////////////////////////////////////////////////////////
 
 @interface CYPlayerFrame()
 @property (readwrite, nonatomic) CGFloat position;
@@ -576,11 +604,11 @@ static int interrupt_callback(void *ctx);
     AVFrame             *_videoFrame2;
     AVFrame             *_videoFrame3;
     AVFrame             *_videoFrame4;
-    AVPicture           _picture;
-    AVPicture           _picture1;
-    AVPicture           _picture2;
-    AVPicture           _picture3;
-    AVPicture           _picture4;
+    CYPicture           _picture;
+    CYPicture           _picture1;
+    CYPicture           _picture2;
+    CYPicture           _picture3;
+    CYPicture           _picture4;
     BOOL                _pictureValid;
     BOOL                _pictureValid1;
     BOOL                _pictureValid2;
@@ -1638,36 +1666,35 @@ static int interrupt_callback(void *ctx);
     }
     
     if (_pictureValid) {
-        avpicture_free(&_picture);
+        cypicture_free(&_picture);
         _pictureValid = NO;
     }
     if (_pictureValid1) {
-        avpicture_free(&_picture1);
+        cypicture_free(&_picture1);
         _pictureValid1 = NO;
     }
     if (_pictureValid2) {
-        avpicture_free(&_picture2);
+        cypicture_free(&_picture2);
         _pictureValid2 = NO;
     }
     if (_pictureValid3) {
-        avpicture_free(&_picture3);
+        cypicture_free(&_picture3);
         _pictureValid3 = NO;
     }
     if (_pictureValid4) {
-        avpicture_free(&_picture4);
+        cypicture_free(&_picture4);
         _pictureValid4 = NO;
     }
 }
 
-- (BOOL) setupScalerWithPicture:(AVPicture *)picture isValid:(BOOL *)isValid Width:(int)width Heigth:(int)height DstFormat:(int)format
+- (BOOL) setupScalerWithPicture:(CYPicture *)picture isValid:(BOOL *)isValid Width:(int)width Heigth:(int)height DstFormat:(int)format
 {
     [self closeScaler];
     
-    *isValid = avpicture_alloc(picture,
+    *isValid = cypicture_alloc(picture,
                                format,
                                width,
                                height) == 0;
-    
     if (!(*isValid))
         return NO;
     
@@ -1782,7 +1809,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
 }
 
-- (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
+- (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     if (!videoFrame->data[0])
         return nil;
@@ -1869,7 +1896,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             }
             
             if (!(*isPictureValid)) {
-                *isPictureValid = avpicture_alloc(picture,
+                *isPictureValid = cypicture_alloc(picture,
                                                   _videoCodecCtx->pix_fmt,
                                                   width,
                                                   height) == 0;
@@ -1949,7 +1976,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         }
         
         if (!(*isPictureValid)) {
-            *isPictureValid = avpicture_alloc(picture,
+            *isPictureValid = cypicture_alloc(picture,
                                               AV_PIX_FMT_RGB24,
                                               width,
                                               height) == 0;
@@ -2219,7 +2246,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     return frame;
 }
 
-- (void) asyncDecodeFrames:(CGFloat)minDuration audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid compeletionHandler:(CYPlayerCompeletionThread)compeletion
+- (void) asyncDecodeFrames:(CGFloat)minDuration audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid compeletionHandler:(CYPlayerCompeletionThread)compeletion
 {
     __weak typeof(&*self)weakSelf = self;
     dispatch_async(_concurrentDecodeQueue, ^{
@@ -2662,7 +2689,7 @@ error:
     }
 }
 
-- (CYPlayerFrame *)handlePacket:(AVPacket *)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(AVPicture *)picture isPictureValid:(BOOL *)isPictureValid
+- (CYPlayerFrame *)handlePacket:(AVPacket *)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     CYPlayerFrame * result_frame = nil;
     CGFloat curr_targetPos = self.targetPosition;
