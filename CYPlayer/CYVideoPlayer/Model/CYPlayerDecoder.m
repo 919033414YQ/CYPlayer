@@ -2262,7 +2262,7 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         BOOL finished = NO;
         CGFloat curr_targetPos = weakSelf.targetPosition;
         while (!finished && strongSelf->_formatCtx && curr_targetPos == weakSelf.targetPosition) {
-            NSLog(@"%f", curr_targetPos);
+//            NSLog(@"%f", curr_targetPos);
             CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             ///读取下一帧开始
             dispatch_semaphore_wait(strongSelf->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁

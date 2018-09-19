@@ -96,7 +96,7 @@ typedef struct Wavehead
 //    [self.player openAudioFromQueue:dataBytes withLength:dataSize];
     [self.player openAudioFromQueue:dataBytes andWithDataSize:dataSize andWithSampleRate:self.avcodecContextSamplingRate andWithAbit:aBit andWithAchannel:aChannel];
     //这里设置openal内部缓存数据的大小  太大了视频延迟大  太小了视频会卡顿 根据实际情况调整
-//    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
+    NSLog(@"++++++++++++++%d",self.player.m_numqueued);
     if (self.player.m_numqueued >= 10 && self.player.m_numqueued <= 35) {
         [NSThread sleepForTimeInterval:0.01];
     }else if (self.player.m_numqueued > 35){

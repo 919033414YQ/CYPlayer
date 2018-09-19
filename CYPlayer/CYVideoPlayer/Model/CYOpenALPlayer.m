@@ -344,12 +344,14 @@
     alDopplerVelocity(1.0);
     alDopplerFactor(1.0);
     alSourcef(m_outSourceId, AL_PITCH, 1.0f);
-    alSourcef(m_outSourceId, AL_GAIN, 1.0f);
-    alSourcei(m_outSourceId, AL_LOOPING, AL_FALSE);
-    alSourcef(m_outSourceId, AL_SOURCE_TYPE, AL_STREAMING);
-    
+    alSourcef(m_outSourceId, AL_GAIN, 1.0f); //设置音量大小，1.0f表示最大音量。openAL动态调节音量大小就用这个方法
+    alSourcei(m_outSourceId, AL_LOOPING, AL_FALSE);// 设置音频播放是否为循环播放，AL_FALSE是不循环
+    alSourcef(m_outSourceId, AL_SOURCE_TYPE, AL_STREAMING);// 设置声音数据为流试，（openAL 针对PCM格式数据流）
+    alDopplerVelocity(1.0); //多普勒效应，这属于高级范畴，不是游戏开发，对音质没有苛刻要求的话，一般无需设置
+    alDopplerFactor(1.0);   //同上
     return ret;
 }
+
 -(int)updataQueueBuffer{
     
     
@@ -466,6 +468,7 @@
     if((ret = alGetError()) != AL_NO_ERROR)
     {
         printf("error alGenBuffers %x \n", ret);
+        return ret;
         // printf("error alGenBuffers %x : %s\n", ret,alutGetErrorString (ret));
         //AL_ILLEGAL_ENUM
         //AL_INVALID_VALUE
@@ -501,6 +504,7 @@
     if((ret = alGetError()) != AL_NO_ERROR)
     {
         printf("error alBufferData %x\n", ret);
+        return ret;
         //AL_ILLEGAL_ENUM
         //AL_INVALID_VALUE
         //#define AL_ILLEGAL_COMMAND                        0xA004
@@ -511,6 +515,7 @@
     if((ret = alGetError()) != AL_NO_ERROR)
     {
         printf("error alSourceQueueBuffers %x\n", ret);
+        return ret;
     }
     
     //更新队列数据

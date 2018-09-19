@@ -1347,61 +1347,37 @@ CYPCMAudioManagerDelegate>
         {
             if (!weakSelf.playing)
                 return;
+            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             
-//            while ()
-            {
-                CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
+            @autoreleasepool {
                 
-                @autoreleasepool {
+                if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
                     
-                    if (weakDecoder && (weakDecoder.validVideo || weakDecoder.validAudio)) {
-                        
-                        NSArray *frames = nil;
-                        if (strongSelf->_positionUpdating)//正在跳播
-                        {
-                            [weakDecoder asyncDecodeFrames:duration targetPosition:strongSelf->_targetPosition compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
-                                [weakSelf insertFrames:frames];
-                                if (compeleted)
-                                {
-                                    weakSelf.decoding = NO;
-//                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_minBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_minBufferedDuration) && !weakSelf.stopped)
-//                                    {
-//                                        weakSelf.decoding = NO;
-//                                        [weakSelf concurrentAsyncDecodeFrames];
-//                                    }
-//                                    else
-//                                    {
-//                                        weakSelf.decoding = NO;
-//                                    }
-                                }
-                            }];
-                        }
-                        else
-                        {
-                            [weakDecoder concurrentDecodeFrames:duration compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
-                                [weakSelf insertFrames:frames];
-                                if (compeleted)
-                                {
-                                    weakSelf.decoding = NO;
-//                                    if (weakSelf.playing && (strongSelf->_videoBufferedDuration < strongSelf->_maxBufferedDuration || strongSelf->_audioBufferedDuration < strongSelf->_maxBufferedDuration) && !weakSelf.stopped)
-//                                    {
-//                                        weakSelf.decoding = NO;
-//                                        [weakSelf concurrentAsyncDecodeFrames];
-//                                    }
-//                                    else
-//                                    {
-//                                        weakSelf.decoding = NO;
-//                                    }
-                                }
-                            }];
-                        }
+                    NSArray *frames = nil;
+                    if (strongSelf->_positionUpdating)//正在跳播
+                    {
+                        [weakDecoder asyncDecodeFrames:duration targetPosition:strongSelf->_targetPosition compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
+                            [weakSelf insertFrames:frames];
+                            if (compeleted)
+                            {
+                                weakSelf.decoding = NO;
+                            }
+                        }];
+                    }
+                    else
+                    {
+                        [weakDecoder concurrentDecodeFrames:duration compeletionHandler:^(NSArray<CYPlayerFrame *> *frames, BOOL compeleted) {
+                            [weakSelf insertFrames:frames];
+                            if (compeleted)
+                            {
+                                weakSelf.decoding = NO;
+                            }
+                        }];
                     }
                 }
-                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
-                //NSLog(@"Linked asyncDecodeFrames in %f ms", linkTime *1000.0);
             }
-            
-            
+            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+            //NSLog(@"Linked asyncDecodeFrames in %f ms", linkTime *1000.0);
         }
     });
 }
@@ -1700,7 +1676,7 @@ CYPCMAudioManagerDelegate>
         }
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);
         dispatch_after(popTime, _audioQueue, ^(void){
             [weakSelf audioTick];
         });
@@ -1728,10 +1704,11 @@ CYPCMAudioManagerDelegate>
         (_decoder.validVideo ? _videoFrames.count : 0) +
         (_decoder.validAudio ? _audioFrames.count : 0);
         
+        CGFloat curr_position = _decoder.validVideo ? _moviePosition : _currentAudioFramePos;
         if ( leftFrames == 0 )
         {
             if (_decoder.isEOF) {
-                if (_decoder.duration - _decoder.position <= 1.0 &&
+                if (_decoder.duration - curr_position <= 1.0 &&
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
@@ -1799,7 +1776,7 @@ CYPCMAudioManagerDelegate>
                    _decoder.validAudio == YES)))
         {
             if (_decoder.isEOF) {
-                if (_decoder.duration - _decoder.position <= 1.0 &&
+                if (_decoder.duration - curr_position <= 1.0 &&
                     _decoder.duration > 0 &&
                     _decoder.duration != NSNotFound)
                 {
@@ -1820,11 +1797,10 @@ CYPCMAudioManagerDelegate>
                 }
                 else
                 {
-                    [self _itemPlayFailed];
-                    
-                    return;
+//                    [self _itemPlayFailed];
+//
+//                    return;
                 }
-                return;
             }
         }
         
