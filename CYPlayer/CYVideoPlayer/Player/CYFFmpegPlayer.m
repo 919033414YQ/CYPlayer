@@ -1895,28 +1895,30 @@ CYPCMAudioManagerDelegate>
             {
                 _currentAudioFramePos = audioFrame.position;
                 CGFloat delta = _currentAudioFramePos - _moviePosition;
-                CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
+                CGFloat limit_val = 0.1;
                 //                if (limit_val < 1) { limit_val = 1; }
                 if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
                 {
                     
                     [_audioFrames removeObjectAtIndex:0];
                     _audioBufferedDuration -= audioFrame.duration;
-                    
-                    interval = audioFrame.duration;
                     [audioManager setData:audioFrame.samples];//播放
+                    interval = audioFrame.duration;
                 }
                 else if (delta > limit_val)//音频快了
                 {
-                    
+                    [_audioFrames removeObjectAtIndex:0];
+                    _audioBufferedDuration -= audioFrame.duration;
+                    [audioManager setData:audioFrame.samples];//播放
+                    interval = audioFrame.duration;
                 }
                 else//音频慢了
                 {
                     [_audioFrames removeObjectAtIndex:0];
                     _audioBufferedDuration -= audioFrame.duration;
-                    
-                    interval = audioFrame.duration;
                     [audioManager setData:audioFrame.samples];//播放
+                    interval = audioFrame.duration;
+//                    interval = 0;
                 }
             }
         }
@@ -1941,7 +1943,7 @@ CYPCMAudioManagerDelegate>
                 _moviePosition = frame.position;
                 
                 CGFloat delta = _moviePosition - _currentAudioFramePos;                
-                CGFloat limit_val = 1.0 / CYPlayerDecoderMaxFPS * 10;
+                CGFloat limit_val = 0.1;
 //                if (limit_val < 1) { limit_val = 1; }
                 if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
                 {
@@ -1952,14 +1954,17 @@ CYPCMAudioManagerDelegate>
                 }
                 else if (delta > limit_val)//视频快了
                 {
-
-
+                    [_videoFrames removeObjectAtIndex:0];
+                    _videoBufferedDuration -= frame.duration;
+                    interval = [self presentVideoFrame:frame];//呈现视频
+//                    interval = delta;
                 }
                 else//视频慢了
                 {
                     [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
                     interval = [self presentVideoFrame:frame];//呈现视频
+//                    interval = 0;
                 }
             }
         }
