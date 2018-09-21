@@ -167,6 +167,11 @@ typedef struct Wavehead
     self.player = nil;
 }
 
+- (void)clearBuffer
+{
+    [self.player clearBuffer];
+}
+
 - (void)resetPlayer
 {
     [self.player stopSound];

@@ -316,11 +316,6 @@ CYPCMAudioManagerDelegate>
 
 - (void) dealloc
 {
-    if (self.enableAudio)
-    {
-        [self enableAudio:NO];
-    }
-    
     [[CYPCMAudioManager audioManager] stopAndCleanBuffer];
     
     while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
@@ -677,7 +672,6 @@ CYPCMAudioManagerDelegate>
     
     self.playing = NO;
     //_interrupted = YES;
-    [self enableAudio:NO];
     [[CYPCMAudioManager audioManager] setPlayRate:0];
     LoggerStream(1, @"pause movie");
 }
@@ -690,7 +684,6 @@ CYPCMAudioManagerDelegate>
     self.playing = NO;
     _interrupted = YES;
     _generatedPreviewImageInterrupted = YES;
-    [self enableAudio:NO];
     [[CYPCMAudioManager audioManager] setPlayRate:0];//及时停止声音
     LoggerStream(1, @"pause movie");
 }
@@ -1023,222 +1016,6 @@ CYPCMAudioManagerDelegate>
     return _interrupted;
 }
 
-
-- (void) audioCallbackFillData: (float *) outData
-                     numFrames: (UInt32) numFrames
-                   numChannels: (UInt32) numChannels
-{
-    //fillSignalF(outData,numFrames,numChannels);
-    //return;
-    
-    if (_buffered) {
-        memset(outData, 0, numFrames * numChannels * sizeof(float));
-        return;
-    }
-    
-    @autoreleasepool {
-        
-        while (numFrames > 0) {
-            
-            if (!_currentAudioFrame) {
-                
-                @synchronized(_audioFrames) {
-                    
-                    NSUInteger count = _audioFrames.count;
-                    
-                    if (count > 0) {
-                        
-                        CYAudioFrame *frame = _audioFrames[0];
-                        
-#ifdef DUMP_AUDIO_DATA
-                        LoggerAudio(2, @"Audio frame position: %f", frame.position);
-#endif
-                        if (_decoder.validVideo) {
-                            
-                            const CGFloat delta = _moviePosition - frame.position;
-                            
-                            if (delta < -0.1) {
-                                
-                                memset(outData, 0, numFrames * numChannels * sizeof(float));
-#ifdef DEBUG
-                                LoggerStream(0, @"desync audio (outrun) wait %.4f %.4f", _moviePosition, frame.position);
-                                _debugAudioStatus = 1;
-                                _debugAudioStatusTS = [NSDate date];
-#endif
-                                //                                [_audioFrames removeObjectAtIndex:0];
-                                //                                break; // silence and exit
-                            }
-                            
-                            [_audioFrames removeObjectAtIndex:0];
-                            
-                            if (delta > 0.1 && count > 1) {
-                                
-#ifdef DEBUG
-                                LoggerStream(0, @"desync audio (lags) skip %.4f %.4f", _moviePosition, frame.position);
-                                _debugAudioStatus = 2;
-                                _debugAudioStatusTS = [NSDate date];
-#endif
-                                continue;
-                            }
-                            
-                        } else {
-                            
-                            [_audioFrames removeObjectAtIndex:0];
-                            _moviePosition = frame.position;
-                            _audioBufferedDuration -= frame.duration;
-                        }
-                        
-                        _currentAudioFramePos = 0;
-                        _currentAudioFrame = frame.samples;
-                    }
-                }
-            }
-            
-            if (_currentAudioFrame) {
-                
-                const void *bytes = (Byte *)_currentAudioFrame.bytes + _currentAudioFramePos;
-                const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
-                const NSUInteger frameSizeOf = numChannels * sizeof(float);
-                const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
-                const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
-                
-                memcpy(outData, bytes, bytesToCopy);
-                numFrames -= framesToCopy;
-                outData += framesToCopy * numChannels;
-                
-                if (bytesToCopy < bytesLeft)
-                    _currentAudioFramePos += bytesToCopy;
-                else
-                    _currentAudioFrame = nil;
-                
-            } else {
-                
-                memset(outData, 0, numFrames * numChannels * sizeof(float));
-                //LoggerStream(1, @"silence audio");
-#ifdef DEBUG
-                _debugAudioStatus = 3;
-                _debugAudioStatusTS = [NSDate date];
-#endif
-                break;
-            }
-        }
-    }
-}
-
-
-- (void) enableAudio: (BOOL) on
-{
-    return;
-#ifdef UseCYPCMAudioManager
-    if (on && _decoder.validAudio) {
-        __weak typeof(&*self)weakSelf = self;
-        self.enableAudio = YES;
-        dispatch_async(_audioQueue, ^{
-            __strong __typeof(&*self)strongSelf = weakSelf;
-            if (strongSelf)
-            {
-                CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-                audioManager.delegate = strongSelf;
-                while (strongSelf.enableAudio)//循环开始
-                {
-                    @synchronized(strongSelf->_audioFrames)
-                    {
-                        NSUInteger count = strongSelf->_audioFrames.count;
-                        CYAudioFrame * audioFrame = [strongSelf->_audioFrames firstObject];
-                        
-                        if ([audioFrame isKindOfClass: NSClassFromString(@"CYAudioFrame")] &&
-                            count > 0)
-                        {
-                            if (strongSelf->_decoder.validVideo)
-                            {
-                                if (strongSelf->_audioFrames.count)
-                                {
-                                    [strongSelf->_audioFrames removeObjectAtIndex:0];
-                                    strongSelf->_audioBufferedDuration -= audioFrame.duration;
-                                    strongSelf->_currentAudioFramePos = audioFrame.position;
-                                }
-
-                                [audioManager setData:audioFrame.samples];//播放
-                                continue;
-                                const CGFloat delta = strongSelf->_moviePosition - audioFrame.position;
-                                //音视频播放同步
-                                strongSelf->_currentAudioFramePos = audioFrame.position;
-                                CGFloat limit_val = 1.0 / weakSelf.decoder.fps;
-                                if (limit_val < 0.2) { limit_val = 0.2; }
-                                if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
-                                {
-                                    if (strongSelf->_audioFrames.count)
-                                    {
-                                        [strongSelf->_audioFrames removeObjectAtIndex:0];
-                                        strongSelf->_audioBufferedDuration -= audioFrame.duration;
-                                    }
-                                    
-                                    [audioManager setData:audioFrame.samples];//播放
-                                }
-                                else if (delta > limit_val)//音频慢了
-                                {
-                                    if (strongSelf->_audioFrames.count)
-                                    {
-                                        [strongSelf->_audioFrames removeObjectAtIndex:0];
-                                        strongSelf->_audioBufferedDuration -= audioFrame.duration;
-                                    }
-
-                                    continue;
-                                }
-                                else//音频快了
-                                {
-                                    continue;
-                                }
-                            }
-                            else
-                            {
-                                [strongSelf->_audioFrames removeObjectAtIndex:0];
-                                strongSelf->_moviePosition = audioFrame.position;
-                                strongSelf->_audioBufferedDuration -= audioFrame.duration;
-                                [audioManager setData:audioFrame.samples];//播放
-                            }
-                            
-                        }
-                        else
-                        {
-                            
-                        }
-                    }
-                }
-            }
-        });
-    }
-    else
-    {
-        self.enableAudio = NO;
-        CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
-        [audioManager stop];
-    }
-#else
-    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
-    
-    if (on && _decoder.validAudio) {
-        
-        audioManager.outputBlock = ^(float *outData, UInt32 numFrames, UInt32 numChannels) {
-            
-            [self audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
-        };
-        
-        [audioManager play];
-        
-        LoggerAudio(2, @"audio device smr: %d fmt: %d chn: %d",
-                    (int)audioManager.samplingRate,
-                    (int)audioManager.numBytesPerSample,
-                    (int)audioManager.numOutputChannels);
-        
-    } else {
-        
-        [audioManager pause];
-        audioManager.outputBlock = nil;
-    }
-    
-#endif
-}
 
 - (void) freeBufferedFrames
 {
@@ -1660,6 +1437,21 @@ CYPCMAudioManagerDelegate>
         }
         interval = [self presentAudioFrame];
     }
+    else
+    {
+//        const int bufSize = 100;
+        int bufSize = av_samples_get_buffer_size(NULL,
+                                                       (int)audioManager.avcodecContextNumOutputChannels,
+                                                       audioManager.audioCtx->frame_size,
+                                                       AV_SAMPLE_FMT_S16,
+                                                       1);
+        bufSize = bufSize > 0 ? bufSize : 100;
+        char * empty_audio_data = (char *)calloc(bufSize, sizeof(char));
+        memset(empty_audio_data, 0, bufSize);
+        NSData * empty_audio = [NSData dataWithBytes:empty_audio_data length:bufSize];
+        [audioManager setData:empty_audio];//播放
+//        interval = delta;
+    }
     
     if (self.playing) {
         const NSUInteger leftFrames =
@@ -1674,6 +1466,7 @@ CYPCMAudioManagerDelegate>
 //            [self asyncDecodeFrames];
             [self concurrentAsyncDecodeFrames];
         }
+        
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);

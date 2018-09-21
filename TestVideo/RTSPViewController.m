@@ -30,9 +30,9 @@
     __weak typeof(self)weakSelf = self;
 #if DEBUG
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
-        NSURL * url = [NSURL fileURLWithPath:path];
-        NSString * video_str = [url absoluteString];
+//        NSString * path = [[NSBundle mainBundle] pathForResource:@"01" ofType:@"avi"];
+//        NSURL * url = [NSURL fileURLWithPath:path];
+//        NSString * video_str = [url absoluteString];
         
 //        weakSelf.cy_video = [[CYRtspPlayer alloc] initWithVideo:@"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4"];
         weakSelf.cy_video = [[CYRtspPlayer alloc] initWithVideo:@"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"];

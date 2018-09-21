@@ -310,9 +310,18 @@
     ALuint       m_outSourceId;           //source id 负责播放
     NSLock     * lock;
     float        rate;
-    
+    dispatch_semaphore_t _bufferLock;
 }
 
+
+- (instancetype)init
+{
+    if (self = [super init])
+    {
+        _bufferLock = dispatch_semaphore_create(1);
+    }
+    return self;
+}
 
 - (BOOL)isPlaying
 {
@@ -321,6 +330,7 @@
     
     return (stateVaue == AL_PLAYING);
 }
+
 
 -(int)initOpenAL{
     
@@ -387,7 +397,6 @@
             [self playSound];
         }
     }
-    
     //将已经播放过的的数据删除掉
     while(_m_numprocessed --)
     {
@@ -402,6 +411,43 @@
     }
     
     return 1;
+}
+
+- (void)clearBuffer
+{
+    //播放状态字段
+    ALint stateVaue = 0;
+    //获取处理队列，得出已经播放过的缓冲器的数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_PROCESSED, &_m_numprocessed);
+    //获取缓存队列，缓存的队列数量
+    alGetSourcei(m_outSourceId, AL_BUFFERS_QUEUED, &_m_numqueued);
+    
+    //获取播放状态，是不是正在播放
+    alGetSourcei(m_outSourceId, AL_SOURCE_STATE, &stateVaue);
+    
+    if (stateVaue == AL_PLAYING) {
+        alSourceStop(m_outSourceId);
+    }
+    
+    //将已经播放过的的数据删除掉
+    while(_m_numqueued > 0 && _m_numqueued --)
+    {
+        ALuint buff;
+        //更新缓存buffer中的数据到source中
+        alSourceUnqueueBuffers(m_outSourceId, 1, &buff);
+        //删除缓存buff中的数据
+        alDeleteBuffers(1, &buff);
+    }
+    
+    //将已经播放过的的数据删除掉
+    while(_m_numprocessed > 0 && _m_numprocessed --)
+    {
+        ALuint buff;
+        //更新缓存buffer中的数据到source中
+        alSourceUnqueueBuffers(m_outSourceId, 1, &buff);
+        //删除缓存buff中的数据
+        alDeleteBuffers(1, &buff);
+    }
 }
 
 -(void)cleanUpOpenAL{
@@ -467,6 +513,10 @@
     alGenBuffers(1, &bufferID);
     if((ret = alGetError()) != AL_NO_ERROR)
     {
+        //播放状态字段
+        ALint stateVaue = 0;
+        //获取播放状态，是不是正在播放
+        alGetSourcei(m_outSourceId, AL_SOURCE_STATE, &stateVaue);
         printf("error alGenBuffers %x \n", ret);
         return ret;
         // printf("error alGenBuffers %x : %s\n", ret,alutGetErrorString (ret));
@@ -514,6 +564,10 @@
     alSourceQueueBuffers(m_outSourceId, 1, &bufferID);
     if((ret = alGetError()) != AL_NO_ERROR)
     {
+        //播放状态字段
+        ALint stateVaue = 0;
+        //获取播放状态，是不是正在播放
+        alGetSourcei(m_outSourceId, AL_SOURCE_STATE, &stateVaue);
         printf("error alSourceQueueBuffers %x\n", ret);
         return ret;
     }

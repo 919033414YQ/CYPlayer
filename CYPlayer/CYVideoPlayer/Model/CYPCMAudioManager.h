@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import<AVFoundation/AVFoundation.h>
 #import "CYOpenALPlayer.h"
+#import "ffmpeg.h"
 
 #define CYPCMAudioManagerNormalSampleRate [CYPCMAudioManager audioManager].avaudioSessionSamplingRate //44100 48000
 
@@ -31,6 +32,8 @@
 @property (nonatomic, weak) id<CYPCMAudioManagerDelegate> delegate;
 
 @property (nonatomic,strong) CYOpenALPlayer *player;
+
+@property (nonatomic, assign) AVCodecContext * audioCtx;
 
 
 @property(nonatomic,assign) double playRate;                //播放速率
@@ -71,6 +74,8 @@
  停止并清除缓存
  */
 - (void)stopAndCleanBuffer;
+
+- (void)clearBuffer;
 
 /**
  停止播放

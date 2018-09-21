@@ -69,6 +69,7 @@
 - (BOOL)isPlaying;
 -(int)initOpenAL;
 -(int)updataQueueBuffer;
+- (void)clearBuffer;
 -(void)cleanUpOpenAL;
 -(void)playSound;
 -(void)stopSound;

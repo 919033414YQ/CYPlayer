@@ -23,7 +23,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
-NSInteger CYPlayerDecoderMaxFPS = 25;
+NSInteger CYPlayerDecoderMaxFPS = 26;
 NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
 
 # pragma mark - struct CYPicture
@@ -305,17 +305,23 @@ static NSArray *collectStreams(AVFormatContext *formatCtx, enum AVMediaType code
 
 static NSData * copyFrameData(UInt8 *src, int linesize, int width, int height)
 {
-//    NSMutableData * data = [NSMutableData dataWithBytes:src length:width * height];
-//    return data;
-    width = MIN(linesize, width);
-    NSMutableData *md = [NSMutableData dataWithLength: width * height];
-    Byte *dst = md.mutableBytes;
-    for (NSUInteger i = 0; i < height; ++i) {
-        memcpy(dst, src, width);
-        dst += width;
-        src += linesize;
+    if (linesize == width)
+    {
+        NSMutableData * data = [NSMutableData dataWithBytes:src length:width * height];
+        return data;
     }
-    return md;
+    else
+    {
+        width = MIN(linesize, width);
+        NSMutableData *md = [NSMutableData dataWithLength: width * height];
+        Byte *dst = md.mutableBytes;
+        for (NSUInteger i = 0; i < height; ++i) {
+            memcpy(dst, src, width);
+            dst += width;
+            src += linesize;
+        }
+        return md;
+    }
 }
 
 static BOOL isNetworkPath (NSString *path)
@@ -1257,6 +1263,7 @@ static int interrupt_callback(void *ctx);
 
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         [[CYPCMAudioManager audioManager] setPlayRate: 1 / _rate];
+        [audioManager setAudioCtx:codecCtx];
 
         audioManager.avcodecContextNumOutputChannels = audioManager.avaudioSessionNumOutputChannels;
         if (codecCtx->sample_rate < CYPCMAudioManagerNormalSampleRate)
@@ -1890,7 +1897,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     int height = _videoCodecCtx->height;
     if (!(_dstWidth > 0 && _dstHeight > 0))
     {
-        get_video_scale_max_size(_videoCodecCtx, &width, &height);
+//        get_video_scale_max_size(_videoCodecCtx, &width, &height);
         _dstWidth = width;
         _dstHeight = height;
     }
