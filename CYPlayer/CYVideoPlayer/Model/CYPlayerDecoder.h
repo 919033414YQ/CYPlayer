@@ -11,6 +11,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "CYHardwareDecompressVideo.h"
 
 //#define CYPlayerDecoderMaxFPS 30
 extern NSInteger CYPlayerDecoderConCurrentThreadCount;// range: 1 - 5
@@ -130,6 +131,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 @property (readonly, nonatomic) CGFloat fps;
 @property (readonly, nonatomic) CGFloat sampleRate;
 @property (readwrite, nonatomic) CGFloat rate;//设置解码播放速度, 0.5-2.0
+@property (readwrite, nonatomic, assign) BOOL useHWDecompressor;//开启硬解码, 只支持h264
 @property (readonly, nonatomic) NSUInteger frameWidth;
 @property (readonly, nonatomic) NSUInteger frameHeight;
 @property (readonly, nonatomic) NSUInteger audioStreamsCount;
@@ -142,6 +144,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 @property (readonly, nonatomic) BOOL validFilter;
 @property (readonly, nonatomic, strong) NSDictionary *info;
 @property (readonly, nonatomic, strong) NSString *videoStreamFormatName;
+@property (readonly, nonatomic, strong) CYHardwareDecompressVideo *hwDecompressor;
 @property (readonly, nonatomic) BOOL isNetwork;
 @property (readonly, nonatomic) CGFloat startTime;
 @property (readwrite, nonatomic) BOOL disableDeinterlacing;

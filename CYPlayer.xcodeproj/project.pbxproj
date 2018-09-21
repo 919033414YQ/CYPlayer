@@ -94,6 +94,7 @@
 		0E7FA51C213CF42400D1F16B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51B213CF42300D1F16B /* AVFoundation.framework */; };
 		0E7FA51E213CF43600D1F16B /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E7FA51D213CF43600D1F16B /* OpenAL.framework */; };
 		0EA91120214674F700149858 /* libx264.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EA9111F214674F700149858 /* libx264.a */; };
+		0EAFEEFB21534177009898D0 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAFEEFA21534177009898D0 /* CYHardwareDecompressVideo.m */; };
 		0ECD4C0B2111A2D30078D24A /* CYFFmpegViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA24221007479002A7597 /* CYFFmpegViewController.m */; };
 		0ECD4C102111A33C0078D24A /* CYFFmpegPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */; };
 		0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */; };
@@ -307,6 +308,8 @@
 		0EA9111C214674F700149858 /* x264_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264_config.h; sourceTree = "<group>"; };
 		0EA9111D214674F700149858 /* x264.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x264.h; sourceTree = "<group>"; };
 		0EA9111F214674F700149858 /* libx264.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libx264.a; sourceTree = "<group>"; };
+		0EAFEEF921534176009898D0 /* CYHardwareDecompressVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYHardwareDecompressVideo.h; sourceTree = "<group>"; };
+		0EAFEEFA21534177009898D0 /* CYHardwareDecompressVideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYHardwareDecompressVideo.m; sourceTree = "<group>"; };
 		0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegPlayer.m; sourceTree = "<group>"; };
 		0ECD4C0D2111A33C0078D24A /* CYFFmpegPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYFFmpegPlayer.h; sourceTree = "<group>"; };
 		0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYPlayerGLView.m; sourceTree = "<group>"; };
@@ -658,6 +661,8 @@
 		0E24072820FE1630008BEAB5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				0EAFEEF921534176009898D0 /* CYHardwareDecompressVideo.h */,
+				0EAFEEFA21534177009898D0 /* CYHardwareDecompressVideo.m */,
 				0ECD4C192111DFFA0078D24A /* CYAudioManager.h */,
 				0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */,
 				0EF7875021390DCF0072AED4 /* CYOpenALPlayer.h */,
@@ -1514,6 +1519,7 @@
 				0E2407BF20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsColCell.m in Sources */,
 				0E2407CB20FE1630008BEAB5 /* CYVideoPlayerLeftControlView.m in Sources */,
 				0E2407F920FF1C97008BEAB5 /* RTSPViewController.m in Sources */,
+				0EAFEEFB21534177009898D0 /* CYHardwareDecompressVideo.m in Sources */,
 				0E2407EB20FE1631008BEAB5 /* CYAttributesFactory.m in Sources */,
 				0E2407C820FE1630008BEAB5 /* CYVideoPlayerBottomControlView.m in Sources */,
 				0E2407B520FE1630008BEAB5 /* CYTimerControl.m in Sources */,

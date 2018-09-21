@@ -18,6 +18,7 @@
 #import "pixfmt.h"
 #import <objc/runtime.h>
 #import "CYVideoPlayerResources.h"
+#import "CYHardwareDecompressVideo.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,6 +305,8 @@ static NSArray *collectStreams(AVFormatContext *formatCtx, enum AVMediaType code
 
 static NSData * copyFrameData(UInt8 *src, int linesize, int width, int height)
 {
+//    NSMutableData * data = [NSMutableData dataWithBytes:src length:width * height];
+//    return data;
     width = MIN(linesize, width);
     NSMutableData *md = [NSMutableData dataWithLength: width * height];
     Byte *dst = md.mutableBytes;
@@ -657,6 +660,7 @@ static int interrupt_callback(void *ctx);
 }
 
 @property (readwrite, nonatomic) BOOL validFilter;
+@property (readwrite, nonatomic, strong) CYHardwareDecompressVideo *hwDecompressor;
 
 @end
 
@@ -1023,8 +1027,6 @@ static int interrupt_callback(void *ctx);
         
         audioErr = [self openAudioStream];
         
-        [self openFilter];
-        
         _subtitleStream = -1;
         
         if (videoErr != cyPlayerErrorNone &&
@@ -1035,6 +1037,11 @@ static int interrupt_callback(void *ctx);
         } else {
             
             _subtitleStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_SUBTITLE);
+            if (videoErr == cyPlayerErrorNone)
+            {
+                [self openFilter];
+//                self.hwDecompressor = [[CYHardwareDecompressVideo alloc] initWithCodecCtx:_videoCodecCtx];
+            }
         }
     }
     
@@ -1168,9 +1175,11 @@ static int interrupt_callback(void *ctx);
     
     // inform the codec that we can handle truncated bitstreams -- i.e.,
     // bitstreams where frame boundaries can fall in the middle of packets
-    //if(codec->capabilities & CODEC_CAP_TRUNCATED)
-    //    _codecCtx->flags |= CODEC_FLAG_TRUNCATED;
-    
+//    if(codec->capabilities & CODEC_CAP_TRUNCATED)
+//    {
+//        codecCtx->flags |= CODEC_FLAG_TRUNCATED;
+//    }
+    codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     // open codec
     if (avcodec_open2(codecCtx, codec, NULL) < 0)
         return cyPlayerErrorOpenCodec;
@@ -1188,6 +1197,13 @@ static int interrupt_callback(void *ctx);
     
     _videoStream = videoStream;
     _videoCodecCtx = codecCtx;
+    
+//    unsigned char *dummy=NULL;   //输入的指针
+//    int dummy_len;
+//    AVBitStreamFilterContext* bsfc =  av_bitstream_filter_init("h264_mp4toannexb");
+//    av_bitstream_filter_filter(bsfc, _videoCodecCtx, NULL, &dummy, &dummy_len, NULL, 0, 0);
+//    av_bitstream_filter_close(bsfc);
+//    free(dummy);
     
     // determine fps
     AVStream *st = _formatCtx->streams[_videoStream];
@@ -2061,6 +2077,7 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec,
         
     }
     
+    if (codec == NULL) { LoggerAudio(1, @"%@",@"codec failed"); return -1; }
     
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     /* set options */
@@ -2500,6 +2517,24 @@ error:
 }
 
 #pragma mark - public
+- (CYHardwareDecompressVideo *)hwDecompressor
+{
+    if (!_hwDecompressor && self.validVideo && _videoCodecCtx->codec_id == AV_CODEC_ID_H264)
+    {
+        _hwDecompressor = [[CYHardwareDecompressVideo alloc] initWithCodecCtx:_videoCodecCtx];
+    }
+    return _hwDecompressor;
+}
+
+- (void)setUseHWDecompressor:(BOOL)useHWDecompressor
+{
+    _useHWDecompressor = useHWDecompressor;
+    if (!self.validVideo || _videoCodecCtx->codec_id != AV_CODEC_ID_H264)
+    {
+        _useHWDecompressor = NO;
+    }
+}
+
 - (void)setRate:(CGFloat)rate
 {
     _rate = 1 / rate;
@@ -2691,64 +2726,188 @@ error:
 
 - (CYPlayerFrame *)handlePacket:(AVPacket *)packet audioFrame:(AVFrame *)audioFrame videoFrame:(AVFrame *)videoFrame picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
-    CYPlayerFrame * result_frame = nil;
+    __block CYPlayerFrame * result_frame = nil;
     CGFloat curr_targetPos = self.targetPosition;
     if ((*packet).stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
-        
-        int pktSize = (*packet).size;
-        while (pktSize > 0 && _videoCodecCtx && curr_targetPos == self.targetPosition) {
-            
-            int gotframe = 0;
-            dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
-            int len = avcodec_send_packet(_videoCodecCtx, packet);
-            gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
-            dispatch_semaphore_signal(_avSendAndReceivePacketLock);
-            
-            if (len < 0) {
-                LoggerVideo(0, @"decode video error, skip packet");
-                break;
-            }
-            
-            if (gotframe) {
-                CGFloat curr_position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
-                if (curr_position >= self.targetPosition)
+    
+        if (_useHWDecompressor)
+        {
+            switch (_videoCodecCtx->profile) {
+                case FF_PROFILE_H264_MAIN:
+                case FF_PROFILE_H264_HIGH:
                 {
-                    CYVideoFrame *frame = nil;
-                    
-                    if (self.validFilter)
-                    {
-                        if (av_buffersrc_add_frame(_buffersrc_ctx, videoFrame) < 0) {
-                            printf( "Error while feeding the filtergraph\n");
-                            //                    break;
-                        }
-                        AVFrame * pFrame_out = av_frame_alloc();
-                        int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
-                        if (ret < 0)
+                    [self.hwDecompressor decompressWithPacket:packet Completed:^(CVPixelBufferRef imageBuffer, int64_t pkt_pts, int64_t pkt_duration) {
+                        
+                        CYVideoFrame * frame;
+                        
+                        CGFloat position = pkt_pts * _videoTimeBase;
+                        CGFloat duration = pkt_duration * _videoTimeBase * self.rate;
+                        
+                        
+                        CVPixelBufferLockBaseAddress(imageBuffer, 0);
+                        
+                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
+                        int height = (int)CVPixelBufferGetHeight(imageBuffer);
+                        
+                        
+                        if (_videoFrameFormat == CYVideoFrameFormatYUV)
                         {
-                            continue;
+                            // yuv每 的字节数与总
+                            size_t yBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
+                            size_t cbBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+                            size_t crBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 2);
+                            size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
+                            // y的数据， 度:yBytes*height
+                            Byte* luma = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
+                            // cb的数据， 度:cbBytes*height/2
+                            Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
+                            // cr的数据， 度:crBytes*height/2
+                            Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
+                            
+                            CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+                            
+                            if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
+                            
+                            if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
+                            
+                            if(chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
+                            
+                            frame = yuvFrame;
+                            
+                            frame.width = width;
+                            frame.height = height;
+                            frame.position = position;
+                            frame.duration = duration;
+                        }
+                        else
+                        {
                             
                         }
-                        frame = [self handleVideoFrame:pFrame_out Picture:picture isPictureValid:isPictureValid];
-                        av_frame_free(&pFrame_out);
+                        
+                        if (frame)
+                        {
+                            result_frame = frame;
+                        }
+                        
+                        CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+                    }];
+                }
+                    break;
+                case FF_PROFILE_H264_BASELINE:
+                default:
+                {
+                    CVPixelBufferRef imageBuffer = [self.hwDecompressor deCompressedCMSampleBufferWithData:packet andOffset:0];
+                    
+                    
+                    CYVideoFrame * frame;
+                    
+                    CGFloat position = packet->pts * _videoTimeBase;
+                    CGFloat duration = packet->duration * _videoTimeBase * self.rate;
+                    
+                    int width = (int)CVPixelBufferGetWidth(imageBuffer);
+                    int height = (int)CVPixelBufferGetHeight(imageBuffer);
+                    
+                    
+                    if (_videoFrameFormat == CYVideoFrameFormatYUV)
+                    {
+                        // yuv每 的字节数与总
+                        size_t yBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
+                        size_t cbBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+                        size_t crBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 2);
+                        //                size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
+                        // y的数据， 度:yBytes*height
+                        Byte* luma = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
+                        // cb的数据， 度:cbBytes*height/2
+                        Byte* chromaB = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
+                        // cr的数据， 度:crBytes*height/2
+                        Byte* chromaR = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 2);
+                        
+                        CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
+                        if (luma) yuvFrame.luma = [NSData dataWithBytes:luma length:yBytes*height];
+                        
+                        if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
+                        
+                        if (chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
+                        
+                        frame = yuvFrame;
+                        
+                        frame.width = width;
+                        frame.height = height;
+                        frame.position = position;
+                        frame.duration = duration;
                     }
                     else
                     {
-                        frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
+                        
                     }
                     
-                    if (frame) {
-                        
+                    if (frame)
+                    {
                         result_frame = frame;
                     }
+                    
+                    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+                    CVPixelBufferRelease(imageBuffer);
                 }
+                    break;
             }
-            
-            if (0 == len)
-                break;
-            
-            pktSize -= len;
         }
-        
+        else
+        {
+            int pktSize = (*packet).size;
+            while (pktSize > 0 && _videoCodecCtx && curr_targetPos == self.targetPosition) {
+                
+                int gotframe = 0;
+                dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+                int len = avcodec_send_packet(_videoCodecCtx, packet);
+                gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
+                dispatch_semaphore_signal(_avSendAndReceivePacketLock);
+                
+                if (len < 0) {
+                    LoggerVideo(0, @"decode video error, skip packet");
+                    break;
+                }
+                
+                if (gotframe) {
+                    CGFloat curr_position = av_frame_get_best_effort_timestamp(videoFrame) * _videoTimeBase;
+                    if (curr_position >= self.targetPosition)
+                    {
+                        CYVideoFrame *frame = nil;
+                        
+                        if (self.validFilter)
+                        {
+                            if (av_buffersrc_add_frame(_buffersrc_ctx, videoFrame) < 0) {
+                                printf( "Error while feeding the filtergraph\n");
+                                //                    break;
+                            }
+                            AVFrame * pFrame_out = av_frame_alloc();
+                            int ret = av_buffersink_get_frame(_buffersink_ctx, pFrame_out);
+                            if (ret < 0)
+                            {
+                                continue;
+                                
+                            }
+                            frame = [self handleVideoFrame:pFrame_out Picture:picture isPictureValid:isPictureValid];
+                            av_frame_free(&pFrame_out);
+                        }
+                        else
+                        {
+                            frame = [self handleVideoFrame:videoFrame Picture:picture isPictureValid:isPictureValid];
+                        }
+                        
+                        if (frame) {
+                            
+                            result_frame = frame;
+                        }
+                    }
+                }
+                
+                if (0 == len)
+                    break;
+                
+                pktSize -= len;
+            }
+        }
     } else if ((*packet).stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
         
         int pktSize = (*packet).size;

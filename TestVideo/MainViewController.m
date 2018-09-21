@@ -44,6 +44,8 @@
                           @"rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp",
                           @"rtmp://rtmp.yayiguanjia.com/AppName/StreamName?auth_key=1533608675-0-0-4708840ac7649d449d643a25156f7be7",
                           @"smb://192.168.31.217/Downloads/a.avi",
+                          @"smb://192.168.31.217/Downloads/9533522808.f4v.mp4",
+                          @"smb://192.168.31.217/Downloads/9533522808.f4v.AVI",
                           @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/16/27/35/99/215900434383323136.mp4",
                           @"smb://192.168.31.1/XiaoMi-usb0/小蝌蚪找妈妈/heyzo-1578/heyzo_hd_1578_full.mp4",
                           @"smb://192.168.31.1/XiaoMi-usb0/小蝌蚪找妈妈/heyzo.com-0608-FHD/heyzo_hd_0608_full.mp4",
