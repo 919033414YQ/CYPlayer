@@ -2043,7 +2043,7 @@ CYAudioManagerDelegate>
     }
     _positionUpdating = YES;
     _buffered = YES;
-    [self pause];
+//    [self pause];
     __weak CYFFmpegPlayer *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         [weakSelf _startLoading];
@@ -2419,7 +2419,7 @@ CYAudioManagerDelegate>
                     return;
                 }
                 
-                [self _pause];
+//                [self _pause];
                 _cyAnima(^{
                     _cyShowViews(@[self.controlView.draggingProgressView]);
                 });
@@ -2625,7 +2625,6 @@ CYAudioManagerDelegate>
             if (!_positionUpdating) { _positionUpdating = YES; }
             
             NSInteger currentTime = slider.value * _decoder.duration;
-            [self pause];
             [self setMoviePosition:currentTime playMode:YES];
             [self _delayHiddenControl];
             _cyAnima(^{
@@ -2646,7 +2645,7 @@ CYAudioManagerDelegate>
         case CYVideoPlaySliderTag_Progress: {
             if (!_decoder || _buffered || _positionUpdating) { return;}
             _isDraging = YES;
-            [self _pause];
+//            [self _pause];
             NSInteger currentTime = slider.value * _decoder.duration;
             [self _refreshingTimeLabelWithCurrentTime:currentTime duration:_decoder.duration];
             _cyAnima(^{

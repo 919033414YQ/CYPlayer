@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "CYPlayerGestureControl.h"
 #import "CYPlayerDecoder.h"
+#import "CYVideoPlayerSettings.h"
 
 @class
 //CYPlayerDecoder,
