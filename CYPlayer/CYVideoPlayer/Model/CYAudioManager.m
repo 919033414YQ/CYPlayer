@@ -16,6 +16,7 @@
 #import "CYAudioManager.h"
 #import "TargetConditionals.h"
 #import <AudioToolbox/AudioToolbox.h>
+#import <AVFoundation/AVFoundation.h>
 #import <Accelerate/Accelerate.h>
 #import "CYLogger.h"
 
@@ -48,6 +49,15 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 
 @property (readwrite, copy) CYAudioManagerOutputBlock outputBlock;
 @property (readwrite) BOOL playAfterSessionEndInterruption;
+
+/**
+ *资源原有属性, 重采样时使用,
+ *原资源采样率过低(例如8000->44100)会造成视频音频同步困难
+ */
+@property (nonatomic, readwrite) NSInteger          avcodecContextNumOutputChannels;
+@property (nonatomic, readwrite) double             avcodecContextSamplingRate;
+
+@property (nonatomic, weak) id<CYAudioManagerDelegate> delegate;
 
 - (BOOL) activateAudioSession;
 - (void) deactivateAudioSession;
@@ -82,7 +92,6 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 {    
     self = [super init];
 	if (self) {
-        
         _outData = (float *)calloc(MAX_FRAME_SIZE*MAX_CHAN, sizeof(float));
         _outputVolume = 0.5;        
 	}	
@@ -452,7 +461,11 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
     return _playing;
 }
 
+
 @end
+
+
+
 
 #pragma mark - callbacks
 

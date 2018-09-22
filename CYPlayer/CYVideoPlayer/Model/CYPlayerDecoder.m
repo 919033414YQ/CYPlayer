@@ -13,6 +13,7 @@
 #import <Accelerate/Accelerate.h>
 #import "ffmpeg.h"
 #import "CYPCMAudioManager.h"
+#import "CYAudioManager.h"
 #import "CYLogger.h"
 #import "CYOpenALPlayer.h"
 #import "pixfmt.h"
@@ -20,6 +21,9 @@
 #import "CYVideoPlayerResources.h"
 #import "CYHardwareDecompressVideo.h"
 
+//#define USE_OPENAL @"UseCYPCMAudioManager"
+
+#define USE_AUDIOTOOL @"UseCYAudioManager"
 
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
@@ -116,10 +120,16 @@ static NSString * errorMessage (cyPlayerError errorCode)
 static BOOL audioCodecIsSupported(AVCodecContext *audio)
 {
     if (audio->sample_fmt == AV_SAMPLE_FMT_S16) {
-
+#ifdef USE_OPENAL
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         return  (int)audioManager.avaudioSessionSamplingRate == audio->sample_rate &&
                 audioManager.avaudioSessionNumOutputChannels == audio->channels;
+#endif
+#ifdef USE_AUDIOTOOL
+        id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+        return  (int)audioManager.samplingRate == audio->sample_rate &&
+        audioManager.numOutputChannels == audio->channels;
+#endif
     }
     return NO;
 }
@@ -1261,6 +1271,7 @@ static int interrupt_callback(void *ctx);
     
     if (!audioCodecIsSupported(codecCtx)) {
 
+#ifdef USE_OPENAL
         CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         [[CYPCMAudioManager audioManager] setPlayRate: 1 / _rate];
         [audioManager setAudioCtx:codecCtx];
@@ -1282,6 +1293,22 @@ static int interrupt_callback(void *ctx);
         {
             return cyPlayerErroReSampler;
         }
+#endif
+#ifdef USE_AUDIOTOOL
+        id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+        audioManager.avcodecContextNumOutputChannels = audioManager.numOutputChannels;
+        {
+            audioManager.avcodecContextSamplingRate = audioManager.samplingRate;
+        }
+        
+        dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+        BOOL result = audio_swr_resampling_audio_init(&swrContext, codecCtx, _rate) <= 0;
+        dispatch_semaphore_signal(_swrContextLock);
+        if (result)
+        {
+            return cyPlayerErroReSampler;
+        }
+#endif
     }
     _audioFrame = av_frame_alloc();
     _audioFrame1 = av_frame_alloc();
@@ -2086,7 +2113,21 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec,
     
     if (codec == NULL) { LoggerAudio(1, @"%@",@"codec failed"); return -1; }
     
+#ifdef USE_OPENAL
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+#endif
+#ifdef USE_AUDIOTOOL
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+//    *swr_ctx = swr_alloc_set_opts(NULL,
+//                                    av_get_default_channel_layout(audioManager.numOutputChannels),
+//                                    AV_SAMPLE_FMT_S16,
+//                                    audioManager.samplingRate,
+//                                    av_get_default_channel_layout(codec->channels),
+//                                    codec->sample_fmt,
+//                                    codec->sample_rate,
+//                                    0,
+//                                    NULL);
+#endif
     /* set options */
     
     if (codec->channel_layout)
@@ -2097,15 +2138,15 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec,
     {
         av_opt_set_int(*swr_ctx, "in_channel_layout",    av_get_default_channel_layout(codec->channels), 0);
     }
-    
+
     av_opt_set_int(*swr_ctx, "in_sample_rate",       codec->sample_rate, 0);
-    
+
     av_opt_set_sample_fmt(*swr_ctx, "in_sample_fmt", codec->sample_fmt, 0);
-    
+
     av_opt_set_int(*swr_ctx, "out_channel_layout",    av_get_default_channel_layout((int)(audioManager.avcodecContextNumOutputChannels)), 0);
-    
+
     av_opt_set_int(*swr_ctx, "out_sample_rate",       audioManager.avcodecContextSamplingRate, 0);
-    
+
     av_opt_set_sample_fmt(*swr_ctx, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);// AV_SAMPLE_FMT_S16
     
     /* initialize the resampling context */
@@ -2133,12 +2174,12 @@ int audio_swr_resampling_audio_init(SwrContext **swr_ctx, AVCodecContext *codec,
 }
 
 
-int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t **targetData, CGFloat rate){
+int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t **targetData, CGFloat ratio, CGFloat rate){
     
     int len = swr_convert(swr_ctx,
                           targetData,
-                          audioFrame->nb_samples,
-                          (const uint8_t **)audioFrame->extended_data,
+                          audioFrame->nb_samples * ratio,
+                          (const uint8_t **)audioFrame->data,
                           audioFrame->nb_samples);
     
     if(len < 0){
@@ -2148,8 +2189,13 @@ int audio_swr_resampling_audio(SwrContext *swr_ctx, AVFrame *audioFrame, uint8_t
         return -1;
         
     }
-    
+#ifdef USE_OPENAL
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+#endif
+    
+#ifdef USE_AUDIOTOOL
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+#endif
     
     long int dst_bufsize = len * audioManager.avcodecContextNumOutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
     
@@ -2175,8 +2221,15 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     
     CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
     
+#ifdef USE_OPENAL
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
+#endif
+#ifdef USE_AUDIOTOOL
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+    const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
+#endif
+    
     CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase * self.rate;
     CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase * self.rate;
     
@@ -2185,18 +2238,17 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     void * audioData;
     int out_linesize;
     
+    const NSUInteger ratio = MAX(1, audioManager.avcodecContextSamplingRate / _audioCodecCtx->sample_rate) * MAX(1, audioManager.avcodecContextNumOutputChannels / _audioCodecCtx->channels) * 2;
+    
     const int bufSize = av_samples_get_buffer_size(&out_linesize,
                                                    (int)audioManager.avcodecContextNumOutputChannels,
-                                                   audioFrame->nb_samples,
+                                                   (int)(audioFrame->nb_samples * ratio),
                                                    AV_SAMPLE_FMT_S16,
                                                    1);
     
     dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
     if (_swrContext) {
-        
-        const NSUInteger ratio = MAX(1, audioManager.avcodecContextSamplingRate / _audioCodecCtx->sample_rate) *
-        MAX(1, audioManager.avcodecContextNumOutputChannels / _audioCodecCtx->channels) * 2;
-        
+ 
         if (!_swrBuffer || _swrBufferSize < bufSize) {
             _swrBufferSize = bufSize;
             _swrBuffer = realloc(_swrBuffer, _swrBufferSize);
@@ -2206,7 +2258,10 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
         
         Byte *outbuf[2] = { _swrBuffer, 0 };
         
-        numFrames = audio_swr_resampling_audio(_swrContext, audioFrame, outbuf, _rate);
+        numFrames = audio_swr_resampling_audio(_swrContext, audioFrame, outbuf, ratio, _rate);
+#ifdef USE_AUDIOTOOL
+        numFrames /=  av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+#endif
         
         //        //存储PCM数据，注意：m_SwrCtx即使进行了转换，也要判断转换后的数据是否分平面
         //        if (_swrContext ) {
@@ -2239,17 +2294,22 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     }
     dispatch_semaphore_signal(_swrContextLock);
     
-    const NSUInteger numElements = numFrames * numChannels;
-    
-    //    NSMutableData *data = [NSMutableData dataWithLength:numElements * sizeof(float)];
-    //
-    //    float scale = 1.0 / (float)INT16_MAX ;
-    //    vDSP_vflt16((SInt16 *)audioData, 1, data.mutableBytes, 1, numElements);
-    //    vDSP_vsmul(data.mutableBytes, 1, &scale, data.mutableBytes, 1, numElements);
+#ifdef USE_AUDIOTOOL
+    const NSUInteger numElements = numFrames;
+    NSMutableData *data = [NSMutableData dataWithLength:numElements * sizeof(float)];
+    float scale = 1.0 / (float)INT16_MAX ;
+    vDSP_vflt16((SInt16 *)audioData, 1, data.mutableBytes, 1, numElements);
+    vDSP_vsmul(data.mutableBytes, 1, &scale, data.mutableBytes, 1, numElements);
     
     CYAudioFrame *frame = [[CYAudioFrame alloc] init];
-    //    frame.samples = data;
+    frame.samples = data;
+#endif
+    
+#ifdef USE_OPENAL
+    CYAudioFrame *frame = [[CYAudioFrame alloc] init];
     frame.samples = [NSData dataWithBytes:audioData length:numFrames];
+#endif
+    
     if (duration == 0) {
         // sometimes ffmpeg can't determine the duration of audio frame
         // especially of wma/wmv format
@@ -2545,7 +2605,12 @@ error:
 - (void)setRate:(CGFloat)rate
 {
     _rate = 1 / rate;
+#ifdef USE_OPENAL
     [[CYPCMAudioManager audioManager] setPlayRate: rate];
+#endif
+#ifdef USE_AUDIOTOOL
+    
+#endif
 //    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
 //    BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx, rate);
 //    if (result)
@@ -3013,7 +3078,13 @@ error:
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification
 {
     dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
+#ifdef USE_OPENAL
     CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
+#endif
+    
+#ifdef USE_AUDIOTOOL
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+#endif
     int64_t audioChannel = av_get_default_channel_layout((int)(audioManager.avcodecContextNumOutputChannels));
     int64_t swrcontext_channel;
     av_opt_get_int(_swrContext, "out_channel_layout", 0, &swrcontext_channel);

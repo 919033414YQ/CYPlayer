@@ -47,7 +47,6 @@ typedef struct Wavehead
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         audioManager = [[CYPCMAudioManager alloc] init];
-        [[AVAudioSession sharedInstance]setCategory:AVAudioSessionCategoryPlayback error:nil];
     });
     return audioManager;
 }
@@ -56,7 +55,7 @@ typedef struct Wavehead
 {
     if (self = [super init])
     {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)   name:AVAudioSessionRouteChangeNotification object:nil];
+        
     }
     return self;
 }
@@ -196,19 +195,11 @@ typedef struct Wavehead
     return result;
 }
 
-# pragma mark - NotificationCenter
-- (void)audioRouteChangeListenerCallback:(NSNotification*)notification
-{
-    if ([self.delegate respondsToSelector:@selector(audioManager:audioRouteChangeListenerCallback:)])
-    {
-        [self.delegate audioManager:self audioRouteChangeListenerCallback:notification];
-    }
-}
 
 # pragma mark - Other
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
 }
 
 @end

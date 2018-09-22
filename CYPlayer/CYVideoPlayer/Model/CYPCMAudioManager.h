@@ -20,7 +20,6 @@
 @protocol CYPCMAudioManagerDelegate<NSObject>
 
 @optional
-- (void)audioManager:(CYPCMAudioManager *)audioManager audioRouteChangeListenerCallback:(NSNotification*)notification;
 
 @end
 
