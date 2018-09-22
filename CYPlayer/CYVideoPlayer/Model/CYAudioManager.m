@@ -26,8 +26,6 @@
 #define MAX_SAMPLE_DUMPED 5
 
 static BOOL checkError(OSStatus error, const char *operation);
-static void sessionPropertyListener(void *inClientData, AudioSessionPropertyID inID, UInt32 inDataSize, const void *inData);
-static void sessionInterruptionListener(void *inClientData, UInt32 inInterruption);
 static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioActionFlags, const AudioTimeStamp * inTimeStamp, UInt32 inOutputBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData);
 
 
@@ -64,9 +62,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 - (BOOL) play;
 - (void) pause;
 
-- (BOOL) checkAudioRoute;
 - (BOOL) setupAudio;
-- (BOOL) checkSessionProperties;
 - (BOOL) renderFrames: (UInt32) numFrames
                ioData: (AudioBufferList *) ioData;
 
@@ -93,7 +89,8 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
     self = [super init];
 	if (self) {
         _outData = (float *)calloc(MAX_FRAME_SIZE*MAX_CHAN, sizeof(float));
-        _outputVolume = 0.5;        
+        _outputVolume = 0.5;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioSessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
 	}	
 	return self;
 }
@@ -105,6 +102,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
         free(_outData);
         _outData = NULL;
     }
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - private
@@ -139,91 +137,29 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
     LoggerAudio(3, @"%@", dump); \
 }
 
-- (BOOL) checkAudioRoute
-{
-    // Check what the audio route is.
-    UInt32 propertySize = sizeof(CFStringRef);
-    CFStringRef route;
-    if (checkError(AudioSessionGetProperty(kAudioSessionProperty_AudioRoute,
-                                           &propertySize,
-                                           &route),
-                   "Couldn't check the audio route"))
-        return NO;
-    
-    _audioRoute = CFBridgingRelease(route);
-    LoggerAudio(1, @"AudioRoute: %@", _audioRoute);
-    return YES;
-}
 
 - (BOOL) setupAudio
 {
-    // --- Audio Session Setup ---
-        
-    UInt32 sessionCategory = kAudioSessionCategory_MediaPlayback;
-    //UInt32 sessionCategory = kAudioSessionCategory_PlayAndRecord;
-    if (checkError(AudioSessionSetProperty(kAudioSessionProperty_AudioCategory,
-                                           sizeof(sessionCategory),
-                                           &sessionCategory),
-                   "Couldn't set audio category"))
-        return NO;
-    
-    
-    if (checkError(AudioSessionAddPropertyListener(kAudioSessionProperty_AudioRouteChange,
-                                                   sessionPropertyListener,
-                                                   (__bridge void *)(self)),
-                   "Couldn't add audio session property listener"))
-    {
-        // just warning
-    }
-    
-    if (checkError(AudioSessionAddPropertyListener(kAudioSessionProperty_CurrentHardwareOutputVolume,
-                                                   sessionPropertyListener,
-                                                   (__bridge void *)(self)),
-                   "Couldn't add audio session property listener"))
-    {
-        // just warning
-    }
-    
-    // Set the buffer size, this will affect the number of samples that get rendered every time the audio callback is fired
-    // A small number will get you lower latency audio, but will make your processor work harder
-    
-#if !TARGET_IPHONE_SIMULATOR
-    Float32 preferredBufferSize = 0.0232;
-    if (checkError(AudioSessionSetProperty(kAudioSessionProperty_PreferredHardwareIOBufferDuration,
-                                            sizeof(preferredBufferSize),
-                                            &preferredBufferSize),
-                    "Couldn't set the preferred buffer duration")) {
-        
-        // just warning
-    }
-#endif
-        
-    if (checkError(AudioSessionSetActive(YES),
-                   "Couldn't activate the audio session"))
-        return NO;
-    
-    [self checkSessionProperties];
-    
     // ----- Audio Unit Setup -----
-    
+
     // Describe the output unit.
 
     AudioComponentDescription description = {0};
     description.componentType = kAudioUnitType_Output;
     description.componentSubType = kAudioUnitSubType_RemoteIO;
     description.componentManufacturer = kAudioUnitManufacturer_Apple;
-    
+
     // Get component
     AudioComponent component = AudioComponentFindNext(NULL, &description);
     if (checkError(AudioComponentInstanceNew(component, &_audioUnit),
                    "Couldn't create the output audio unit"))
         return NO;
-    
+
     UInt32 size;
-	
-	// Check the output stream format
-	size = sizeof(AudioStreamBasicDescription);
-	if (checkError(AudioUnitGetProperty(_audioUnit,
+
+    // Check the output stream format
+    size = sizeof(AudioStreamBasicDescription);
+    if (checkError(AudioUnitGetProperty(_audioUnit,
                                         kAudioUnitProperty_StreamFormat,
                                         kAudioUnitScope_Input,
                                         0,
@@ -231,9 +167,9 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
                                         &size),
                    "Couldn't get the hardware output stream format"))
         return NO;
-    
-    
-    _outputFormat.mSampleRate = _samplingRate;
+
+
+    _outputFormat.mSampleRate = self.samplingRate;
     if (checkError(AudioUnitSetProperty(_audioUnit,
                                         kAudioUnitProperty_StreamFormat,
                                         kAudioUnitScope_Input,
@@ -241,21 +177,20 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
                                         &_outputFormat,
                                         size),
                    "Couldn't set the hardware output stream format")) {
-        
+
         // just warning
     }
-
-    _numBytesPerSample = _outputFormat.mBitsPerChannel / 8;
-    _numOutputChannels = _outputFormat.mChannelsPerFrame;
     
-    LoggerAudio(2, @"Current output bytes per sample: %ld", _numBytesPerSample);
-    LoggerAudio(2, @"Current output num channels: %ld", _numOutputChannels);
-            
+    _numBytesPerSample = _outputFormat.mBitsPerChannel / 8;
+
+    LoggerAudio(2, @"Current output bytes per sample: %u", (unsigned int)_numBytesPerSample);
+    LoggerAudio(2, @"Current output num channels: %u", (unsigned int)self.numOutputChannels);
+
     // Slap a render callback on the unit
     AURenderCallbackStruct callbackStruct;
     callbackStruct.inputProc = renderCallback;
     callbackStruct.inputProcRefCon = (__bridge void *)(self);
-    
+
     if (checkError(AudioUnitSetProperty(_audioUnit,
                                         kAudioUnitProperty_SetRenderCallback,
                                         kAudioUnitScope_Input,
@@ -264,51 +199,14 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
                                         sizeof(callbackStruct)),
                    "Couldn't set the render callback on the audio unit"))
         return NO;
-    
-	if (checkError(AudioUnitInitialize(_audioUnit),
+
+    if (checkError(AudioUnitInitialize(_audioUnit),
                    "Couldn't initialize the audio unit"))
         return NO;
-    
+
     return YES;
 }
 
-- (BOOL) checkSessionProperties
-{
-    [self checkAudioRoute];
-    
-    // Check the number of output channels.
-    UInt32 newNumChannels;
-    UInt32 size = sizeof(newNumChannels);
-    if (checkError(AudioSessionGetProperty(kAudioSessionProperty_CurrentHardwareOutputNumberChannels,
-                                           &size,
-                                           &newNumChannels),
-                   "Checking number of output channels"))
-        return NO;
-    
-    LoggerAudio(2, @"We've got %lu output channels", newNumChannels);
-    
-    // Get the hardware sampling rate. This is settable, but here we're only reading.
-    size = sizeof(_samplingRate);
-    if (checkError(AudioSessionGetProperty(kAudioSessionProperty_CurrentHardwareSampleRate,
-                                           &size,
-                                           &_samplingRate),
-                   "Checking hardware sampling rate"))
-        
-        return NO;
-    
-    LoggerAudio(2, @"Current sampling rate: %f", _samplingRate);
-    
-    size = sizeof(_outputVolume);
-    if (checkError(AudioSessionGetProperty(kAudioSessionProperty_CurrentHardwareOutputVolume,
-                                           &size,
-                                           &_outputVolume),
-                   "Checking current hardware output volume"))
-        return NO;
-    
-    LoggerAudio(1, @"Current output volume: %f", _outputVolume);
-    
-    return YES;	
-}
 
 - (BOOL) renderFrames: (UInt32) numFrames
                ioData: (AudioBufferList *) ioData
@@ -320,7 +218,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
     if (_playing && _outputBlock ) {
     
         // Collect data to render from the callbacks
-        _outputBlock(_outData, numFrames, _numOutputChannels);
+        _outputBlock(_outData, numFrames, self.numOutputChannels);
         
         // Put the rendered data into the output buffer
         if (_numBytesPerSample == 4) // then we've already got floats
@@ -332,7 +230,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
                 int thisNumChannels = ioData->mBuffers[iBuffer].mNumberChannels;
                 
                 for (int iChannel = 0; iChannel < thisNumChannels; ++iChannel) {
-                    vDSP_vsadd(_outData+iChannel, _numOutputChannels, &zero, (float *)ioData->mBuffers[iBuffer].mData, thisNumChannels, numFrames);
+                    vDSP_vsadd(_outData+iChannel, self.numOutputChannels, &zero, (float *)ioData->mBuffers[iBuffer].mData, thisNumChannels, numFrames);
                 }
             }
         }
@@ -342,7 +240,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 //                             _outData, @"% 12.4f ", numFrames, _numOutputChannels);
 
             float scale = (float)INT16_MAX;
-            vDSP_vsmul(_outData, 1, &scale, _outData, 1, numFrames*_numOutputChannels);
+            vDSP_vsmul(_outData, 1, &scale, _outData, 1, numFrames * self.numOutputChannels);
             
 #ifdef DUMP_AUDIO_DATA
             LoggerAudio(2, @"Buffer %u - Output Channels %u - Samples %u",
@@ -354,7 +252,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
                 int thisNumChannels = ioData->mBuffers[iBuffer].mNumberChannels;
                 
                 for (int iChannel = 0; iChannel < thisNumChannels; ++iChannel) {
-                    vDSP_vfix16(_outData+iChannel, _numOutputChannels, (SInt16 *)ioData->mBuffers[iBuffer].mData+iChannel, thisNumChannels, numFrames);
+                    vDSP_vfix16(_outData+iChannel, self.numOutputChannels, (SInt16 *)ioData->mBuffers[iBuffer].mData+iChannel, thisNumChannels, numFrames);
                 }
 #ifdef DUMP_AUDIO_DATA
                 dumpAudioSamples(@"Audio frames decoded by FFmpeg and reformatted:\n",
@@ -377,18 +275,22 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
         
         if (!_initialized) {
             
-            if (checkError(AudioSessionInitialize(NULL,
-                                                  kCFRunLoopDefaultMode,
-                                                  sessionInterruptionListener,
-                                                  (__bridge void *)(self)),
-                           "Couldn't initialize audio session"))
+//            if (checkError(AudioSessionInitialize(NULL,
+//                                                  kCFRunLoopDefaultMode,
+//                                                  sessionInterruptionListener,
+//                                                  (__bridge void *)(self)),
+//                           "Couldn't initialize audio session"))
+//                return NO;
+            NSError * error = nil;
+            [[AVAudioSession sharedInstance] setActive:YES error:&error];
+            if (error)
+            {
                 return NO;
-            
+            }
             _initialized = YES;
         }
         
-        if ([self checkAudioRoute] &&
-            [self setupAudio]) {
+        if ([self setupAudio]) {
             
             _activated = YES;
         }
@@ -421,18 +323,15 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
         checkError(AudioComponentInstanceDispose(_audioUnit),
                    "Couldn't dispose the output audio unit");
                 
-        checkError(AudioSessionSetActive(NO),
-                   "Couldn't deactivate the audio session");        
-        
-        checkError(AudioSessionRemovePropertyListenerWithUserData(kAudioSessionProperty_AudioRouteChange,
-                                                                  sessionPropertyListener,
-                                                                  (__bridge void *)(self)),
-                   "Couldn't remove audio session property listener");
-        
-        checkError(AudioSessionRemovePropertyListenerWithUserData(kAudioSessionProperty_CurrentHardwareOutputVolume,
-                                                                  sessionPropertyListener,
-                                                                  (__bridge void *)(self)),
-                   "Couldn't remove audio session property listener");
+//        checkError(AudioSessionSetActive(NO),
+//                   "Couldn't deactivate the audio session");
+        NSError * error = nil;
+        [[AVAudioSession sharedInstance] setActive:NO error:&error];
+        if (error)
+        {
+            NSLog(@"Couldn't deactivate the audio session");
+        }
+
         
         _activated = NO;
     }
@@ -461,6 +360,55 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
     return _playing;
 }
 
+- (Float64)samplingRate
+{
+    double result = [AVAudioSession sharedInstance].sampleRate;
+    return result;
+}
+
+- (UInt32)numOutputChannels
+{
+    double result = [AVAudioSession sharedInstance].outputNumberOfChannels;
+    return result;
+}
+
+- (Float32)outputVolume
+{
+    double result = [AVAudioSession sharedInstance].outputVolume;
+    return result;
+}
+
+# pragma mark - AVAudioSessionNotification
+- (void)audioSessionInterrupted:(NSNotification *)notification
+{
+    //通知类型
+    NSNumber *interruptionType = [[notification userInfo] objectForKey:AVAudioSessionInterruptionTypeKey];
+    AVAudioSessionInterruptionOptions options = [AVAudioSessionInterruptionOptionKey integerValue];
+    switch (interruptionType.unsignedIntegerValue) {
+            
+        case AVAudioSessionInterruptionTypeBegan:{
+            LoggerAudio(2, @"Begin interuption");
+            self.playAfterSessionEndInterruption = self.playing;
+            [self pause];
+        }
+            break;
+        case AVAudioSessionInterruptionTypeEnded:{
+            if (options == AVAudioSessionInterruptionOptionShouldResume) {
+                //触发重新播放
+                LoggerAudio(2, @"End interuption");
+                if (self.playAfterSessionEndInterruption) {
+                    self.playAfterSessionEndInterruption = NO;
+                    [self play];
+                }
+            }
+            
+        }
+            break;
+        default:
+            break;
+    }
+    
+}
 
 @end
 
@@ -468,48 +416,6 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 
 
 #pragma mark - callbacks
-
-static void sessionPropertyListener(void *                  inClientData,
-                                    AudioSessionPropertyID  inID,
-                                    UInt32                  inDataSize,
-                                    const void *            inData)
-{
-    CYAudioManagerImpl *sm = (__bridge CYAudioManagerImpl *)inClientData;
-    
-	if (inID == kAudioSessionProperty_AudioRouteChange) {
-        
-        if ([sm checkAudioRoute]) {
-            [sm checkSessionProperties];
-        }
-        
-    } else if (inID == kAudioSessionProperty_CurrentHardwareOutputVolume) {
-        
-        if (inData && inDataSize == 4) {
-
-            sm.outputVolume = *(float *)inData;
-        }
-    }
-}
-
-static void sessionInterruptionListener(void *inClientData, UInt32 inInterruption)
-{    
-    CYAudioManagerImpl *sm = (__bridge CYAudioManagerImpl *)inClientData;
-    
-	if (inInterruption == kAudioSessionBeginInterruption) {
-        
-		LoggerAudio(2, @"Begin interuption");
-        sm.playAfterSessionEndInterruption = sm.playing;
-        [sm pause];
-                
-	} else if (inInterruption == kAudioSessionEndInterruption) {
-		
-        LoggerAudio(2, @"End interuption");
-        if (sm.playAfterSessionEndInterruption) {
-            sm.playAfterSessionEndInterruption = NO;
-            [sm play];
-        }
-	}
-}
 
 static OSStatus renderCallback (void						*inRefCon,
                                 AudioUnitRenderActionFlags	* ioActionFlags,
