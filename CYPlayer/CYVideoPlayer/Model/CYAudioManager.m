@@ -383,7 +383,7 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 {
     //通知类型
     NSNumber *interruptionType = [[notification userInfo] objectForKey:AVAudioSessionInterruptionTypeKey];
-    AVAudioSessionInterruptionOptions options = [AVAudioSessionInterruptionOptionKey integerValue];
+    AVAudioSessionInterruptionOptions options = [[notification userInfo][AVAudioSessionInterruptionOptionKey] integerValue];
     switch (interruptionType.unsignedIntegerValue) {
             
         case AVAudioSessionInterruptionTypeBegan:{
