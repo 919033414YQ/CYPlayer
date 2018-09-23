@@ -8,7 +8,7 @@
 
 #import "CYVideoPlayerControlView.h"
 #import "CYVideoPlayerAssetCarrier.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerResources.h"
 #import "CYPlayerDecoder.h"
 
@@ -94,41 +94,41 @@
     [self.containerView addSubview:self.previewView];
     [self.containerView addSubview:self.bottomProgressSlider];
     
-    [_topControlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_topControlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.equalTo(@0);
         make.leading.trailing.offset(0);
         make.height.equalTo(@(CYControlTopH));
     }];
     
-    [_previewView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_topControlView.previewBtn.mas_bottom).offset(12);
+    [_previewView cy_makeConstraints:^(CYConstraintMaker *make) {
+        make.top.equalTo(_topControlView.previewBtn.cy_bottom).offset(12);
         make.leading.trailing.offset(0);
         make.height.offset([UIScreen mainScreen].bounds.size.width * 0.25);
     }];
     
-    [_leftControlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_leftControlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.size.offset(CYControlLeftH);
         make.leading.offset(0);
         make.centerY.offset(0);
     }];
     
-    [_centerControlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_centerControlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
         make.width.equalTo(_centerControlView.superview).multipliedBy(0.382);
-        make.height.equalTo(_centerControlView.mas_width);
+        make.height.equalTo(_centerControlView.cy_width);
     }];
     
-    [_bottomControlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_bottomControlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.bottom.leading.trailing.offset(0);
         make.height.offset(CYControlBottomH);
     }];
     
-    [_bottomProgressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_bottomProgressSlider cy_makeConstraints:^(CYConstraintMaker *make) {
         make.leading.bottom.trailing.offset(0);
         make.height.offset(1);
     }];
     
-    [_draggingProgressView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_draggingProgressView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_draggingProgressView.superview);
     }];
 }

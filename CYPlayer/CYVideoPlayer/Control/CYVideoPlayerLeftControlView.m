@@ -9,7 +9,7 @@
 #import "CYVideoPlayerLeftControlView.h"
 #import "CYUIFactoryHeader.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 
 @interface CYVideoPlayerLeftControlView ()
 
@@ -42,11 +42,11 @@
     [self.containerView addSubview:self.lockBtn];
     [self.containerView addSubview:self.unlockBtn];
     
-    [_lockBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_lockBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_lockBtn.superview);
     }];
     
-    [_unlockBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_unlockBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_unlockBtn.superview);
     }];
 }

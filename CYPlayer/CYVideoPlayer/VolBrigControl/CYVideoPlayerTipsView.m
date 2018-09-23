@@ -9,7 +9,7 @@
 #import "CYVideoPlayerTipsView.h"
 #import "CYUIFactory.h"
 #import "CYBorderlineView.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 
 #define CYThemeColor [UIColor colorWithRed:1 / 255.0 \
                                      green:0 / 255.0 \
@@ -73,20 +73,20 @@
     [self addSubview:self.tipsContainerView];
     [self addSubview:self.minShowTitleLabel];
     
-    [_bottomMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_bottomMaskView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_bottomMaskView.superview);
     }];
     
-    [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_titleLabel cy_makeConstraints:^(CYConstraintMaker *make) {
         make.centerX.equalTo(_titleLabel.superview);
         make.top.offset(12);
     }];
     
-    [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_imageView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
     }];
     
-    [_tipsContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_tipsContainerView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.leading.offset(12);
         make.trailing.offset(-12);
         make.bottom.offset(-16);
@@ -96,22 +96,22 @@
     [self.tipsViewsArr enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [_tipsContainerView addSubview:obj];
         if ( 0 == idx ) {
-            [obj mas_makeConstraints:^(MASConstraintMaker *make) {
+            [obj cy_makeConstraints:^(CYConstraintMaker *make) {
                 make.leading.top.bottom.offset(0);
                 make.width.equalTo(obj.superview).multipliedBy(1.0 / 16);
             }];
         }
         else {
             UIView *beforeView = _tipsViewsArr[idx - 1];
-            [obj mas_makeConstraints:^(MASConstraintMaker *make) {
+            [obj cy_makeConstraints:^(CYConstraintMaker *make) {
                 make.top.bottom.offset(0);
-                make.leading.equalTo(beforeView.mas_trailing).offset(0);
+                make.leading.equalTo(beforeView.cy_trailing).offset(0);
                 make.width.equalTo(beforeView);
             }];
         }
     }];
     
-    [_minShowTitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_minShowTitleLabel cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.equalTo(_tipsContainerView);
     }];
 }

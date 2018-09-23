@@ -8,7 +8,7 @@
 
 #import "CYVideoPlayerMoreSettingsFooterSlidersView.h"
 #import "CYSlider.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerControlViewEnumHeader.h"
 #import "CYVideoPlayerSettings.h"
@@ -111,20 +111,20 @@
     [self addSubview:brightnessBackgroundView];
     [self addSubview:rateBackgroundView];
     
-    [rateBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [rateBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.offset(25);
         make.leading.trailing.offset(0);
         make.height.offset((self.frame.size.height - 25 * 2) / 3);
     }];
     
-    [volumeBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(rateBackgroundView.mas_bottom);
+    [volumeBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
+        make.top.equalTo(rateBackgroundView.cy_bottom);
         make.leading.trailing.offset(0);
         make.height.equalTo(rateBackgroundView);
     }];
     
-    [brightnessBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(volumeBackgroundView.mas_bottom);
+    [brightnessBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
+        make.top.equalTo(volumeBackgroundView.cy_bottom);
         make.leading.trailing.offset(0);
         make.height.equalTo(volumeBackgroundView);
     }];
@@ -150,12 +150,12 @@
 }
 
 - (void)_constraintsLabel:(UILabel *)label slider:(CYSlider *)slider {
-    [label mas_makeConstraints:^(MASConstraintMaker *make) {
+    [label cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.bottom.offset(0);
         make.leading.offset(25);
     }];
     
-    [slider mas_makeConstraints:^(MASConstraintMaker *make) {
+    [slider cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.bottom.offset(0);
         make.trailing.offset(-25);
         make.leading.offset(99);

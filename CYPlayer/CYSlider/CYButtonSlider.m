@@ -7,7 +7,7 @@
 //
 
 #import "CYButtonSlider.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 
 @interface CYButtonSlider ()
 @end
@@ -42,11 +42,11 @@
     [self.leftContainerView addSubview:self.leftBtn];
     [self.rightContainerView addSubview:self.rightBtn];
     
-    [_leftBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_leftBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_leftBtn.superview);
     }];
     
-    [_rightBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_rightBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_rightBtn.superview);
     }];
 }

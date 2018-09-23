@@ -9,7 +9,7 @@
 #import "CYVideoPlayerPreviewCollectionViewCell.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerAssetCarrier.h"
 #import "CYPlayerDecoder.h"
 
@@ -46,7 +46,7 @@
 
 - (void)_collectionSetupView {
     [self.contentView addSubview:self.imageView];
-    [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_imageView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_imageView.superview);
     }];
 }

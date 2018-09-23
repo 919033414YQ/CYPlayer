@@ -7,7 +7,7 @@
 //
 
 #import "CYVideoPlayerMoreSettingSecondaryView.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYAttributesFactoryHeader.h"
 #import "CYVideoPlayerMoreSettingsSecondaryHeaderView.h"
 #import "CYVideoPlayerMoreSettingSecondary.h"
@@ -51,7 +51,7 @@ static NSString *const CYVideoPlayerMoreSettingsSecondaryHeaderViewID = @"CYVide
 - (void)_CYVideoPlayerMoreSettingTwoSettingsViewSetupUI {
     self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.85];
     [self addSubview:self.colView];
-    [_colView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_colView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_colView.superview);
     }];
     

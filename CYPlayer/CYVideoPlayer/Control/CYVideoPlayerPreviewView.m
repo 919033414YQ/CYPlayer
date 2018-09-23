@@ -9,7 +9,7 @@
 #import "CYVideoPlayerPreviewView.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerAssetCarrier.h"
 #import "CYPlayerDecoder.h"
 
@@ -62,7 +62,7 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
 
 - (void)_previewSetupView {
     [self.containerView addSubview:self.collectionView];
-    [_collectionView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_collectionView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_collectionView.superview);
     }];
 }

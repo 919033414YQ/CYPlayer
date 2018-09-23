@@ -13,7 +13,7 @@
 #import "CYPlayerGLView.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 
 //Views
 #import "CYVideoPlayerControlView.h"
@@ -426,7 +426,7 @@ CYAudioManagerDelegate>
 - (UIView *)view {
     if ( _view )
     {
-        [_presentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        [_presentView cy_remakeConstraints:^(CYConstraintMaker *make) {
             make.edges.equalTo(_presentView.superview);
         }];
         return _view;
@@ -443,26 +443,26 @@ CYAudioManagerDelegate>
     _controlView.delegate = self;
     _controlView.bottomControlView.progressSlider.delegate = self;
     
-    [_presentView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_presentView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_presentView.superview);
     }];
     
-    [_controlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_controlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_controlView.superview);
     }];
     
-    [_moreSettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_moreSettingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.bottom.trailing.offset(0);
         make.width.offset(MoreSettingWidth);
     }];
     
-    [_moreSecondarySettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_moreSecondarySettingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_moreSettingView);
     }];
     
     _loadingView = [CYLoadingView new];
     [_controlView addSubview:_loadingView];
-    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_loadingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
     }];
     
@@ -979,7 +979,7 @@ CYAudioManagerDelegate>
     frameView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin;
     
     [self.view insertSubview:frameView atIndex:0];
-    [frameView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [frameView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(@0);
     }];
     
@@ -2279,10 +2279,10 @@ CYAudioManagerDelegate>
                     _cyShowViews(@[self.controlView.topControlView.previewBtn]);
                 }
                 
-                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
                     //                    make.center.offset(0);
                     //                    make.height.equalTo(self.controlView.superview);
-                    //                    make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
+                    //                    make.width.equalTo(self.controlView.cy_height).multipliedBy(16.0 / 9.0);
                     make.edges.equalTo(self.controlView.superview);
                 }];
                 //横屏按钮界面处理
@@ -2292,7 +2292,7 @@ CYAudioManagerDelegate>
                 _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
                                  self.controlView.topControlView.previewBtn,]);
                 
-                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
                 //横屏按钮界面处理
@@ -2442,8 +2442,8 @@ CYAudioManagerDelegate>
                     case CYPanLocation_Right: break;
                     case CYPanLocation_Left: {
                         [[UIApplication sharedApplication].keyWindow addSubview:self.volBrigControl.brightnessView];
-                        [self.volBrigControl.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                            make.size.mas_offset(CGSizeMake(155, 155));
+                        [self.volBrigControl.brightnessView cy_remakeConstraints:^(CYConstraintMaker *make) {
+                            make.size.cy_offset(CGSizeMake(155, 155));
                             make.center.equalTo([UIApplication sharedApplication].keyWindow);
                         }];
                         self.volBrigControl.brightnessView.transform = self.controlView.superview.transform;

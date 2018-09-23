@@ -7,7 +7,7 @@
 //
 
 #import "CYVideoPlayerMoreSettingSecondaryColCell.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerMoreSettingSecondary.h"
 #import "CYAttributesFactoryHeader.h"
 #import "CYUIFactory.h"
@@ -55,7 +55,7 @@
 
 - (void)_CYVideoPlayerMoreSettingTwoSettingsCellSetupUI {
     [self.contentView addSubview:self.itemBtn];
-    [_itemBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_itemBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(self.contentView);
     }];
 }

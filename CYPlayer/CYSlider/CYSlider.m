@@ -8,7 +8,7 @@
 
 #import "CYSlider.h"
 
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 
 #import <objc/message.h>
 
@@ -171,7 +171,7 @@
 
 - (void)setTrackHeight:(CGFloat)trackHeight {
     _trackHeight = trackHeight;
-    [self.containerView mas_updateConstraints:^(MASConstraintMaker *make) {
+    [self.containerView cy_updateConstraints:^(CYConstraintMaker *make) {
         make.height.offset(self.trackHeight);
     }];
 }
@@ -283,7 +283,7 @@
             }
             self.value = value;
             self.thumbImageView.image = self.thumbnail_sel;
-            [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
+            [self.thumbImageView cy_updateConstraints:^(CYConstraintMaker *make) {
                 make.width.height.equalTo(@48);
             }];
             if ( ![self.delegate respondsToSelector:@selector(sliderWillBeginDragging:)] ) break;
@@ -309,7 +309,7 @@
         case UIGestureRecognizerStateCancelled: {
             _isDragging = NO;
             self.thumbImageView.image = self.thumbnail_nor;
-            [self.thumbImageView mas_updateConstraints:^(MASConstraintMaker *make) {
+            [self.thumbImageView cy_updateConstraints:^(CYConstraintMaker *make) {
                 make.width.height.equalTo(@10);
             }];
             if ( ![self.delegate respondsToSelector:@selector(sliderDidEndDragging:)] ) break;
@@ -333,22 +333,22 @@
     [self.containerView addSubview:self.bufferProgressView];
     [self.containerView addSubview:self.traceImageView];
     
-    [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_containerView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.leading.offset(0);
         make.trailing.offset(0);
         make.center.offset(0);
     }];
     
-    [_trackImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_trackImageView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.offset(0);
     }];
     
-    [_bufferProgressView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_bufferProgressView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.leading.bottom.offset(0);
         make.width.offset(0);
     }];
     
-    [_traceImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_traceImageView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.leading.bottom.offset(0);
         make.width.offset(0.001);
     }];
@@ -379,9 +379,9 @@
     if ( _thumbImageView ) return _thumbImageView;
     _thumbImageView = [self imageViewWithImageStr:@""];
     [self addSubview:self.thumbImageView];
-    [_thumbImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_thumbImageView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.centerY.equalTo(_thumbImageView.superview);
-        make.centerX.equalTo(_traceImageView.mas_trailing);
+        make.centerX.equalTo(_traceImageView.cy_trailing);
         make.width.height.equalTo(@10);
     }];
     return _thumbImageView;
@@ -429,7 +429,7 @@
     
     __weak __typeof(&*self)weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf.traceImageView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        [weakSelf.traceImageView cy_remakeConstraints:^(CYConstraintMaker *make) {
             make.top.leading.bottom.offset(0);
             make.width.equalTo(weakSelf.traceImageView.superview).multipliedBy(rate);
         }];
@@ -482,7 +482,7 @@
     objc_setAssociatedObject(self, @selector(bufferProgress), @(bufferProgress), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     dispatch_async(dispatch_get_main_queue(), ^{
         if ( !self.bufferProgressView.superview ) return ;
-        [self.bufferProgressView mas_updateConstraints:^(MASConstraintMaker *make) {
+        [self.bufferProgressView cy_updateConstraints:^(CYConstraintMaker *make) {
             make.width.offset(bufferProgress * self.containerView.ccy_w);
         }];
     });

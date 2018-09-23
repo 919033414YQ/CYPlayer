@@ -14,7 +14,7 @@ s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer
 s.frameworks  = "UIKit", "Foundation"
 s.requires_arc = true
 
-s.dependency 'Masonry'
+#s.dependency 'Masonry'
 # s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"$(PODS_ROOT)/CYPlayer/CYFrameworks"', 'ENABLE_BITCODE' => 'YES', 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 # s.pod_target_xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '}
 

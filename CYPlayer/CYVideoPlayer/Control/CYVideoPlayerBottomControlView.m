@@ -9,7 +9,7 @@
 #import "CYVideoPlayerBottomControlView.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerControlMaskView.h"
 
 @interface CYVideoPlayerBottomControlView ()
@@ -84,42 +84,42 @@
     [self.containerView addSubview:self.progressSlider];
     [self.containerView addSubview:self.fullBtn];
     
-    [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_controlMaskView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_controlMaskView.superview);
     }];
 
-    [_playBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_playBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.leading.offset(0);
         make.size.offset(49);
         make.bottom.offset(-8);
     }];
     
-    [_pauseBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_pauseBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_playBtn);
     }];
     
-    [_currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_currentTimeLabel cy_makeConstraints:^(CYConstraintMaker *make) {
         make.centerY.equalTo(_separateLabel);
-        make.leading.equalTo(_playBtn.mas_trailing).offset(0);
+        make.leading.equalTo(_playBtn.cy_trailing).offset(0);
     }];
     
-    [_separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_separateLabel cy_makeConstraints:^(CYConstraintMaker *make) {
         make.centerY.equalTo(_playBtn);
-        make.leading.equalTo(_currentTimeLabel.mas_trailing);
+        make.leading.equalTo(_currentTimeLabel.cy_trailing);
     }];
 
-    [_durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(_separateLabel.mas_trailing);
+    [_durationTimeLabel cy_makeConstraints:^(CYConstraintMaker *make) {
+        make.leading.equalTo(_separateLabel.cy_trailing);
         make.centerY.equalTo(_separateLabel);
     }];
     
-    [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(_playBtn.mas_trailing).offset(86 + 8);
+    [_progressSlider cy_makeConstraints:^(CYConstraintMaker *make) {
+        make.leading.equalTo(_playBtn.cy_trailing).offset(86 + 8);
         make.height.centerY.equalTo(_playBtn);
-        make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+        make.trailing.equalTo(_fullBtn.cy_leading).offset(-8);
     }];
     
-    [_fullBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_fullBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.size.equalTo(_playBtn);
         make.centerY.equalTo(_playBtn);
         make.trailing.offset(0);

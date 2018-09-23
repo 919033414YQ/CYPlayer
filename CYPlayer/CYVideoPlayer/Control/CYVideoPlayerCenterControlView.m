@@ -9,7 +9,7 @@
 #import "CYVideoPlayerCenterControlView.h"
 #import "CYUIFactoryHeader.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYAttributesFactoryHeader.h"
 
 @interface CYVideoPlayerCenterControlView ()
@@ -55,14 +55,14 @@
 - (void)_centerSetupView {
     [self.containerView addSubview:self.failedBtn];
     [self.containerView addSubview:self.replayBtn];
-    [_failedBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_failedBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
-        make.width.equalTo(_failedBtn.mas_height);
+        make.width.equalTo(_failedBtn.cy_height);
     }];
     
-    [_replayBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_replayBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
-        make.width.equalTo(_replayBtn.mas_height);
+        make.width.equalTo(_replayBtn.cy_height);
     }];
 }
 

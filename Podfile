@@ -6,7 +6,7 @@ target 'CYPlayer' do
   # use_frameworks!
 
 
-  pod 'Masonry'
+#  pod 'Masonry'
   pod 'NSLogger'
 #  pod 'FFmpeg-Decoder'
 #  pod 'AFNetworking','~>3.0'
@@ -18,3 +18,9 @@ target 'CYPlayer' do
 # pod 'CYOrentationObserver',git: 'https://github.com/yellowei/CYOrentationObserver'
 # pod 'CYObserverHelper',git: 'https://github.com/yellowei/CYObserverHelper'
 end
+
+#target 'CYMedia' do
+#    # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
+#    # use_frameworks!
+#    pod 'Masonry'
+#end

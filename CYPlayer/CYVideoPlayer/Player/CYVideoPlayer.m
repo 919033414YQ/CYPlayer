@@ -8,7 +8,7 @@
 
 #import "CYVideoPlayer.h"
 #import "CYVideoPlayerAssetCarrier.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerPresentView.h"
 #import "CYVideoPlayerControlView.h"
 #import <AVFoundation/AVFoundation.h>
@@ -443,7 +443,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
 - (UIView *)view {
     if ( _view )
     {
-        [_presentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        [_presentView cy_remakeConstraints:^(CYConstraintMaker *make) {
             make.edges.equalTo(_presentView.superview);
         }];
         return _view;
@@ -460,26 +460,26 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     _controlView.delegate = self;
     _controlView.bottomControlView.progressSlider.delegate = self;
     
-    [_presentView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_presentView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_presentView.superview);
     }];
     
-    [_controlView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_controlView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_controlView.superview);
     }];
     
-    [_moreSettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_moreSettingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.bottom.trailing.offset(0);
         make.width.offset(MoreSettingWidth);
     }];
     
-    [_moreSecondarySettingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_moreSecondarySettingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_moreSettingView);
     }];
     
     _loadingView = [CYLoadingView new];
     [_controlView addSubview:_loadingView];
-    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_loadingView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.center.offset(0);
     }];
     
@@ -677,26 +677,26 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                     _cyShowViews(@[self.controlView.topControlView.previewBtn]);
                 }
                 
-                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
                     make.center.offset(0);
                     make.height.equalTo(self.controlView.superview);
-                    make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
+                    make.width.equalTo(self.controlView.cy_height).multipliedBy(16.0 / 9.0);
                 }];
                 
                 //优化横屏播放器topview的显示
-                [self.controlView.topControlView.backBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.backBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(20);
                 }];
                 
-                [self.controlView.topControlView.titleBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.titleBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(20);
                 }];
                 
-                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.previewBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(20);
                 }];
                 
-                [self.controlView.topControlView.moreBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.moreBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(20);
                 }];
                 
@@ -710,24 +710,24 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                 _cyShowViews(@[self.controlView.topControlView.titleBtn,]);
                 [self.controlView.topControlView.moreBtn setImage:[UIImage imageNamed:@"btn_navi_share"] forState:UIControlStateNormal];
                 
-                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
                 
                 // 优化竖屏播放器topview的显示
-                [self.controlView.topControlView.backBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.backBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(0);
                 }];
                 
-                [self.controlView.topControlView.titleBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.titleBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(0);
                 }];
                 
-                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.previewBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(0);
                 }];
                 
-                [self.controlView.topControlView.moreBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                [self.controlView.topControlView.moreBtn cy_updateConstraints:^(CYConstraintMaker *make) {
                     make.top.offset(0);
                 }];
                 
@@ -900,8 +900,8 @@ inline static NSString *_formatWithSec(NSInteger sec) {
                     case CYPanLocation_Right: break;
                     case CYPanLocation_Left: {
                         [[UIApplication sharedApplication].keyWindow addSubview:self.volBrigControl.brightnessView];
-                        [self.volBrigControl.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                            make.size.mas_offset(CGSizeMake(155, 155));
+                        [self.volBrigControl.brightnessView cy_remakeConstraints:^(CYConstraintMaker *make) {
+                            make.size.cy_offset(CGSizeMake(155, 155));
                             make.center.equalTo([UIApplication sharedApplication].keyWindow);
                         }];
                         self.volBrigControl.brightnessView.transform = self.controlView.superview.transform;
@@ -1414,7 +1414,7 @@ inline static NSString *_formatWithSec(NSInteger sec) {
             if ( superview && self.view.superview != superview ) {
                 [self.view removeFromSuperview];
                 [superview addSubview:self.view];
-                [self.view mas_remakeConstraints:^(MASConstraintMaker *make) {
+                [self.view cy_remakeConstraints:^(CYConstraintMaker *make) {
                     make.edges.equalTo(self.view.superview);
                 }];
             }

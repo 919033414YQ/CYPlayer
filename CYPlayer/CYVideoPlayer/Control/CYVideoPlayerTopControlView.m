@@ -9,7 +9,7 @@
 #import "CYVideoPlayerTopControlView.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import <Masonry/Masonry.h>
+#import "Cyonry.h"
 #import "CYVideoPlayerControlMaskView.h"
 
 @interface CYVideoPlayerTopControlView ()
@@ -59,33 +59,33 @@
     [self.containerView addSubview:self.moreBtn];
     [self.containerView addSubview:self.titleBtn];
     
-    [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_controlMaskView cy_makeConstraints:^(CYConstraintMaker *make) {
         make.edges.equalTo(_controlMaskView.superview);
     }];
     
-    [_backBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_backBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.width.height.offset(49);
         make.left.offset(0);
     }];
     
-    [_moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_moreBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.width.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.right.equalTo(@(-8));
     }];
     
-    [_previewBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_previewBtn cy_makeConstraints:^(CYConstraintMaker *make) {
         make.width.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
-        make.right.equalTo(_moreBtn.mas_left).offset(-8);
+        make.right.equalTo(_moreBtn.cy_left).offset(-8);
     }];
     
-    [_titleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        //        make.centerX.equalTo(_titleBtn.superview.mas_centerX);
+    [_titleBtn cy_makeConstraints:^(CYConstraintMaker *make) {
+        //        make.centerX.equalTo(_titleBtn.superview.cy_centerX);
         make.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
