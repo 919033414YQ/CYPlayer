@@ -29,3 +29,4 @@ FOUNDATION_EXPORT const unsigned char CYMediaVersionString[];
 #import <CYMedia/CYPrompt.h>
 #import <CYMedia/CYAttributesFactory.h>
 #import <CYMedia/CYBorderlineView.h>
+#import <CYMedia/talloc_stack.h>
