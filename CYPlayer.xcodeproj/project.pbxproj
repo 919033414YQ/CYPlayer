@@ -572,7 +572,7 @@
 		0E343E602107132D00DF4564 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		0E343E622107133A00DF4564 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		0E343E642107134900DF4564 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		0E5A6AE72157A8E30033F100 /* libCYMediaStaticLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCYMediaStaticLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E5A6AE72157A8E30033F100 /* libCYMedia.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCYMedia.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E5A6AE92157A8E30033F100 /* CYMediaStaticLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYMediaStaticLib.h; sourceTree = "<group>"; };
 		0E5A6AEA2157A8E30033F100 /* CYMediaStaticLib.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYMediaStaticLib.m; sourceTree = "<group>"; };
 		0E5A6AF32157A92F0033F100 /* ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffmpeg.h; sourceTree = "<group>"; };
@@ -902,7 +902,7 @@
 		0E5FA22C21003E23002A7597 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		0E5FA24121007479002A7597 /* CYFFmpegViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegViewController.h; sourceTree = "<group>"; };
 		0E5FA24221007479002A7597 /* CYFFmpegViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegViewController.m; sourceTree = "<group>"; };
-		0E73883E21577E6500DC4A62 /* CYMedia.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CYMedia.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E73883E21577E6500DC4A62 /* CYMediaFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CYMediaFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E73884021577E6500DC4A62 /* CYMedia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYMedia.h; sourceTree = "<group>"; };
 		0E73884121577E6500DC4A62 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0E7FA51B213CF42300D1F16B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -1798,8 +1798,8 @@
 			isa = PBXGroup;
 			children = (
 				84B261AD1A46A0AF00C8CAA9 /* CYPlayer.app */,
-				0E73883E21577E6500DC4A62 /* CYMedia.framework */,
-				0E5A6AE72157A8E30033F100 /* libCYMediaStaticLib.a */,
+				0E73883E21577E6500DC4A62 /* CYMediaFramework.framework */,
+				0E5A6AE72157A8E30033F100 /* libCYMedia.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2111,9 +2111,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		0E5A6AE62157A8E30033F100 /* CYMediaStaticLib */ = {
+		0E5A6AE62157A8E30033F100 /* CYMedia */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0E5A6AED2157A8E30033F100 /* Build configuration list for PBXNativeTarget "CYMediaStaticLib" */;
+			buildConfigurationList = 0E5A6AED2157A8E30033F100 /* Build configuration list for PBXNativeTarget "CYMedia" */;
 			buildPhases = (
 				0E5A6AE32157A8E30033F100 /* Sources */,
 				0E5A6AE42157A8E30033F100 /* Frameworks */,
@@ -2123,14 +2123,14 @@
 			);
 			dependencies = (
 			);
-			name = CYMediaStaticLib;
+			name = CYMedia;
 			productName = CYMediaStaticLib;
-			productReference = 0E5A6AE72157A8E30033F100 /* libCYMediaStaticLib.a */;
+			productReference = 0E5A6AE72157A8E30033F100 /* libCYMedia.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		0E73883D21577E6500DC4A62 /* CYMedia */ = {
+		0E73883D21577E6500DC4A62 /* CYMediaFramework */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0E73884321577E6500DC4A62 /* Build configuration list for PBXNativeTarget "CYMedia" */;
+			buildConfigurationList = 0E73884321577E6500DC4A62 /* Build configuration list for PBXNativeTarget "CYMediaFramework" */;
 			buildPhases = (
 				0E73883921577E6500DC4A62 /* Sources */,
 				0E73883A21577E6500DC4A62 /* Frameworks */,
@@ -2141,9 +2141,9 @@
 			);
 			dependencies = (
 			);
-			name = CYMedia;
+			name = CYMediaFramework;
 			productName = CYMedia;
-			productReference = 0E73883E21577E6500DC4A62 /* CYMedia.framework */;
+			productReference = 0E73883E21577E6500DC4A62 /* CYMediaFramework.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		84B261AC1A46A0AE00C8CAA9 /* CYPlayer */ = {
@@ -2203,8 +2203,8 @@
 			projectRoot = "";
 			targets = (
 				84B261AC1A46A0AE00C8CAA9 /* CYPlayer */,
-				0E73883D21577E6500DC4A62 /* CYMedia */,
-				0E5A6AE62157A8E30033F100 /* CYMediaStaticLib */,
+				0E73883D21577E6500DC4A62 /* CYMediaFramework */,
+				0E5A6AE62157A8E30033F100 /* CYMedia */,
 			);
 		};
 /* End PBXProject section */
@@ -2937,7 +2937,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0E5A6AED2157A8E30033F100 /* Build configuration list for PBXNativeTarget "CYMediaStaticLib" */ = {
+		0E5A6AED2157A8E30033F100 /* Build configuration list for PBXNativeTarget "CYMedia" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0E5A6AEE2157A8E30033F100 /* Debug */,
@@ -2946,7 +2946,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0E73884321577E6500DC4A62 /* Build configuration list for PBXNativeTarget "CYMedia" */ = {
+		0E73884321577E6500DC4A62 /* Build configuration list for PBXNativeTarget "CYMediaFramework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0E73884421577E6500DC4A62 /* Debug */,
