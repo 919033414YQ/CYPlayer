@@ -87,7 +87,6 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 - (void)viewWillDisappear;
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
 - (void) setMoviePosition: (CGFloat) position playMode:(BOOL)playMode;
-- (void)setupPlayerWithPath:(NSString *)path;
 - (double)currentTime;
 - (NSTimeInterval)totalTime;
 
