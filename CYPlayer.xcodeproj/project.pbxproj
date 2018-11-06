@@ -237,8 +237,6 @@
 		0E5A6D432157A9300033F100 /* UIView+CYUIFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BAE2157A9300033F100 /* UIView+CYUIFactory.m */; };
 		0E5A6D442157A9300033F100 /* UIView+CYUIFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BAE2157A9300033F100 /* UIView+CYUIFactory.m */; };
 		0E5A6D452157A9300033F100 /* CYUIFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BAF2157A9300033F100 /* CYUIFactory.h */; };
-		0E5A6D462157A9300033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6BB02157A9300033F100 /* README.md */; };
-		0E5A6D472157A9300033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6BB02157A9300033F100 /* README.md */; };
 		0E5A6D482157A9300033F100 /* CYUIFactoryHeader.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BB12157A9300033F100 /* CYUIFactoryHeader.h */; };
 		0E5A6D492157A9300033F100 /* CYUIFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BB22157A9300033F100 /* CYUIFactory.m */; };
 		0E5A6D4A2157A9300033F100 /* CYUIFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BB22157A9300033F100 /* CYUIFactory.m */; };
@@ -253,8 +251,6 @@
 		0E5A6D532157A9300033F100 /* CYLabelSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BB82157A9300033F100 /* CYLabelSlider.h */; };
 		0E5A6D542157A9300033F100 /* CYButtonSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BB92157A9300033F100 /* CYButtonSlider.h */; };
 		0E5A6D552157A9300033F100 /* CYCommonSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BBA2157A9300033F100 /* CYCommonSlider.h */; };
-		0E5A6D562157A9300033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6BBB2157A9300033F100 /* README.md */; };
-		0E5A6D572157A9300033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6BBB2157A9300033F100 /* README.md */; };
 		0E5A6D582157A9300033F100 /* CYSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6BBC2157A9300033F100 /* CYSlider.h */; };
 		0E5A6D592157A9300033F100 /* CYLabelSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BBD2157A9300033F100 /* CYLabelSlider.m */; };
 		0E5A6D5A2157A9300033F100 /* CYLabelSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6BBD2157A9300033F100 /* CYLabelSlider.m */; };
@@ -452,16 +448,12 @@
 		0E5A6E1E2157A9300033F100 /* UIResponder+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C352157A9300033F100 /* UIResponder+CYExtension.m */; };
 		0E5A6E1F2157A9300033F100 /* UIResponder+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C352157A9300033F100 /* UIResponder+CYExtension.m */; };
 		0E5A6E202157A9300033F100 /* UIResponder+CYExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C352157A9300033F100 /* UIResponder+CYExtension.m */; };
-		0E5A6E2D2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C3D2157A9300033F100 /* README.md */; };
-		0E5A6E2E2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C3D2157A9300033F100 /* README.md */; };
 		0E5A6E2F2157A9310033F100 /* CYOrentationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C3E2157A9300033F100 /* CYOrentationObserver.h */; };
 		0E5A6E302157A9310033F100 /* UINavigationController+CYVideoPlayerAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C402157A9300033F100 /* UINavigationController+CYVideoPlayerAdd.h */; };
 		0E5A6E312157A9310033F100 /* CYScreenshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C412157A9300033F100 /* CYScreenshotView.m */; };
 		0E5A6E322157A9310033F100 /* CYScreenshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C412157A9300033F100 /* CYScreenshotView.m */; };
 		0E5A6E332157A9310033F100 /* CYScreenshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C412157A9300033F100 /* CYScreenshotView.m */; };
 		0E5A6E342157A9310033F100 /* UIViewController+CYVideoPlayerAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C422157A9300033F100 /* UIViewController+CYVideoPlayerAdd.h */; };
-		0E5A6E352157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C432157A9300033F100 /* README.md */; };
-		0E5A6E362157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C432157A9300033F100 /* README.md */; };
 		0E5A6E372157A9310033F100 /* UINavigationController+CYVideoPlayerAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C442157A9300033F100 /* UINavigationController+CYVideoPlayerAdd.m */; };
 		0E5A6E382157A9310033F100 /* UINavigationController+CYVideoPlayerAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C442157A9300033F100 /* UINavigationController+CYVideoPlayerAdd.m */; };
 		0E5A6E392157A9310033F100 /* UINavigationController+CYVideoPlayerAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C442157A9300033F100 /* UINavigationController+CYVideoPlayerAdd.m */; };
@@ -476,14 +468,10 @@
 		0E5A6E422157A9310033F100 /* CYPrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C492157A9300033F100 /* CYPrompt.m */; };
 		0E5A6E432157A9310033F100 /* CYPrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C492157A9300033F100 /* CYPrompt.m */; };
 		0E5A6E442157A9310033F100 /* CYPromptConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C4A2157A9300033F100 /* CYPromptConfig.h */; };
-		0E5A6E452157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4B2157A9300033F100 /* README.md */; };
-		0E5A6E462157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4B2157A9300033F100 /* README.md */; };
 		0E5A6E472157A9310033F100 /* CYPrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C4C2157A9300033F100 /* CYPrompt.h */; };
 		0E5A6E482157A9310033F100 /* NSObject+CYObserverHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4E2157A9300033F100 /* NSObject+CYObserverHelper.m */; };
 		0E5A6E492157A9310033F100 /* NSObject+CYObserverHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4E2157A9300033F100 /* NSObject+CYObserverHelper.m */; };
 		0E5A6E4A2157A9310033F100 /* NSObject+CYObserverHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4E2157A9300033F100 /* NSObject+CYObserverHelper.m */; };
-		0E5A6E4B2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4F2157A9300033F100 /* README.md */; };
-		0E5A6E4C2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C4F2157A9300033F100 /* README.md */; };
 		0E5A6E4D2157A9310033F100 /* NSObject+CYObserverHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C502157A9300033F100 /* NSObject+CYObserverHelper.h */; };
 		0E5A6E4E2157A9310033F100 /* CYCTFrameParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C522157A9300033F100 /* CYCTFrameParser.m */; };
 		0E5A6E4F2157A9310033F100 /* CYCTFrameParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C522157A9300033F100 /* CYCTFrameParser.m */; };
@@ -497,8 +485,6 @@
 		0E5A6E572157A9310033F100 /* CYCTData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C592157A9300033F100 /* CYCTData.m */; };
 		0E5A6E582157A9310033F100 /* CYCTData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C592157A9300033F100 /* CYCTData.m */; };
 		0E5A6E592157A9310033F100 /* CYCTData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C592157A9300033F100 /* CYCTData.m */; };
-		0E5A6E5A2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C5A2157A9300033F100 /* README.md */; };
-		0E5A6E5B2157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C5A2157A9300033F100 /* README.md */; };
 		0E5A6E5C2157A9310033F100 /* CYAttributesFactoryHeader.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C5B2157A9300033F100 /* CYAttributesFactoryHeader.h */; };
 		0E5A6E5D2157A9310033F100 /* CYCTFrameParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C5C2157A9300033F100 /* CYCTFrameParser.h */; };
 		0E5A6E5E2157A9310033F100 /* CYCTFrameParserConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C5D2157A9300033F100 /* CYCTFrameParserConfig.m */; };
@@ -523,8 +509,6 @@
 		0E5A6E712157A9310033F100 /* CYBorderlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C652157A9300033F100 /* CYBorderlineView.m */; };
 		0E5A6E722157A9310033F100 /* CYBorderlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C652157A9300033F100 /* CYBorderlineView.m */; };
 		0E5A6E732157A9310033F100 /* CYBorderlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A6C652157A9300033F100 /* CYBorderlineView.m */; };
-		0E5A6E742157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C662157A9300033F100 /* README.md */; };
-		0E5A6E752157A9310033F100 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0E5A6C662157A9300033F100 /* README.md */; };
 		0E5A6E762157A9310033F100 /* CYBorderlineView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E5A6C672157A9300033F100 /* CYBorderlineView.h */; };
 		0E5FA22D21003E24002A7597 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA22B21003E23002A7597 /* MainViewController.m */; };
 		0E73884221577E6500DC4A62 /* CYMedia.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E73884021577E6500DC4A62 /* CYMedia.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2201,16 +2185,8 @@
 			files = (
 				0E5A6DAE2157A9300033F100 /* CYVideoPlayer.bundle in Resources */,
 				0E5A6DA82157A9300033F100 /* FFmpeg Structure.jpg in Resources */,
-				0E5A6E4C2157A9310033F100 /* README.md in Resources */,
 				0E5A6E032157A9300033F100 /* cyplayer.bundle in Resources */,
-				0E5A6E2E2157A9310033F100 /* README.md in Resources */,
-				0E5A6D572157A9300033F100 /* README.md in Resources */,
-				0E5A6E752157A9310033F100 /* README.md in Resources */,
 				0E5A6DF32157A9300033F100 /* CYPlayer.mindnode in Resources */,
-				0E5A6E462157A9310033F100 /* README.md in Resources */,
-				0E5A6E362157A9310033F100 /* README.md in Resources */,
-				0E5A6E5B2157A9310033F100 /* README.md in Resources */,
-				0E5A6D472157A9300033F100 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2222,19 +2198,11 @@
 				0E5A6DAD2157A9300033F100 /* CYVideoPlayer.bundle in Resources */,
 				84B261BC1A46A0AF00C8CAA9 /* Main.storyboard in Resources */,
 				0E2D993E214B67380006EC7E /* logo.png in Resources */,
-				0E5A6E2D2157A9310033F100 /* README.md in Resources */,
 				84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */,
-				0E5A6E742157A9310033F100 /* README.md in Resources */,
-				0E5A6E4B2157A9310033F100 /* README.md in Resources */,
-				0E5A6D462157A9300033F100 /* README.md in Resources */,
 				0E2406FC20FE15D8008BEAB5 /* CYPlayer.podspec in Resources */,
 				0E2D993C214B599D0006EC7E /* test.mp4 in Resources */,
 				0E5A6E022157A9300033F100 /* cyplayer.bundle in Resources */,
-				0E5A6E5A2157A9310033F100 /* README.md in Resources */,
-				0E5A6E352157A9310033F100 /* README.md in Resources */,
 				0E5A6DA72157A9300033F100 /* FFmpeg Structure.jpg in Resources */,
-				0E5A6E452157A9310033F100 /* README.md in Resources */,
-				0E5A6D562157A9300033F100 /* README.md in Resources */,
 				84B261BE1A46A0AF00C8CAA9 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
