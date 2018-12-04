@@ -1948,14 +1948,17 @@ CYAudioManagerDelegate>
 
 - (CGFloat) presentVideoFrame: (CYVideoFrame *) frame
 {
-    if (_glView) {
-        
-        [_glView render:frame];
-        
-    } else {
-        
-        CYVideoFrameRGB *rgbFrame = (CYVideoFrameRGB *)frame;
-        _imageView.image = [rgbFrame asImage];
+    if([UIApplication sharedApplication].applicationState == UIApplicationStateActive)
+    {
+        if (_glView) {
+            
+            [_glView render:frame];
+            
+        } else {
+            
+            CYVideoFrameRGB *rgbFrame = (CYVideoFrameRGB *)frame;
+            _imageView.image = [rgbFrame asImage];
+        }
     }
     
     _moviePosition = frame.position;
@@ -2181,7 +2184,7 @@ CYAudioManagerDelegate>
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         self.lockScreen = YES;
-        [self pause];
+//        [self pause];
     };
     
     _registrar.didBecomeActive = ^(CYVideoPlayerRegistrar * _Nonnull registrar) {
@@ -2191,7 +2194,7 @@ CYAudioManagerDelegate>
         if ( self.state == CYFFmpegPlayerPlayState_PlayEnd ||
             self.state == CYFFmpegPlayerPlayState_Unknown ||
             self.state == CYFFmpegPlayerPlayState_PlayFailed ) return;
-        if ( !self.userClickedPause ) [self play];
+//        if ( !self.userClickedPause ) [self play];
     };
     
     _registrar.oldDeviceUnavailable = ^(CYVideoPlayerRegistrar * _Nonnull registrar) {

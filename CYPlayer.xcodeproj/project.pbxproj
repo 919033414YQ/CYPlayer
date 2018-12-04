@@ -2155,6 +2155,11 @@
 					84B261AC1A46A0AE00C8CAA9 = {
 						CreatedOnToolsVersion = 6.1;
 						DevelopmentTeam = 4Z49MWW88D;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};

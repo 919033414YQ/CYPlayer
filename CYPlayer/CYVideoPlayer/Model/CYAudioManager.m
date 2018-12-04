@@ -363,14 +363,30 @@ static OSStatus renderCallback (void *inRefCon, AudioUnitRenderActionFlags	*ioAc
 - (Float64)samplingRate
 {
     double result = [AVAudioSession sharedInstance].sampleRate;
+    if (self.avcodecContextSamplingRate) {
+        return self.avcodecContextSamplingRate;
+    }
     return result;
 }
 
 - (UInt32)numOutputChannels
 {
     double result = [AVAudioSession sharedInstance].outputNumberOfChannels;
+    if (self.avcodecContextNumOutputChannels) {
+        return (UInt32)(self.avcodecContextNumOutputChannels);
+    }
     return result;
 }
+
+//- (NSInteger)avcodecContextNumOutputChannels
+//{
+//    return self.numOutputChannels;
+//}
+//
+//- (double)avcodecContextSamplingRate
+//{
+//    return self.samplingRate;
+//}
 
 - (Float32)outputVolume
 {
