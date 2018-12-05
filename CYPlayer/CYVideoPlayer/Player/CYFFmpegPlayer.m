@@ -1793,6 +1793,10 @@ CYAudioManagerDelegate>
                 [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
                 [weakSelf _refreshingTimeLabelWithCurrentTime:position duration:duration];
                 [weakSelf _refreshingTimeProgressSliderWithLoadedTime:loadedPosition duration:duration];
+                if ([weakSelf.delegate respondsToSelector:@selector(CYFFmpegPlayer:UpdatePosition:Duration:)])
+                {
+                    [weakSelf.delegate CYFFmpegPlayer:weakSelf UpdatePosition:position Duration:duration];
+                }
             }
         }
     });

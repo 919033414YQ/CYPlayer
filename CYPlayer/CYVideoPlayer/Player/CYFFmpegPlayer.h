@@ -52,6 +52,7 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeStatus:(CYFFmpegPlayerPlayState)state;
 
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player UpdatePosition:(CGFloat)position Duration:(CGFloat)duration;
 
 @end
 
