@@ -33,6 +33,7 @@
 #import "CYPrompt.h"
 #import "CYVideoPlayerMoreSetting.h"
 #import "CYPCMAudioManager.h"
+#import "CYVideoPlayerAssetCarrier.h"
 
 //Others
 #import <objc/message.h>
@@ -123,12 +124,6 @@ CYAudioManagerDelegate>
     NSTimeInterval      _tickCorrectionTime;
     NSTimeInterval      _tickCorrectionPosition;
     NSUInteger          _tickCounter;
-    
-    //生成预览图
-    CYPlayerDecoder      *_generatedPreviewImagesDecoder;
-    dispatch_queue_t    _generatedPreviewImagesDispatchQueue;
-    NSMutableArray      *_generatedPreviewImagesVideoFrames;
-    BOOL                _generatedPreviewImageInterrupted;
     
     //UI
     CYPlayerGLView       *_glView;
@@ -327,6 +322,9 @@ CYAudioManagerDelegate>
 #ifdef USE_AUDIOTOOL
     [self enableAudioTick:NO];
 #endif
+    
+    [self.decoder stopGeneratePreviewImages];
+    
     while ((_decoder.validVideo ? _videoFrames.count : 0) + (_decoder.validAudio ? _audioFrames.count : 0) > 0) {
         
         @synchronized(_videoFrames) {
@@ -705,7 +703,6 @@ CYAudioManagerDelegate>
     
     self.playing = NO;
     _interrupted = YES;
-    _generatedPreviewImageInterrupted = YES;
 #ifdef USE_OPENAL
     [[CYPCMAudioManager audioManager] setPlayRate:0];//及时停止声音
 #endif
@@ -744,25 +741,11 @@ CYAudioManagerDelegate>
 
 - (void)generatedPreviewImagesWithCount:(NSInteger)imagesCount completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
 {
-    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
-    [decoder setDecodeType:CYVideoDecodeTypeVideo];
-    
     __weak __typeof(&*self)weakSelf = self;
     
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        __strong __typeof(&*self)strongSelf = weakSelf;
-        
-        NSError *error = nil;
-        [decoder openFile:_decoder.path error:&error];
-        
-        if (strongSelf) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                __strong __typeof(&*self)strongSelf2 = weakSelf;
-                if (strongSelf2) {
-                    [strongSelf2 setGeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
-                }
-            });
-        }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        //                    [CYPlayerDecoder generatedPreviewImagesWithVideoURL:weakSelf.decoder.path videoDuration:weakSelf.decoder.duration imagesCount:20 completionHandler:handler];
+        [weakSelf.decoder generatedPreviewImagesWithImagesCount:20 completionHandler:handler];
     });
 }
 
@@ -807,93 +790,6 @@ CYAudioManagerDelegate>
     }
 }
 
-- (void)setGeneratedPreviewImagesDecoder: (CYPlayerDecoder *) decoder
-                             imagesCount:(NSInteger)imagesCount
-                               withError: (NSError *) error
-                       completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler
-{
-    LoggerStream(2, @"setMovieDecoder");
-    if (!error && decoder && !self.stopped)
-    {
-        _generatedPreviewImagesDecoder        = decoder;
-        _generatedPreviewImageInterrupted     = NO;
-        _generatedPreviewImagesDispatchQueue  = dispatch_queue_create("CYPlayer_GeneratedPreviewImagesDispatchQueue", DISPATCH_QUEUE_SERIAL);
-        _generatedPreviewImagesVideoFrames   = [NSMutableArray array];
-        [decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
-        
-        
-        __weak CYFFmpegPlayer *weakSelf = self;
-        __weak CYPlayerDecoder *weakDecoder = decoder;
-        
-        const CGFloat duration = decoder.isNetwork ? .0f : 0.1f;
-        
-        dispatch_async(_generatedPreviewImagesDispatchQueue, ^{
-            @autoreleasepool {
-                CGFloat timeInterval = weakDecoder.duration / imagesCount;
-                NSError * error = nil;
-                int i = 0;
-                __strong CYFFmpegPlayer *strongSelf = weakSelf;
-                while (i < imagesCount && strongSelf && !strongSelf->_generatedPreviewImageInterrupted)
-                    //                for (int i = 0; i < imagesCount; i++)
-                {
-                    __strong CYPlayerDecoder *decoder = weakDecoder;
-                    
-                    if (decoder && decoder.validVideo && decoder.isEOF == NO)
-                    {
-                        NSArray *frames = [decoder decodeFrames:duration];
-                        if (frames.count && [frames firstObject])
-                        {
-                            
-                            if (strongSelf)
-                            {
-                                @synchronized(strongSelf->_generatedPreviewImagesVideoFrames)
-                                {
-                                    //                                        for (CYPlayerFrame *frame in frames)
-                                    CYVideoFrame * frame = [frames firstObject];
-                                    {
-                                        if (frame.type == CYPlayerFrameTypeVideo)
-                                        {
-                                            [strongSelf->_generatedPreviewImagesVideoFrames addObject:frame];
-                                            [decoder setPosition:(timeInterval * (i+1))];
-                                            i++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (strongSelf->_generatedPreviewImagesVideoFrames.count < imagesCount) {
-                            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Generated Failed!" };
-                            
-                            error = [NSError errorWithDomain:cyplayerErrorDomain
-                                                        code:-1
-                                                    userInfo:userInfo];
-                        }
-                        strongSelf->_generatedPreviewImageInterrupted = YES;
-                        break;
-                    }
-                    
-                }
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong CYFFmpegPlayer *strongSelf2 = weakSelf;
-                    if (!strongSelf2) {
-                        return;
-                    }
-                    strongSelf2->_generatedPreviewImageInterrupted = YES;
-                    strongSelf2->_generatedPreviewImagesDecoder = nil;
-                    handler(strongSelf2->_generatedPreviewImagesVideoFrames, error);
-                });
-                
-            }
-        });
-    }
-    else
-    {
-        
-    }
-}
 
 - (void) setMovieDecoder: (CYPlayerDecoder *) decoder
                withError: (NSError *) error
@@ -988,7 +884,7 @@ CYAudioManagerDelegate>
         if (!self.generatPreviewImages) {
             return;
         }
-        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
+        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYFFmpegPreviewModel *> *models, NSError *error) {
             __strong typeof(_self) self = _self;
             if ( !self ) return;
             if (error)
@@ -1002,7 +898,7 @@ CYAudioManagerDelegate>
                     _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
                 });
             }
-            _self.controlView.previewView.previewFrames = frames;
+            _self.controlView.previewView.previewModels = models;
         }];
         
     } else {
@@ -2893,10 +2789,10 @@ CYAudioManagerDelegate>
     });
 }
 
-- (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewFrame:(CYVideoFrame *)frame
+- (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewModel:(nonnull CYFFmpegPreviewModel *)model
 {
     //    [self _pause];
-    NSInteger currentTime = frame.position;
+    NSInteger currentTime = model.position;
     [self setMoviePosition:currentTime];
     [self _delayHiddenControl];
     _cyAnima(^{

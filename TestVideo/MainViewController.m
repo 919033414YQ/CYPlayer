@@ -30,6 +30,7 @@
         self.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag: 0];
         NSString * localV = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"mp4"];
         _remoteMovies = @[
+                          @"rtmp://play.yayi360.com/tt/tt?auth_key=1545724201-0-0-dda8677e0e35ed5d1b42ead143c11d8e",
                           @"rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov",
                           @"http://static.tripbe.com/videofiles/20121214/9533522808.f4v.mp4",
                           @"rtmp://live.hkstv.hk.lxdns.com/live/hks",

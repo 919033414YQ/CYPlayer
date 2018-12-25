@@ -36,11 +36,12 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     [_collectionView reloadData];
 }
 
-- (void)setPreviewFrames:(NSArray<CYVideoFrame *> *)previewFrames
+- (void)setPreviewModels:(NSArray<CYFFmpegPreviewModel *> *)previewModels
 {
-    _previewFrames = previewFrames;
+    _previewModels = previewModels;
     [_collectionView reloadData];
 }
+
 
 - (void)setHidden:(BOOL)hidden {
     if ( hidden == self.isHidden ) return;
@@ -86,7 +87,7 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     }
     else
     {
-        return _previewFrames.count;
+        return _previewModels.count;
     }
 }
 
@@ -98,7 +99,7 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     }
     else
     {
-        [cell setValue:_previewFrames[indexPath.item] forKey:@"videoFrame"];
+        [cell setValue:_previewModels[indexPath.item] forKey:@"ffmpegModel"];
     }
     return cell;
 }
@@ -114,7 +115,8 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     }
     else
     {
-        CGSize imageSize = CGSizeMake(_previewFrames.firstObject.width, _previewFrames.firstObject.height);
+        
+        CGSize imageSize = _previewModels.firstObject.image.size;
         CGFloat rate = imageSize.width / imageSize.height;
         CGFloat height = _collectionView.frame.size.height - 16;
         CGFloat width = rate * height;
@@ -142,8 +144,8 @@ static NSString *CYVideoPlayerPreviewCollectionViewCellID = @"CYVideoPlayerPrevi
     }
     else
     {
-        if ( ![self.delegate respondsToSelector:@selector(previewView:didSelectFrame:)] ) return;
-        [self.delegate previewView:self didSelectFrame:_previewFrames[indexPath.item]];
+        if ( ![self.delegate respondsToSelector:@selector(previewView:didSelectModel:)] ) return;
+        [self.delegate previewView:self didSelectModel:_previewModels[indexPath.item]];
     }
     
 }

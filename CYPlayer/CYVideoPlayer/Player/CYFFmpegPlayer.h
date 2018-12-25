@@ -32,8 +32,6 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
     CYFFmpegPlayerPlayState_Ready
 };
 
-typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames, NSError * error);
-
 
 
 extern NSString * const CYPlayerParameterMinBufferedDuration;    // Float

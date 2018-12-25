@@ -10,13 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CYVideoPreviewModel, CYVideoFrame;
+@class CYVideoPreviewModel, CYFFmpegPreviewModel;
 
 @interface CYVideoPlayerPreviewCollectionViewCell : UICollectionViewCell
 
 @property (nonatomic, strong, readwrite, nullable) CYVideoPreviewModel *model;
 
-@property (nonatomic, strong, readwrite, nullable) CYVideoFrame *videoFrame;
+@property (nonatomic, strong, readwrite, nullable) CYFFmpegPreviewModel *ffmpegModel;
 
 @end
 

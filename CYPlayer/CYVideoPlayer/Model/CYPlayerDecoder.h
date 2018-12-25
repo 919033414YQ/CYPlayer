@@ -13,6 +13,8 @@
 #import <UIKit/UIKit.h>
 #import "CYHardwareDecompressVideo.h"
 
+@class CYFFmpegPreviewModel;
+
 //#define CYPlayerDecoderMaxFPS 30
 extern NSInteger CYPlayerDecoderConCurrentThreadCount;// range: 1 - 5
 
@@ -20,7 +22,11 @@ extern NSInteger CYPlayerDecoderMaxFPS;
 
 extern NSString * cyplayerErrorDomain;
 
+extern int ffmpeg_main(int argc, char * argv[]);
+
 typedef BOOL(^CYPlayerDecoderInterruptCallback)(void);
+
+typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYFFmpegPreviewModel *> * frames, NSError * error);
 
 typedef enum {
     
@@ -168,6 +174,15 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
 
 - (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
+
+//+ (void)generatedPreviewImagesWithVideoURL:(NSString *)videoUrl
+//                             videoDuration:(NSInteger)duration
+//                               imagesCount:(NSInteger)count
+//                         completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
+- (void)generatedPreviewImagesWithImagesCount:(NSInteger)count
+                            completionHandler:(CYPlayerImageGeneratorCompletionHandler)handler;
+
+- (void)stopGeneratePreviewImages;
 @end
 
 @interface CYPlayerSubtitleASSParser : NSObject

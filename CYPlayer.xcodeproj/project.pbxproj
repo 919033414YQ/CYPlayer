@@ -526,6 +526,9 @@
 		84B261BC1A46A0AF00C8CAA9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BA1A46A0AF00C8CAA9 /* Main.storyboard */; };
 		84B261BE1A46A0AF00C8CAA9 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BD1A46A0AF00C8CAA9 /* Images.xcassets */; };
 		84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BF1A46A0AF00C8CAA9 /* LaunchScreen.xib */; };
+		BC33BB2121D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BC33BB2021D1EBD500444A8E /* libFFmpegiOSCLT.a */; };
+		BC33BB2221D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BC33BB2021D1EBD500444A8E /* libFFmpegiOSCLT.a */; };
+		BC33BB2321D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BC33BB2021D1EBD500444A8E /* libFFmpegiOSCLT.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -908,6 +911,7 @@
 		84B261CC1A46A0AF00C8CAA9 /* TestVideoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestVideoTests.m; sourceTree = "<group>"; };
 		99FA05E579685BD309A43463 /* libPods-CYPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CYPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2A86123A5DA3ACF4A945CAE /* Pods-TestVideo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TestVideo.release.xcconfig"; path = "Pods/Target Support Files/Pods-TestVideo/Pods-TestVideo.release.xcconfig"; sourceTree = "<group>"; };
+		BC33BB2021D1EBD500444A8E /* libFFmpegiOSCLT.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFFmpegiOSCLT.a; sourceTree = "<group>"; };
 		DC04D71C3197A6FCD0F66780 /* libPods-CYMedia.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CYMedia.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F82A6770E16FD3C855878832 /* libPods-TestVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TestVideo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -927,6 +931,7 @@
 				0E5A6CE72157A9300033F100 /* libavformat.a in Frameworks */,
 				0E5A6CF02157A9300033F100 /* libswscale.a in Frameworks */,
 				0E5A6CEA2157A9300033F100 /* libavdevice.a in Frameworks */,
+				BC33BB2321D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */,
 				0E5A6CFB2157A9300033F100 /* libtevent.a in Frameworks */,
 				0E5A6CED2157A9300033F100 /* libswresample.a in Frameworks */,
 				0E5A6D022157A9300033F100 /* libsmbclient.a in Frameworks */,
@@ -949,6 +954,7 @@
 				0E5A6CE62157A9300033F100 /* libavformat.a in Frameworks */,
 				0E5A6CEF2157A9300033F100 /* libswscale.a in Frameworks */,
 				0E5A6CE92157A9300033F100 /* libavdevice.a in Frameworks */,
+				BC33BB2221D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */,
 				0E5A6CFA2157A9300033F100 /* libtevent.a in Frameworks */,
 				0E5A6CEC2157A9300033F100 /* libswresample.a in Frameworks */,
 				0E5A6D012157A9300033F100 /* libsmbclient.a in Frameworks */,
@@ -977,6 +983,7 @@
 				0E5A6CD92157A9300033F100 /* libavutil.a in Frameworks */,
 				0E5A6CF62157A9300033F100 /* libfdk-aac.a in Frameworks */,
 				0EF574AD212A718E0057ECB3 /* VideoToolbox.framework in Frameworks */,
+				BC33BB2121D1EBD600444A8E /* libFFmpegiOSCLT.a in Frameworks */,
 				0E5A6CE82157A9300033F100 /* libavdevice.a in Frameworks */,
 				0E5A6CEB2157A9300033F100 /* libswresample.a in Frameworks */,
 				0EF574AB212A71850057ECB3 /* AudioToolbox.framework in Frameworks */,
@@ -1223,6 +1230,7 @@
 				0E5A6B6F2157A9300033F100 /* libavfilter.a */,
 				0E5A6B702157A9300033F100 /* libavcodec.a */,
 				0E5A6B712157A9300033F100 /* libpostproc.a */,
+				BC33BB2021D1EBD500444A8E /* libFFmpegiOSCLT.a */,
 				0E5A6B722157A9300033F100 /* libavformat.a */,
 				0E5A6B732157A9300033F100 /* libavdevice.a */,
 				0E5A6B742157A9300033F100 /* libswresample.a */,
@@ -1555,19 +1563,19 @@
 			isa = PBXGroup;
 			children = (
 				0E5A6C052157A9300033F100 /* CYVideoPlayerBottomControlView.h */,
-				0E5A6C062157A9300033F100 /* CYVideoPlayerCenterControlView.h */,
-				0E5A6C072157A9300033F100 /* CYVideoPlayerTopControlView.m */,
-				0E5A6C082157A9300033F100 /* CYVideoPlayerControlView.m */,
-				0E5A6C092157A9300033F100 /* CYVideoPlayerPreviewView.h */,
-				0E5A6C0A2157A9300033F100 /* CYVideoPlayerPreviewCollectionViewCell.h */,
-				0E5A6C0B2157A9300033F100 /* CYVideoPlayerLeftControlView.h */,
-				0E5A6C0C2157A9300033F100 /* CYVideoPlayerTopControlView.h */,
-				0E5A6C0D2157A9300033F100 /* CYVideoPlayerCenterControlView.m */,
 				0E5A6C0E2157A9300033F100 /* CYVideoPlayerBottomControlView.m */,
-				0E5A6C0F2157A9300033F100 /* CYVideoPlayerPreviewCollectionViewCell.m */,
-				0E5A6C102157A9300033F100 /* CYVideoPlayerPreviewView.m */,
+				0E5A6C062157A9300033F100 /* CYVideoPlayerCenterControlView.h */,
+				0E5A6C0D2157A9300033F100 /* CYVideoPlayerCenterControlView.m */,
 				0E5A6C112157A9300033F100 /* CYVideoPlayerControlView.h */,
+				0E5A6C082157A9300033F100 /* CYVideoPlayerControlView.m */,
+				0E5A6C0B2157A9300033F100 /* CYVideoPlayerLeftControlView.h */,
 				0E5A6C122157A9300033F100 /* CYVideoPlayerLeftControlView.m */,
+				0E5A6C0A2157A9300033F100 /* CYVideoPlayerPreviewCollectionViewCell.h */,
+				0E5A6C0F2157A9300033F100 /* CYVideoPlayerPreviewCollectionViewCell.m */,
+				0E5A6C092157A9300033F100 /* CYVideoPlayerPreviewView.h */,
+				0E5A6C102157A9300033F100 /* CYVideoPlayerPreviewView.m */,
+				0E5A6C0C2157A9300033F100 /* CYVideoPlayerTopControlView.h */,
+				0E5A6C072157A9300033F100 /* CYVideoPlayerTopControlView.m */,
 			);
 			path = Control;
 			sourceTree = "<group>";

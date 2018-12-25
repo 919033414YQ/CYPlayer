@@ -189,10 +189,10 @@
     [_delegate controlView:self didSelectPreviewItem:item];
 }
 
-- (void)previewView:(CYVideoPlayerPreviewView *)view didSelectFrame:(CYVideoFrame *)frame
+- (void)previewView:(CYVideoPlayerPreviewView *)view didSelectModel:(CYFFmpegPreviewModel *)model
 {
-    if ( ![_delegate respondsToSelector:@selector(controlView:didSelectPreviewFrame:)] ) return;
-    [_delegate controlView:self didSelectPreviewFrame:frame];
+    if ( ![_delegate respondsToSelector:@selector(controlView:didSelectPreviewModel:)] ) return;
+    [_delegate controlView:self didSelectPreviewModel:model];
 }
 
 - (CYVideoPlayerPreviewView *)previewView {

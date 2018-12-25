@@ -560,3 +560,14 @@ static float const __GeneratePreImgScale = 0.05;
 @end
 
 
+@implementation CYFFmpegPreviewModel
+
++ (instancetype)previewModelWithImage:(UIImage *)image position:(NSInteger)postion
+{
+    CYFFmpegPreviewModel *model = [self new];
+    model -> _image = image;
+    model -> _position = postion;
+    return model;
+}
+
+@end

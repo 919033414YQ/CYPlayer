@@ -82,7 +82,7 @@
     
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     vc.autoplay = YES;
-//    vc.generatPreviewImages = YES;
+    vc.generatPreviewImages = YES;
     [contentView addSubview:vc.view];
     
     [vc.view cy_makeConstraints:^(CYConstraintMaker *make) {
