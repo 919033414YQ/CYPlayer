@@ -308,7 +308,7 @@ CYAudioManagerDelegate>
         [decoder openFile:path error:&error];
         
         if (strongSelf) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2 && !strongSelf.stopped) {
                     [strongSelf2 setMovieDecoder:decoder withError:error];
@@ -756,7 +756,7 @@ CYAudioManagerDelegate>
         [decoder openFile:_decoder.path error:&error];
         
         if (strongSelf) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2) {
                     [strongSelf2 setGeneratedPreviewImagesDecoder:decoder imagesCount:imagesCount withError:error completionHandler:handler];
@@ -2823,7 +2823,7 @@ CYAudioManagerDelegate>
         [decoder openFile:decoder.path error:&error];
         
         if (strongSelf) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2) {
                     
