@@ -127,16 +127,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-
-@interface CYFFmpegPreviewModel : NSObject
-
-@property (nonatomic, strong, readonly) UIImage *image;
-@property (nonatomic, assign, readonly) NSInteger position;
-
-+ (instancetype)previewModelWithImage:(UIImage *)image position:(NSInteger)postion;
-
-@end
-
 NS_ASSUME_NONNULL_END
 
 
