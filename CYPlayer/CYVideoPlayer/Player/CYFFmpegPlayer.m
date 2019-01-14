@@ -1756,13 +1756,26 @@ CYAudioManagerDelegate>
             }
         }
         
-        if (!leftFrames ||
-            !(_videoBufferedDuration > _maxBufferedDuration) ||
-            !(_audioBufferedDuration > _maxBufferedDuration))
+        if ([self.decoder validVideo])
         {
-            //            [self asyncDecodeFrames];
-            [self concurrentAsyncDecodeFrames];
+            if (!leftFrames ||
+                !(_videoBufferedDuration > _maxBufferedDuration) ||
+                !(_audioBufferedDuration > _maxBufferedDuration))
+            {
+                //            [self asyncDecodeFrames];
+                [self concurrentAsyncDecodeFrames];
+            }
         }
+        else if ([self.decoder validAudio])
+        {
+            if (!leftFrames ||
+                !(_audioBufferedDuration > _maxBufferedDuration))
+            {
+                //            [self asyncDecodeFrames];
+                [self concurrentAsyncDecodeFrames];
+            }
+        }
+        
         CGFloat interval = 0;
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
@@ -2440,7 +2453,18 @@ CYAudioManagerDelegate>
                 }
                 
                 
-                self.controlView.draggingProgressView.progress = self->_decoder.position / self->_decoder.duration;
+                if ([self.decoder validVideo])
+                {
+                    self.controlView.draggingProgressView.progress = self->_moviePosition / self->_decoder.duration;
+                }
+                else if ([self.decoder validAudio])
+                {
+                    self.controlView.draggingProgressView.progress = self->_audioPosition / self->_decoder.duration;
+                }
+                else
+                {
+                    self.controlView.draggingProgressView.progress = self->_decoder.position / self->_decoder.duration;
+                }
                 self.hideControl = YES;
             }
                 break;
