@@ -1640,14 +1640,23 @@ CYAudioManagerDelegate>
 {
     __weak typeof(&*self)weakSelf = self;
     if (_buffered &&
-        (((_videoBufferedDuration > _minBufferedDuration) ||
-          (_audioBufferedDuration > _minBufferedDuration)) ||
-         _decoder.isEOF))
+        (
+         (
+          (_videoBufferedDuration > _minBufferedDuration) ||
+          (_audioBufferedDuration > _minBufferedDuration)
+          ) ||
+         _decoder.isEOF
+         )
+        )
     {
         _tickCorrectionTime = 0;
         _cantPlayStartTime = 0;
         _buffered = NO;
-        [self play];
+        if ((_videoBufferedDuration > _minBufferedDuration) ||
+            (_audioBufferedDuration > _minBufferedDuration))
+        {
+            [self play];
+        }
     }
     
     if (self.playing) {
