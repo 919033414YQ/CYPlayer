@@ -922,7 +922,10 @@ CYAudioManagerDelegate>
         }
         
         if (!_decoder.validVideo)
-            _minBufferedDuration *= 1.0; // increase for audio
+        {
+            _minBufferedDuration *= 2.0; // increase for audio
+            _maxBufferedDuration *= 2.0; // increase for audio
+        }
         
         // allow to tweak some parameters at runtime
         if (_parameters.count) {
@@ -985,7 +988,7 @@ CYAudioManagerDelegate>
     
     if (_decoder.validVideo) {
         __weak typeof(self) _self = self;
-        if (!self.generatPreviewImages) {
+        if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"]) {
             return;
         }
         [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {

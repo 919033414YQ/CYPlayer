@@ -64,7 +64,7 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
                                parameters: (NSDictionary *) parameters;
 
 - (void)setupPlayerWithPath:(NSString *)path;
-
+- (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters;
 
 @property (nonatomic, strong) CYPlayerDecoder *decoder;
 
