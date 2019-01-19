@@ -160,7 +160,7 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
  **/
 - (void)settingPlayer:(void(^)(CYVideoPlayerSettings *settings))block;
 - (void)resetSetting;// 重置配置
-
+- (CYVideoPlayerSettings *)settings;
 
 /*!
  *  Call when the rate changes.

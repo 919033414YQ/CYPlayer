@@ -2446,6 +2446,10 @@ CYAudioManagerDelegate>
         }
         switch (direction) {
             case CYPanDirection_H: {
+                if (![self settings].enableProgressControl) {
+                    return;
+                }
+                
                 if (self->_decoder.duration <= 0)//没有进度信息
                 {
                     return;
@@ -2514,6 +2518,10 @@ CYAudioManagerDelegate>
         }
         switch (direction) {
             case CYPanDirection_H: {
+                if (![self settings].enableProgressControl) {
+                    return;
+                }
+                
                 if (self->_decoder.duration <= 0)//没有进度信息
                 {
                     return;
@@ -2554,6 +2562,10 @@ CYAudioManagerDelegate>
         if (self->_positionUpdating) { return; }
         switch ( direction ) {
             case CYPanDirection_H:{
+                if (![self settings].enableProgressControl) {
+                    return;
+                }
+                
                 if (self->_decoder.duration <= 0) { return; }//没有进度信息
                 
                 if (!self->_positionUpdating) { self->_positionUpdating = YES; } //手势互斥
