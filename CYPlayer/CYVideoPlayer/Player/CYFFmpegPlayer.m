@@ -967,6 +967,7 @@ CYAudioManagerDelegate>
     
     if (_decoder.validVideo) {
         _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
+        _glView.contentScaleFactor = [UIScreen mainScreen].scale;
     }
     
     if (!_glView) {
