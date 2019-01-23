@@ -1795,8 +1795,8 @@ int video_direction(AVCodecContext *videoCodecCtx)
 void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
 {
     
-    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
-    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;// * [UIScreen mainScreen].scale;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;// * [UIScreen mainScreen].scale;
     
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
