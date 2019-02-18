@@ -1110,7 +1110,7 @@ static int interrupt_callback(void *ctx);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
-    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] rangeOfString:@"m3u8"].location != NSNotFound) {
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
     }
@@ -2746,7 +2746,7 @@ error:
         return;
     __block NSInteger compeletedConter = 0;
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
-    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] rangeOfString:@"m3u8"].location != NSNotFound)
     {
         threadCount = 1;
     }
@@ -3121,7 +3121,7 @@ error:
                 outPic
             };
             
-            int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
+            int result = 0;//ffmpeg_main(sizeof(a)/sizeof(*a), a);
             NSError * error = nil;
             NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:count];
             if (result != 0) {
