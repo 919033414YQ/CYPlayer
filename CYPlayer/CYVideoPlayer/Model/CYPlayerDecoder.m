@@ -11,7 +11,7 @@
 
 #import "CYPlayerDecoder.h"
 #import <Accelerate/Accelerate.h>
-#import "ffmpeg.h"
+#import <CYFFmpeg/CYFFmpeg.h>
 #import "CYPCMAudioManager.h"
 #import "CYAudioManager.h"
 #import "CYLogger.h"
