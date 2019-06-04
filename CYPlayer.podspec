@@ -16,13 +16,16 @@ s.requires_arc = true
 
 
 s.user_target_xcconfig = {  'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"'
+                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
+                            'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
 }
+
 
 s.pod_target_xcconfig = {   'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
                             'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
                             'ENABLE_BITCODE' => 'NO',
-                            'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress '
+                            'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress ',
+                            'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
 }
 
 # s.subspec 'CYTest' do |ss|
@@ -115,6 +118,7 @@ end
 ss.subspec 'Model' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Model/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Header'
+sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
 sss.dependency 'CYFFmpeg'
 end
 
@@ -125,7 +129,6 @@ end
 ss.subspec 'Base' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Base/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Model'
-sss.dependency 'CYPlayer/CYVideoPlayer/Resource'
 end
 
 ss.subspec 'Other' do |sss|
