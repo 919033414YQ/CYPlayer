@@ -7,10 +7,10 @@
 //
 
 #import "PlayerViewController.h"
-#import "CYVideoPlayer.h"
-#import "Cyonry.h"
+#import <CYFFmpeg/CYFFmpeg.h>
+#import <Masonry.h>
 #import "UIViewController+CYExtension.h"
-
+#import "CYPlayer.h"
 
 #define Player  [CYVideoPlayer sharedPlayer]
 
@@ -33,26 +33,26 @@
     contentView.backgroundColor = [UIColor blackColor];
     self.contentView = contentView;
     [self.view addSubview:contentView];
-    [contentView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
         make.leading.trailing.offset(0);
-        make.height.equalTo(contentView.cy_width).multipliedBy(9.0 / 16.0);
+        make.height.equalTo(contentView.mas_width).multipliedBy(9.0 / 16.0);
     }];
     
     [contentView addSubview:Player.view];
     Player.autoplay = NO;
-    [Player.view cy_makeConstraints:^(CYConstraintMaker *make) {
+    [Player.view mas_makeConstraints:^(MASConstraintMaker *make) {
         if (kiPad)
         {
             make.center.offset(0);
             make.leading.trailing.offset(0);
-            make.height.equalTo(Player.view.cy_width).multipliedBy(9.0 / 16.0);
+            make.height.equalTo(Player.view.mas_width).multipliedBy(9.0 / 16.0);
         }
         else
         {
             make.center.offset(0);
             make.top.bottom.offset(0);
-            make.width.equalTo(Player.view.cy_height).multipliedBy(16.0 / 9.0);
+            make.width.equalTo(Player.view.mas_height).multipliedBy(16.0 / 9.0);
         }
     }];
     
@@ -144,7 +144,7 @@
 {
     if (size.width > size.height)
     {
-        [self.contentView cy_remakeConstraints:^(CYConstraintMaker *make) {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.top.bottom.equalTo(@(0));
             make.left.equalTo(@(0));
             make.right.equalTo(@(0));
@@ -152,10 +152,10 @@
     }
     else
     {
-        [self.contentView cy_remakeConstraints:^(CYConstraintMaker *make) {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.center.offset(0);
             make.leading.trailing.offset(0);
-            make.height.equalTo(self.contentView.cy_width).multipliedBy(9.0 / 16.0);
+            make.height.equalTo(self.contentView.mas_width).multipliedBy(9.0 / 16.0);
         }];
     }
 }

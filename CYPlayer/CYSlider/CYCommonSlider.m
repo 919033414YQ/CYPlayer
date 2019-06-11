@@ -7,7 +7,7 @@
 //
 
 #import "CYCommonSlider.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 
 @interface CYCommonSlider ()
 
@@ -34,24 +34,24 @@
     [_containerView addSubview:self.slider];
     [_containerView addSubview:self.rightContainerView];
     
-    [_containerView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self);
     }];
     
-    [_leftContainerView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_leftContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.leading.bottom.equalTo(_leftContainerView.superview);
-        make.width.equalTo(_leftContainerView.cy_height);
+        make.width.equalTo(_leftContainerView.mas_height);
     }];
     
-    [_slider cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_slider mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.bottom.offset(0);
-        make.leading.equalTo(_leftContainerView.cy_trailing).offset(4);
-        make.trailing.equalTo(_rightContainerView.cy_leading).offset(-4);
+        make.leading.equalTo(_leftContainerView.mas_trailing).offset(4);
+        make.trailing.equalTo(_rightContainerView.mas_leading).offset(-4);
     }];
     
-    [_rightContainerView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_rightContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.trailing.bottom.equalTo(_rightContainerView.superview);
-        make.width.equalTo(_rightContainerView.cy_height);
+        make.width.equalTo(_rightContainerView.mas_height);
     }];
 }
 

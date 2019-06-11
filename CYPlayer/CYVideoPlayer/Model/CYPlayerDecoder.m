@@ -16,7 +16,6 @@
 #import "CYAudioManager.h"
 #import "CYLogger.h"
 #import "CYOpenALPlayer.h"
-#import "pixfmt.h"
 #import <objc/runtime.h>
 #import "CYVideoPlayerResources.h"
 #import "CYHardwareDecompressVideo.h"
@@ -1059,7 +1058,7 @@ static int interrupt_callback(void *ctx);
             _subtitleStreams = collectStreams(_formatCtx, AVMEDIA_TYPE_SUBTITLE);
             if (videoErr == cyPlayerErrorNone)
             {
-                [self openFilter];
+//                [self openFilter];
 //                self.hwDecompressor = [[CYHardwareDecompressVideo alloc] initWithCodecCtx:_videoCodecCtx];
             }
         }
@@ -1110,7 +1109,7 @@ static int interrupt_callback(void *ctx);
 //    av_dict_set_int(&_options, "fpsprobesize", 25, 0);
 //    av_dict_set_int(&_options, "skip-calc-frame-rate", 25, 0);
     
-    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] rangeOfString:@"m3u8"].location != NSNotFound) {
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"]) {
         // There is total different meaning for 'timeout' option in rtmp
         av_dict_set(&_options, "timeout", NULL, 0);
     }
@@ -1239,6 +1238,8 @@ static int interrupt_callback(void *ctx);
     LoggerVideo(1, @"video disposition %d", st->disposition);
     
     st = NULL;
+    
+//    AVHWAccel *pp = ff_find_hwaccel(_videoCodecCtx->codec_id, _videoCodecCtx->pix_fmt);
     return cyPlayerErrorNone;
 }
 
@@ -1418,7 +1419,7 @@ static int interrupt_callback(void *ctx);
     [self closeAudioStream];
     [self closeVideoStream];
     [self closeSubtitleStream];
-    [self closeFilter];
+//    [self closeFilter];
     
     _videoStreams = nil;
     _audioStreams = nil;
@@ -1795,8 +1796,10 @@ int video_direction(AVCodecContext *videoCodecCtx)
 void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * height)
 {
     
-    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;// * [UIScreen mainScreen].scale;
-    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;// * [UIScreen mainScreen].scale;
+//    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
+//    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
+    CGFloat scr_width = [UIScreen mainScreen].bounds.size.width;
+    CGFloat scr_height = [UIScreen mainScreen].bounds.size.height;
     
     *width = videoCodecCtx->width;
     *height = videoCodecCtx->height;
@@ -2412,6 +2415,19 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     });
 }
 
+//AVHWAccel *ff_find_hwaccel(enum AVCodecID codec_id, enum AVPixelFormat pix_fmt)
+//{
+//    AVHWAccel *hwaccel=NULL;
+//
+//    while((hwaccel= av_hwaccel_next(hwaccel))){
+//        NSLog(@"name:%s type:%d id:%u pix:%d",hwaccel->name,hwaccel->type,hwaccel->id,hwaccel->pix_fmt);
+//        if (   hwaccel->id      == codec_id
+//            && hwaccel->pix_fmt == pix_fmt)
+//            return hwaccel;
+//    }
+//    return NULL;
+//}
+
 # pragma mark 滤镜 AVFilter
 int filters_init(AVFormatContext *ifmt_ctx,
                   AVFilterContext **buffersrc_ctx,
@@ -2739,6 +2755,13 @@ error:
     }
 }
 
+- (void)flush
+{
+    if (_formatCtx) {
+        avformat_flush(_formatCtx);
+    }
+}
+
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
     if (_videoStream == -1 &&
@@ -2746,7 +2769,7 @@ error:
         return;
     __block NSInteger compeletedConter = 0;
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
-    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] rangeOfString:@"m3u8"].location != NSNotFound)
+    if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
     {
         threadCount = 1;
     }
@@ -3077,7 +3100,7 @@ error:
 }
 
 - (void)generatedPreviewImagesWithImagesCount:(NSInteger)count
-                            completionHandler:(void (^)(NSMutableArray<CYVideoFrame *> * frames, NSError * error))handler
+                            completionHandler:(void (^)(NSMutableArray * frames, NSError * error))handler
 {
     @synchronized (self)
     {
@@ -3121,7 +3144,7 @@ error:
                 outPic
             };
             
-            int result = 0;//ffmpeg_main(sizeof(a)/sizeof(*a), a);
+            int result = ffmpeg_main(sizeof(a)/sizeof(*a), a);
             NSError * error = nil;
             NSMutableArray * models = [[NSMutableArray alloc] initWithCapacity:count];
             if (result != 0) {
@@ -3140,11 +3163,6 @@ error:
             });
         });
     }
-    
-}
-
-- (void)stopGeneratePreviewImages
-{
     
 }
 

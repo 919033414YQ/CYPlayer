@@ -8,7 +8,7 @@
 
 #import "CYVideoPlayerMoreSettingsView.h"
 #import "CYVideoPlayerMoreSettingsFooterSlidersView.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 #import "CYSlider.h"
 
 
@@ -49,7 +49,7 @@ static NSString *const CYVideoPlayerMoreSettingsFooterSlidersViewID = @"CYVideoP
 - (void)_CYVideoPlayerMoreSettingsViewSetupUI {
     self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.85];
     [self addSubview:self.colView];
-    [_colView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_colView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_colView.superview);
     }];
     [self.colView reloadData];

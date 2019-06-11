@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import<AVFoundation/AVFoundation.h>
 #import "CYOpenALPlayer.h"
-#import "ffmpeg.h"
+#import <CYFFmpeg/CYFFmpeg.h>
 
 #define CYPCMAudioManagerNormalSampleRate [CYPCMAudioManager audioManager].avaudioSessionSamplingRate //44100 48000
 

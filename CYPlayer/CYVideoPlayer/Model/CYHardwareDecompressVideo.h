@@ -4,8 +4,7 @@
 //
 //  Created by 黄威 on 2018/9/20.
 //
-
-#include "ffmpeg.h"
+#import <CYFFmpeg/CYFFmpeg.h>
 #import <VideoToolbox/VideoToolbox.h>
 #import <Foundation/Foundation.h>
 

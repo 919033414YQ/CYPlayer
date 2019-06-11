@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "PlayerViewController.h"
 #import "RTSPViewController.h"
-#import "Cyonry.h"
+#import <Masonry.h>
 #import "MainViewController.h"
 #import "CYFFmpegViewController.h"
 #import "UIViewController+CYExtension.h"
@@ -35,7 +35,7 @@
     btn1.tag = 100;
     btn1.layer.cornerRadius = 5.0;
     [self.view addSubview:btn1];
-    [btn1 cy_makeConstraints:^(CYConstraintMaker *make) {
+    [btn1 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@(100));
         make.top.equalTo(@100);
         make.centerX.equalTo(@(0));
@@ -48,9 +48,9 @@
     btn2.tag = 200;
     btn2.layer.cornerRadius = 5.0;
     [self.view addSubview:btn2];
-    [btn2 cy_makeConstraints:^(CYConstraintMaker *make) {
+    [btn2 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@(100));
-        make.top.equalTo(btn1.cy_bottom).offset(10);
+        make.top.equalTo(btn1.mas_bottom).offset(10);
         make.centerX.equalTo(@0);
     }];
     
@@ -61,9 +61,9 @@
     btn3.tag = 300;
     btn3.layer.cornerRadius = 5.0;
     [self.view addSubview:btn3];
-    [btn3 cy_makeConstraints:^(CYConstraintMaker *make) {
+    [btn3 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@(100));
-        make.top.equalTo(btn2.cy_bottom).offset(10);
+        make.top.equalTo(btn2.mas_bottom).offset(10);
         make.centerX.equalTo(@0);
     }];
     

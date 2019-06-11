@@ -41,6 +41,14 @@
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_handleDeviceOrientationChange) name:UIDeviceOrientationDidChangeNotification object:nil];
     
+    if(([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationPortrait) || ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationPortraitUpsideDown)){//横屏
+    
+        self.fullScreen = YES;
+        
+    }else{//竖屏
+        self.fullScreen = NO;
+    }
+    
 }
 
 - (void)_handleDeviceOrientationChange
@@ -219,6 +227,7 @@
     }
     return YES;
 }
+
 
 @end
 

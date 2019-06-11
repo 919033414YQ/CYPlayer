@@ -8,7 +8,7 @@
 
 #import "CYFFmpegViewController.h"
 #import "CYFFmpegPlayer.h"
-#import "Cyonry.h"
+#import <Masonry.h>
 #import "UIViewController+CYExtension.h"
 
 #define kiPad  ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) //ipad
@@ -74,10 +74,10 @@
     contentView.backgroundColor = [UIColor blackColor];
     self.contentView = contentView;
     [self.view addSubview:contentView];
-    [contentView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
         make.leading.trailing.offset(0);
-        make.height.equalTo(contentView.cy_width).multipliedBy(9.0 / 16.0);
+        make.height.equalTo(contentView.mas_width).multipliedBy(9.0 / 16.0);
     }];
     
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
@@ -85,18 +85,18 @@
     vc.generatPreviewImages = YES;
     [contentView addSubview:vc.view];
     
-    [vc.view cy_makeConstraints:^(CYConstraintMaker *make) {
+    [vc.view mas_makeConstraints:^(MASConstraintMaker *make) {
         if (kiPad)
         {
             make.center.offset(0);
             make.leading.trailing.offset(0);
-            make.height.equalTo(vc.view.cy_width).multipliedBy(9.0 / 16.0);
+            make.height.equalTo(vc.view.mas_width).multipliedBy(9.0 / 16.0);
         }
         else
         {
             make.center.offset(0);
             make.top.bottom.offset(0);
-            make.width.equalTo(vc.view.cy_height).multipliedBy(16.0 / 9.0);
+            make.width.equalTo(vc.view.mas_height).multipliedBy(16.0 / 9.0);
         }
     }];
     
@@ -123,10 +123,10 @@
     [self.view addSubview:self.infoBtn];
     [self.infoBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.infoBtn addTarget:self action:@selector(onInfoBtnClick:) forControlEvents:UIControlEventTouchUpInside];
-    [self.infoBtn cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.centerX.equalTo(self.infoBtn.superview.cy_centerX);
+    [self.infoBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.infoBtn.superview.mas_centerX);
         make.width.height.equalTo(@50);
-        make.top.equalTo(self.contentView.cy_bottom).offset(20);
+        make.top.equalTo(self.contentView.mas_bottom).offset(20);
     }];
 }
 
@@ -171,7 +171,7 @@
 {
     if (size.width > size.height)
     {
-        [self.contentView cy_remakeConstraints:^(CYConstraintMaker *make) {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.top.bottom.equalTo(@(0));
             make.left.equalTo(@(0));
             make.right.equalTo(@(0));
@@ -179,10 +179,10 @@
     }
     else
     {
-        [self.contentView cy_remakeConstraints:^(CYConstraintMaker *make) {
+        [self.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.center.offset(0);
             make.leading.trailing.offset(0);
-            make.height.equalTo(self.contentView.cy_width).multipliedBy(9.0 / 16.0);
+            make.height.equalTo(self.contentView.mas_width).multipliedBy(9.0 / 16.0);
         }];
     }
 }

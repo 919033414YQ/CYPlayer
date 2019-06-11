@@ -8,7 +8,7 @@
 
 #import "CYVideoPlayerMoreSettingsFooterSlidersView.h"
 #import "CYSlider.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 #import "CYUIFactory.h"
 #import "CYVideoPlayerControlViewEnumHeader.h"
 #import "CYVideoPlayerSettings.h"
@@ -110,21 +110,22 @@
     [self addSubview:volumeBackgroundView];
     [self addSubview:brightnessBackgroundView];
     [self addSubview:rateBackgroundView];
+    rateBackgroundView.hidden = YES;
     
-    [rateBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [rateBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.offset(25);
         make.leading.trailing.offset(0);
         make.height.offset((self.frame.size.height - 25 * 2) / 3);
     }];
     
-    [volumeBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.top.equalTo(rateBackgroundView.cy_bottom);
+    [volumeBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(rateBackgroundView.mas_bottom);
         make.leading.trailing.offset(0);
         make.height.equalTo(rateBackgroundView);
     }];
     
-    [brightnessBackgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.top.equalTo(volumeBackgroundView.cy_bottom);
+    [brightnessBackgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(volumeBackgroundView.mas_bottom);
         make.leading.trailing.offset(0);
         make.height.equalTo(volumeBackgroundView);
     }];
@@ -150,12 +151,12 @@
 }
 
 - (void)_constraintsLabel:(UILabel *)label slider:(CYSlider *)slider {
-    [label cy_makeConstraints:^(CYConstraintMaker *make) {
+    [label mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.bottom.offset(0);
         make.leading.offset(25);
     }];
     
-    [slider cy_makeConstraints:^(CYConstraintMaker *make) {
+    [slider mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.bottom.offset(0);
         make.trailing.offset(-25);
         make.leading.offset(99);
@@ -236,7 +237,7 @@
 
 - (void)sliderWillBeginDragging:(CYSlider *)slider {
     if ( slider == _rateSlider ) {
-//        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
+        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
     }
     else if ( slider == _volumeSlider ) {
         if ( _model.needChangeVolume ) _model.needChangeVolume(slider.value);
@@ -248,7 +249,7 @@
 
 - (void)sliderDidDrag:(CYSlider *)slider {
     if ( slider == _rateSlider ) {
-//        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
+        if ( _model.needChangePlayerRate ) _model.needChangePlayerRate(slider.value);
     }
     else if ( slider == _volumeSlider ) {
         if ( _model.needChangeVolume ) _model.needChangeVolume(slider.value);

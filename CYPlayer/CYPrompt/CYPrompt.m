@@ -7,7 +7,7 @@
 //
 
 #import "CYPrompt.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 
 @interface CYPrompt ()
 
@@ -48,8 +48,8 @@
         self.promptLabel.textColor = self.config.fontColor;
         self.backgroundView.backgroundColor = self.config.backgroundColor;
         self.backgroundView.layer.cornerRadius = self.config.cornerRadius;
-        [self.promptLabel cy_updateConstraints:^(CYConstraintMaker *make) {
-            make.edges.cy_offset(self.config.insets);
+        [self.promptLabel mas_updateConstraints:^(MASConstraintMaker *make) {
+            make.edges.mas_offset(self.config.insets);
         }];
     };
 }
@@ -62,8 +62,13 @@
     if ( !_presentView ) return;
     CGFloat maxWdith = 0 != self.config.maxWidth ? self.config.maxWidth : _presentView.frame.size.width * 0.6;
     CGSize size = [self _sizeForTitle:title constraints:CGSizeMake(maxWdith, CGFLOAT_MAX)];
-    [_promptLabel cy_updateConstraints:^(CYConstraintMaker *make) {
-        make.size.cy_offset(size);
+    [_backgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.offset(0);
+        make.width.equalTo(@(size.width + self.config.insets.left + self.config.insets.right));
+        make.height.equalTo(@(size.height + self.config.insets.top + + self.config.insets.bottom));
+    }];
+    [_promptLabel mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.size.mas_offset(size);
     }];
     _promptLabel.text = title;
     [self _show];
@@ -91,9 +96,9 @@
 - (void)_setupView {
     [_presentView addSubview:self.backgroundView];
     [_backgroundView addSubview:self.promptLabel];
-    [_backgroundView cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.center.offset(0);
-    }];
+//    [_backgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.center.offset(0);
+//    }];
 }
 
 - (UIView *)backgroundView  {

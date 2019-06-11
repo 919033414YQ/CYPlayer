@@ -11,7 +11,6 @@
 #import "UIViewController+CYVideoPlayerAdd.h"
 #import "CYScreenshotView.h"
 #import "NSObject+CYObserverHelper.h"
-#import "Cyonry.h"
 
 #define CY_Shift        (-[UIScreen mainScreen].bounds.size.width * 0.382)
 
@@ -77,10 +76,6 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
     
     // change screenshotImage
     [self.CY_screenshotView setImage:viewImage];
-    
-    [self.CY_screenshotView cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.left.right.bottom.top.equalTo(@0);
-    }];
 }
 
 - (void)CY_dumpingScreenshotWithNum:(NSInteger)num {
@@ -140,11 +135,6 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
         // App launching
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(CY_addscreenshotImageViewToWindow) name:UIApplicationDidFinishLaunchingNotification object:nil];
         
-        if ( ![UIDevice currentDevice].generatesDeviceOrientationNotifications ) {
-            [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-        }
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(CY_handleDeviceOrientationChange) name:UIDeviceOrientationDidChangeNotification object:nil];
-        
         Class nav = [self class];
         
         // Push
@@ -182,10 +172,6 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
     UIWindow *window = [(id)[UIApplication sharedApplication].delegate valueForKey:@"window"];
     NSAssert(window, @"Window was not found and cannot continue!");
     [window insertSubview:self.CY_screenshotView atIndex:0];
-}
-
-+ (void)CY_handleDeviceOrientationChange {
-    
 }
 
 - (void)CY_navSettings {
@@ -230,7 +216,7 @@ static UINavigationControllerOperation _navOperation;
         !self.isObserver ) [self CY_navSettings];
     
     // push update screenshot
-    [self CY_updateScreenshot];
+//    [self CY_updateScreenshot];
     // call origin method
     [self CY_pushViewController:viewController animated:animated];
 }

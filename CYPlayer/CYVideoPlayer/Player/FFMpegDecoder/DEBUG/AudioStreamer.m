@@ -168,9 +168,6 @@ void audioQueueIsRunningCallback(void *inClientData, AudioQueueRef inAQ,
       NSLog(@"Could not create new output.");
       return NO;
     }
-    Float32 gain=1.0;
-    //设置音量
-    AudioQueueSetParameter(audioQueue_, kAudioQueueParam_Volume, gain);
 
     status = AudioQueueAddPropertyListener(audioQueue_, kAudioQueueProperty_IsRunning, audioQueueIsRunningCallback, (__bridge void*)self);
     if (status != noErr) {

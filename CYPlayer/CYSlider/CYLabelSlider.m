@@ -7,7 +7,7 @@
 //
 
 #import "CYLabelSlider.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 
 @interface CYLabelSlider ()
 
@@ -28,11 +28,11 @@
     [self.leftContainerView addSubview:self.leftLabel];
     [self.rightContainerView addSubview:self.rightlabel];
     
-    [_leftLabel cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_leftLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_leftLabel.superview);
     }];
     
-    [_rightlabel cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_rightlabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_rightlabel.superview);
     }];
 }

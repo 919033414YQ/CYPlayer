@@ -9,7 +9,7 @@
 #import "CYVideoPlayerDraggingProgressView.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 #import "CYSlider.h"
 #import "CYVideoPlayerAssetCarrier.h"
 #import "CYPlayerDecoder.h"
@@ -51,24 +51,24 @@ inline static NSString *_formatWithSec(NSInteger sec) {
     [self addSubview:self.progressLabel];
     [self addSubview:self.progressSlider];
     
-    [_imageView cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.bottom.equalTo(_progressLabel.cy_top).offset(-12);
+    [_imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(_progressLabel.mas_top).offset(-12);
         make.centerX.offset(0);
         //        make.width.offset(120);
-        make.width.equalTo(_imageView.superview.cy_width).multipliedBy(1.0 / 3.0);
-        make.height.equalTo(_imageView.cy_width).multipliedBy(9.f / 16);
+        make.width.equalTo(_imageView.superview.mas_width).multipliedBy(1.0 / 3.0);
+        make.height.equalTo(_imageView.mas_width).multipliedBy(9.f / 16);
     }];
     
-    [_progressLabel cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.top.equalTo(_progressLabel.superview.cy_centerY).offset(20);
+    [_progressLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_progressLabel.superview.mas_centerY).offset(20);
         make.centerX.offset(0);
     }];
     
-    [_progressSlider cy_makeConstraints:^(CYConstraintMaker *make) {
-        make.top.equalTo(_progressLabel.cy_bottom).offset(8);
+    [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_progressLabel.mas_bottom).offset(8);
         make.centerX.offset(0);
         //        make.width.offset(54);
-        make.width.equalTo(_progressSlider.superview.cy_width).multipliedBy(1.0 / 5.0);
+        make.width.equalTo(_progressSlider.superview.mas_width).multipliedBy(1.0 / 5.0);
         make.height.offset(3);
     }];
 }

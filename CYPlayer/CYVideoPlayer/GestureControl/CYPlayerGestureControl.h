@@ -24,6 +24,15 @@ typedef NS_ENUM(NSUInteger, CYPanLocation) {
 
 @interface CYPlayerGestureControl : NSObject
 
+@property (nonatomic, strong, readonly) UITapGestureRecognizer *singleTap;
+@property (nonatomic, strong, readonly) UITapGestureRecognizer *doubleTap;
+@property (nonatomic, strong, readonly) UIPanGestureRecognizer *panGR;
+
+@property (nonatomic, weak, readwrite) UIView *targetView;
+@property (nonatomic, assign, readwrite) CYPanDirection panDirection;
+@property (nonatomic, assign, readwrite) CYPanLocation panLocation;
+
+
 - (instancetype)initWithTargetView:(__weak UIView *)view;
 
 @property (nonatomic, copy, readwrite, nullable) BOOL(^triggerCondition)(CYPlayerGestureControl *control, UIGestureRecognizer *gesture);

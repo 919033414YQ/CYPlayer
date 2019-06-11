@@ -13,31 +13,23 @@ s.source       = { :git => 'https://github.com/yellowei/CYPlayer.git', :tag => "
 s.resources = ['CYPlayer/CYVideoPlayer/Resource/CYVideoPlayer.bundle', 'CYPlayer/CYVideoPlayer/Player/FFMpegDecoder/cyplayer.bundle']
 s.frameworks  = "UIKit", "Foundation"
 s.requires_arc = true
+s.dependency 'Masonry'
+s.dependency 'CYFFmpeg'
 
-
-s.user_target_xcconfig = {  'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+s.user_target_xcconfig = { 	'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"', 
+							'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
+							'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
 }
 
 
-s.pod_target_xcconfig = {   'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"',
-                            'ENABLE_BITCODE' => 'NO',
-                            'OTHER_LDFLAGS' => '$(inherited) -read_only_relocs suppress ',
-                            'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+s.pod_target_xcconfig = { 	'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"', 
+							'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/CYPlayer"' ,
+							'OTHER_LDFLAGS'            => '$(inherited) -undefined dynamic_lookup -ObjC',
+      						'ENABLE_BITCODE'           => 'NO',
+      						'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
 }
 
-# s.subspec 'CYTest' do |ss|
-# ss.source_files = 'CYPlayer/CYTest/*.{h}'
-# ss.dependency 'CYPlayer/CYSMBClient'
-# ss.dependency 'CYPlayer/CYfdkAAC'
-# ss.dependency 'CYPlayer/CYx264'
-# end
 
-s.subspec 'CYMasonry' do |ss|
-ss.source_files = 'CYPlayer/CYMasonry/*.{h,m}'
-end
 
 s.subspec 'CYAttributesFactory' do |ss|
 ss.source_files = 'CYPlayer/CYAttributesFactory/*.{h,m}'
@@ -72,12 +64,10 @@ end
 
 s.subspec 'CYPrompt' do |ss|
 ss.source_files = 'CYPlayer/CYPrompt/*.{h,m}'
-ss.dependency 'CYPlayer/CYMasonry'
 end
 
 s.subspec 'CYSlider' do |ss|
 ss.source_files = 'CYPlayer/CYSlider/*.{h,m}'
-ss.dependency 'CYPlayer/CYMasonry'
 end
 
 s.subspec 'CYUIFactory' do |ss|
@@ -92,7 +82,6 @@ end
 s.subspec 'CYVideoPlayerBackGR' do |ss|
 ss.source_files = 'CYPlayer/CYVideoPlayerBackGR/*.{h,m}'
 ss.dependency 'CYPlayer/CYObserverHelper'
-ss.dependency 'CYPlayer/CYMasonry'
 end
 
 s.subspec 'CYVideoPlayer' do |ss|
@@ -108,7 +97,6 @@ ss.dependency 'CYPlayer/CYSlider'
 ss.dependency 'CYPlayer/CYBorderLineView'
 ss.dependency 'CYPlayer/CYObserverHelper'
 ss.dependency 'CYPlayer/CYLoadingView'
-ss.dependency 'CYPlayer/CYMasonry'
 
 # ########
 ss.subspec 'Header' do |sss|
@@ -129,6 +117,7 @@ end
 ss.subspec 'Base' do |sss|
 sss.source_files = 'CYPlayer/CYVideoPlayer/Base/*.{h,m}'
 sss.dependency 'CYPlayer/CYVideoPlayer/Model'
+
 end
 
 ss.subspec 'Other' do |sss|
@@ -145,6 +134,7 @@ sss.dependency 'CYPlayer/CYVideoPlayer/Present'
 sss.dependency 'CYPlayer/CYVideoPlayer/Registrar'
 sss.dependency 'CYPlayer/CYVideoPlayer/TimerControl'
 sss.dependency 'CYPlayer/CYVideoPlayer/GestureControl'
+
 end
 
 
@@ -159,7 +149,6 @@ sss.source_files = 'CYPlayer/CYVideoPlayer/GestureControl/*.{h,m}'
 end
 
 ss.subspec 'MoreSetting' do |sss|
-
 sss.dependency 'CYPlayer/CYVideoPlayer/Other'
 
 sss.subspec 'MoreSetting' do |ssss|

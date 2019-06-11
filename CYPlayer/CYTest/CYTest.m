@@ -7,10 +7,8 @@
 //
 
 #import "CYTest.h"
-#import "libsmbclient.h"
-#import "FDK_audio.h"
-#import "x264.h"
-#import "ffmpeg.h"
+#import <CYFFmpeg/CYFFmpeg.h>
+//#import "x264.h"
 
 
 @implementation CYTest
@@ -22,7 +20,7 @@
     int debug;
     smbc_init(fn, debug);
     
-    x264_encoder_encode(NULL, NULL, NULL, NULL, NULL);
+//    x264_encoder_encode(NULL, NULL, NULL, NULL, NULL);
     
     avcodec_open2(NULL, NULL, NULL);
 }

@@ -19,6 +19,8 @@
 - (id) initWithFrame:(CGRect)frame
              decoder: (CYPlayerDecoder *) decoder;
 
+- (UIImage*)snapshot;
+
 - (void) render: (CYVideoFrame *) frame;
 
 @end

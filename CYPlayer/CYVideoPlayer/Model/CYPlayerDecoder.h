@@ -159,7 +159,9 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 - (BOOL) openFile: (NSString *) path
             error: (NSError **) perror;
 
--(void) closeFile;
+- (void) closeFile;
+
+- (void) flush;
 
 - (BOOL) setupVideoFrameFormat: (CYVideoFrameFormat) format;
 
@@ -170,6 +172,10 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
 
 - (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion;
+
+
+- (void)generatedPreviewImagesWithImagesCount:(NSInteger)count
+                            completionHandler:(void (^)(NSMutableArray * frames, NSError * error))handler;
 @end
 
 @interface CYPlayerSubtitleASSParser : NSObject

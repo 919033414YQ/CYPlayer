@@ -13,13 +13,14 @@
 #import "CYPlayerGLView.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 
 //Views
 #import "CYVideoPlayerControlView.h"
 #import "CYLoadingView.h"
 #import "CYVideoPlayerMoreSettingsView.h"
 #import "CYVideoPlayerMoreSettingSecondaryView.h"
+#import "CYVideoPlayerPresentView.h"
 
 
 //Models
@@ -131,7 +132,7 @@ CYAudioManagerDelegate>
     BOOL                _generatedPreviewImageInterrupted;
     
     //UI
-    CYPlayerGLView       *_glView;
+//    CYPlayerGLView       *_glView;
     UIImageView         *_imageView;
     
     //Gesture
@@ -159,12 +160,6 @@ CYAudioManagerDelegate>
 @property (readwrite) BOOL unarchiving;
 @property (readwrite, strong) CYArtworkFrame *artworkFrame;
 
-@property (nonatomic, strong) UIView * presentView;
-@property (nonatomic, strong, readonly) CYVideoPlayerControlView *controlView;
-@property (nonatomic, strong, readonly) CYVolBrigControl *volBrigControl;
-@property (nonatomic, strong, readonly) CYLoadingView *loadingView;
-@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingsView *moreSettingView;
-@property (nonatomic, strong, readonly) CYVideoPlayerMoreSettingSecondaryView *moreSecondarySettingView;
 @property (nonatomic, strong, readonly) CYOrentationObserver *orentation;
 @property (nonatomic, strong, readonly) dispatch_queue_t workQueue;
 
@@ -184,6 +179,7 @@ CYAudioManagerDelegate>
 
 @implementation CYFFmpegPlayer
 {
+    CYVideoPlayerPresentView *_presentView;
     CYVideoPlayerControlView *_controlView;
     CYVideoPlayerMoreSettingsView *_moreSettingView;
     CYVideoPlayerMoreSettingSecondaryView *_moreSecondarySettingView;
@@ -308,10 +304,13 @@ CYAudioManagerDelegate>
         [decoder openFile:path error:&error];
         
         if (strongSelf) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2 && !strongSelf.stopped) {
                     [strongSelf2 setMovieDecoder:decoder withError:error];
+                }
+                else if (error) {
+                    [weakSelf _itemPlayFailed];
                 }
             });
         }
@@ -426,7 +425,7 @@ CYAudioManagerDelegate>
 - (UIView *)view {
     if ( _view )
     {
-        [_presentView cy_remakeConstraints:^(CYConstraintMaker *make) {
+        [_presentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.edges.equalTo(_presentView.superview);
         }];
         return _view;
@@ -443,26 +442,26 @@ CYAudioManagerDelegate>
     _controlView.delegate = self;
     _controlView.bottomControlView.progressSlider.delegate = self;
     
-    [_presentView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_presentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_presentView.superview);
     }];
     
-    [_controlView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_controlView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_controlView.superview);
     }];
     
-    [_moreSettingView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_moreSettingView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.bottom.trailing.offset(0);
         make.width.offset(MoreSettingWidth);
     }];
     
-    [_moreSecondarySettingView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_moreSecondarySettingView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_moreSettingView);
     }];
     
     _loadingView = [CYLoadingView new];
     [_controlView addSubview:_loadingView];
-    [_loadingView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_loadingView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
     }];
     
@@ -650,6 +649,7 @@ CYAudioManagerDelegate>
     _debugStartTime = -1;
 #endif
     
+
     //    [self asyncDecodeFrames];
     [self concurrentAsyncDecodeFrames];
     
@@ -924,7 +924,7 @@ CYAudioManagerDelegate>
         if (!_decoder.validVideo)
         {
             _minBufferedDuration *= 2.0; // increase for audio
-            _maxBufferedDuration *= 2.0; // increase for audio
+            _maxBufferedDuration *= 20.0;
         }
         
         // allow to tweak some parameters at runtime
@@ -983,7 +983,7 @@ CYAudioManagerDelegate>
     frameView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin;
     
     [self.view insertSubview:frameView atIndex:0];
-    [frameView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [frameView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(@0);
     }];
     
@@ -1004,6 +1004,9 @@ CYAudioManagerDelegate>
             if ( _self.orentation.fullScreen ) {
                 _cyAnima(^{
                     _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
+                    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                        make.width.equalTo(@49);
+                    }];
                 });
             }
             _self.controlView.previewView.previewFrames = frames;
@@ -1521,6 +1524,9 @@ CYAudioManagerDelegate>
                 }
             }
             
+            if (_positionUpdating) {
+                _positionUpdating = NO;
+            }
             if (_currentAudioFrame) {
                 
                 const void *bytes = (Byte *)_currentAudioFrame.bytes + _currentAudioFramePos;
@@ -1681,19 +1687,19 @@ CYAudioManagerDelegate>
                     
                     return;
                 }
-                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
-                {
-                    [self _pause];
-                    CGFloat interval = 0;
-                    const NSTimeInterval correction = [self tickCorrection];
-                    const NSTimeInterval time = MAX(interval + correction, 0.01);
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
-                    dispatch_after(popTime, _progressQueue, ^(void){
-                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
-                    });
-                    return;
-                }
-                else
+//                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
+//                {
+//                    [self _pause];
+//                    CGFloat interval = 0;
+//                    const NSTimeInterval correction = [self tickCorrection];
+//                    const NSTimeInterval time = MAX(interval + correction, 0.01);
+//                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+//                    dispatch_after(popTime, _progressQueue, ^(void){
+//                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
+//                    });
+//                    return;
+//                }
+//                else
                 {
                     [self _itemPlayFailed];
                     
@@ -1748,18 +1754,18 @@ CYAudioManagerDelegate>
                     [self _itemPlayEnd];
                     return;
                 }
-                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
-                {
-                    [self _pause];
-                    CGFloat interval = 0;
-                    const NSTimeInterval correction = [self tickCorrection];
-                    const NSTimeInterval time = MAX(interval + correction, 0.01);
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
-                    dispatch_after(popTime, _progressQueue, ^(void){
-                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
-                    });
-                    return;
-                }
+//                if ([_decoder.path hasPrefix:@"rtsp"] || [_decoder.path hasPrefix:@"rtmp"] || [[_decoder.path lastPathComponent] containsString:@"m3u8"])
+//                {
+//                    [self _pause];
+//                    CGFloat interval = 0;
+//                    const NSTimeInterval correction = [self tickCorrection];
+//                    const NSTimeInterval time = MAX(interval + correction, 0.01);
+//                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+//                    dispatch_after(popTime, _progressQueue, ^(void){
+//                        [weakSelf replayFromInterruptWithDecoder:weakSelf.decoder];
+//                    });
+//                    return;
+//                }
                 else
                 {
                     //                    [self _itemPlayFailed];
@@ -1779,7 +1785,7 @@ CYAudioManagerDelegate>
                 [self concurrentAsyncDecodeFrames];
             }
         }
-        else if ([self.decoder validAudio])
+        else if (![self.decoder validVideo] && [self.decoder validAudio])
         {
             if (!leftFrames ||
                 !(_audioBufferedDuration > _maxBufferedDuration))
@@ -1808,21 +1814,22 @@ CYAudioManagerDelegate>
         __strong typeof(&*self)strongSelf = weakSelf;
         if (strongSelf)
         {
+            const CGFloat duration = strongSelf->_decoder.duration;
+            CGFloat position = strongSelf->_audioPosition - strongSelf->_decoder.startTime;
+            if (weakSelf.decoder.validVideo)
+            {
+                position = strongSelf->_moviePosition - strongSelf->_decoder.startTime;
+            }
             if ((strongSelf->_tickCounter++ % 3) == 0 && strongSelf->_isDraging == NO) {
-                const CGFloat duration = strongSelf->_decoder.duration;
-                CGFloat position = strongSelf->_audioPosition - strongSelf->_decoder.startTime;
-                if (weakSelf.decoder.validVideo)
-                {
-                    position = strongSelf->_moviePosition - strongSelf->_decoder.startTime;
-                }
                 const CGFloat loadedPosition = weakSelf.decoder.position;
                 [weakSelf _refreshingTimeProgressSliderWithCurrentTime:position duration:duration];
                 [weakSelf _refreshingTimeLabelWithCurrentTime:position duration:duration];
                 [weakSelf _refreshingTimeProgressSliderWithLoadedTime:loadedPosition duration:duration];
-                if ([weakSelf.delegate respondsToSelector:@selector(CYFFmpegPlayer:UpdatePosition:Duration:)])
-                {
-                    [weakSelf.delegate CYFFmpegPlayer:weakSelf UpdatePosition:position Duration:duration];
-                }
+            }
+            
+            if ([weakSelf.delegate respondsToSelector:@selector(CYFFmpegPlayer:UpdatePosition:Duration:isDrag:)])
+            {
+                [weakSelf.delegate CYFFmpegPlayer:weakSelf UpdatePosition:position Duration:duration isDrag:strongSelf->_isDraging];
             }
         }
     });
@@ -1990,7 +1997,6 @@ CYAudioManagerDelegate>
             _imageView.image = [rgbFrame asImage];
         }
     }
-    
     _moviePosition = frame.position;
     
     return frame.duration;
@@ -2310,12 +2316,15 @@ CYAudioManagerDelegate>
                 if ( self.hasBeenGeneratedPreviewImages )
                 {
                     _cyShowViews(@[self.controlView.topControlView.previewBtn]);
+                    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                        make.width.equalTo(@49);
+                    }];
                 }
                 
-                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
+                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
                     //                    make.center.offset(0);
                     //                    make.height.equalTo(self.controlView.superview);
-                    //                    make.width.equalTo(self.controlView.cy_height).multipliedBy(16.0 / 9.0);
+                    //                    make.width.equalTo(self.controlView.mas_height).multipliedBy(16.0 / 9.0);
                     make.edges.equalTo(self.controlView.superview);
                 }];
                 //横屏按钮界面处理
@@ -2324,8 +2333,10 @@ CYAudioManagerDelegate>
             else {
                 _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
                                  self.controlView.topControlView.previewBtn,]);
-                
-                [self.controlView cy_remakeConstraints:^(CYConstraintMaker *make) {
+                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.width.equalTo(@0);
+                }];
+                [self.controlView mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.edges.equalTo(self.controlView.superview);
                 }];
                 //横屏按钮界面处理
@@ -2447,6 +2458,7 @@ CYAudioManagerDelegate>
         }
         switch (direction) {
             case CYPanDirection_H: {
+                
                 if (![self settings].enableProgressControl) {
                     return;
                 }
@@ -2490,8 +2502,8 @@ CYAudioManagerDelegate>
                     case CYPanLocation_Right: break;
                     case CYPanLocation_Left: {
                         [[UIApplication sharedApplication].keyWindow addSubview:self.volBrigControl.brightnessView];
-                        [self.volBrigControl.brightnessView cy_remakeConstraints:^(CYConstraintMaker *make) {
-                            make.size.cy_offset(CGSizeMake(155, 155));
+                        [self.volBrigControl.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                            make.size.mas_offset(CGSizeMake(155, 155));
                             make.center.equalTo([UIApplication sharedApplication].keyWindow);
                         }];
                         self.volBrigControl.brightnessView.transform = self.controlView.superview.transform;
@@ -2644,13 +2656,16 @@ CYAudioManagerDelegate>
     }
     if (currentTime > duration || duration == NSNotFound || isnan(duration) || duration == MAXFLOAT)
     {
-        self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
-        self.controlView.bottomControlView.durationTimeLabel.text = @"LIVE?";
+//        self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
+//        self.controlView.bottomControlView.durationTimeLabel.text = @"LIVE?";
+        self.controlView.bottomControlView.currentTimeLabel.text = @"LIVE";
     }
     else
     {
-        self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
-        self.controlView.bottomControlView.durationTimeLabel.text = _formatWithSec(duration);
+        if (currentTime >= 0 && duration >= 0) {
+            self.controlView.bottomControlView.currentTimeLabel.text = _formatWithSec(currentTime);
+            self.controlView.bottomControlView.durationTimeLabel.text = _formatWithSec(duration);
+        }
     }
 }
 
@@ -2854,6 +2869,7 @@ CYAudioManagerDelegate>
         return;
     }
     [self _itemPrepareToPlay];
+
     [decoder closeFile];
     
     __weak __typeof(&*self)weakSelf = self;
@@ -2872,7 +2888,7 @@ CYAudioManagerDelegate>
         [decoder openFile:decoder.path error:&error];
         
         if (strongSelf) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2) {
                     
@@ -3023,6 +3039,9 @@ CYAudioManagerDelegate>
     if ( oldValue != hideControl ) {
         objc_setAssociatedObject(self, @selector(isHiddenControl), @(hideControl), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         if ( self.controlViewDisplayStatus ) self.controlViewDisplayStatus(self, !hideControl);
+        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ControlViewDisplayStatus:)])  {
+            [self.delegate CYFFmpegPlayer:self ControlViewDisplayStatus:!hideControl];
+        }
     }
 }
 
@@ -3052,6 +3071,9 @@ CYAudioManagerDelegate>
                      self.controlView.bottomProgressSlider,
                      self.controlView.draggingProgressView.imageView,
                      ]);
+    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.width.equalTo(@0);
+    }];
     
     if ( self.orentation.fullScreen ) {
         _cyShowViews(@[self.controlView.topControlView.moreBtn,]);
@@ -3059,12 +3081,18 @@ CYAudioManagerDelegate>
         if ( self.hasBeenGeneratedPreviewImages )
         {
             _cyShowViews(@[self.controlView.topControlView.previewBtn]);
+            [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                make.width.equalTo(@49);
+            }];
         }
     }
     else {
         self.hiddenLeftControlView = YES;
         _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
                          self.controlView.topControlView.previewBtn,]);
+        [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+            make.width.equalTo(@0);
+        }];
     }
     
     self.state = CYFFmpegPlayerPlayState_Prepare;
@@ -3116,7 +3144,9 @@ CYAudioManagerDelegate>
 
 - (void)_playFailedState {
     // show
-    _cyShowViews(@[self.controlView.centerControlView.failedBtn]);
+    [self showBackBtn];
+    _cyShowViews(@[self.controlView.centerControlView,
+                   self.controlView.centerControlView.failedBtn]);
     
     // hidden
     _cyHiddenViews(@[self.controlView.centerControlView.replayBtn]);
@@ -3165,10 +3195,10 @@ CYAudioManagerDelegate>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if ( self.orentation.fullScreen ) {
-        //        [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
+                [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
     }
     else {
-        //        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+                [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
     }
 #pragma clang diagnostic pop
 }
@@ -3182,9 +3212,11 @@ CYAudioManagerDelegate>
     // transform show
     if (self.orentation.fullScreen ) {
         self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, 0);
+        [[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
     }
     else {
         self.controlView.topControlView.transform = CGAffineTransformIdentity;
+        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
     }
     self.controlView.bottomControlView.transform = CGAffineTransformIdentity;
     
@@ -3193,7 +3225,7 @@ CYAudioManagerDelegate>
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    //    [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
+//        [[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
 #pragma clang diagnostic pop
 }
 
@@ -3336,7 +3368,10 @@ CYAudioManagerDelegate>
     setting.more_trackColor = [UIColor whiteColor];
     setting.more_trackHeight = 5;
     setting.loadingLineColor = [UIColor whiteColor];
-    setting.title = @"";
+    if (setting.title.length <= 0)
+    {
+        setting.title = @"";
+    }
     setting.enableProgressControl = YES;
 }
 
@@ -3458,6 +3493,45 @@ CYAudioManagerDelegate>
 - (LockScreen)lockscreen
 {
     return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)hideBackBtn {
+    _cyHiddenViews(@[
+                     self.controlView.topControlView.previewBtn,
+                     self.controlView.leftControlView,
+//                     self.controlView.centerControlView,
+//                     self.controlView.bottomControlView,
+                     self.controlView.draggingProgressView,
+                     ]);
+    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.width.equalTo(@0);
+    }];
+    _cyAnima(^{
+        self.hideControl = YES;
+    });
+}
+
+- (void)showBackBtn {
+    _cyShowViews(@[self.controlView,
+//                   self.controlView.bottomControlView,
+                   self.controlView.topControlView,
+                   self.controlView.topControlView.backBtn,
+                   self.controlView.centerControlView,
+                   self.controlView.topControlView.titleBtn]);
+    _cyHiddenViews(@[
+                     self.controlView.topControlView.previewBtn,
+                     self.controlView.leftControlView,
+//                     self.controlView.centerControlView,
+//                     self.controlView.bottomControlView,
+                     self.controlView.draggingProgressView,
+                     ]);
+    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.width.equalTo(@0);
+    }];
+    _cyShowViews(@[self.controlView, self.controlView.topControlView, self.controlView.topControlView.backBtn, self.controlView.topControlView.titleBtn]);
+    _cyAnima(^{
+        self.hideControl = NO;
+    });
 }
 
 @end

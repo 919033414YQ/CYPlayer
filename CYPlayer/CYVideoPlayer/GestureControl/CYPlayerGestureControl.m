@@ -10,13 +10,6 @@
 
 @interface CYPlayerGestureControl ()<UIGestureRecognizerDelegate>
 
-@property (nonatomic, strong, readonly) UITapGestureRecognizer *singleTap;
-@property (nonatomic, strong, readonly) UITapGestureRecognizer *doubleTap;
-@property (nonatomic, strong, readonly) UIPanGestureRecognizer *panGR;
-
-@property (nonatomic, weak, readwrite) UIView *targetView;
-@property (nonatomic, assign, readwrite) CYPanDirection panDirection;
-@property (nonatomic, assign, readwrite) CYPanLocation panLocation;
 
 @end
 
@@ -48,6 +41,9 @@
     [_targetView addGestureRecognizer:self.doubleTap];
     [_targetView addGestureRecognizer:self.panGR];
     
+    self.singleTap.delegate = self;
+    self.doubleTap.delegate = self;
+    self.panGR.delegate = self;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -134,5 +130,16 @@
     _gestureHandling = NO;
 }
 
+
+# pragma mark - UIGestureRecognizerDelegate
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+//    if ([touch.view isDescendantOfView:self.bottomControlView])
+    if ([touch.view isKindOfClass:[UIButton class]])//提高按钮的响应速度
+    {
+        return NO;
+    }
+    return YES;
+}
 @end
 

@@ -7,7 +7,7 @@
 //
 
 #import "CYVideoPlayerBaseView.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 #import "CYUIFactory.h"
 
 @implementation CYVideoPlayerBaseView
@@ -32,7 +32,7 @@
 
 - (void)_baseSetupView {
     [self addSubview:self.containerView];
-    [_containerView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_containerView.superview);
     }];
 }

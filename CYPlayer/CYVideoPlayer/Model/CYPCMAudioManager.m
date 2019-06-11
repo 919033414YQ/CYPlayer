@@ -8,7 +8,7 @@
 
 #import "CYPCMAudioManager.h"
 #import "CYOpenALPlayer.h"
-#import "ffmpeg.h"
+#import <CYFFmpeg/CYFFmpeg.h>
 
 typedef struct Wavehead
 {

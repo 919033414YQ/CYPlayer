@@ -9,7 +9,7 @@
 #import "CYVideoPlayerTopControlView.h"
 #import "CYUIFactory.h"
 #import "CYVideoPlayerResources.h"
-#import "Cyonry.h"
+#import <Masonry/Masonry.h>
 #import "CYVideoPlayerControlMaskView.h"
 
 @interface CYVideoPlayerTopControlView ()
@@ -59,38 +59,39 @@
     [self.containerView addSubview:self.moreBtn];
     [self.containerView addSubview:self.titleBtn];
     
-    [_controlMaskView cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(_controlMaskView.superview);
     }];
     
-    [_backBtn cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_backBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.width.height.offset(49);
         make.left.offset(0);
     }];
     
-    [_moreBtn cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.right.equalTo(@(-8));
     }];
     
-    [_previewBtn cy_makeConstraints:^(CYConstraintMaker *make) {
+    [_previewBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
-        make.right.equalTo(_moreBtn.cy_left).offset(-8);
+        make.right.equalTo(_moreBtn.mas_left).offset(-8);
     }];
     
-    [_titleBtn cy_makeConstraints:^(CYConstraintMaker *make) {
-        //        make.centerX.equalTo(_titleBtn.superview.cy_centerX);
+    [_titleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        //        make.centerX.equalTo(_titleBtn.superview.mas_centerX);
         make.height.equalTo(@49);
         make.top.equalTo(@0);
         //        make.centerY.equalTo(@0);
         make.left.equalTo(@100);
-        make.right.equalTo(@(-100));
+//        make.right.equalTo(@(-100));
+        make.right.equalTo(_previewBtn.mas_left).offset(-8);
     }];
 }
 

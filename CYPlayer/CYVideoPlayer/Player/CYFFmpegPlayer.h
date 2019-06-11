@@ -10,7 +10,9 @@
 #import <UIKit/UIKit.h>
 #import "CYPlayerGestureControl.h"
 #import "CYPlayerDecoder.h"
+#import "CYVideoPlayerControlView.h"
 #import "CYVideoPlayerSettings.h"
+#import "CYPlayerGLView.h"
 
 @class
 //CYPlayerDecoder,
@@ -42,7 +44,12 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 # pragma mark - CYFFmpegPlayer
 
-@class CYFFmpegPlayer;
+@class CYFFmpegPlayer,
+CYVideoPlayerControlView,
+CYLoadingView,
+CYVolBrigControl,
+CYVideoPlayerMoreSettingsView,
+CYVideoPlayerMoreSettingSecondaryView;
 
 @protocol CYFFmpegPlayerDelegate <NSObject>
 
@@ -52,7 +59,10 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeStatus:(CYFFmpegPlayerPlayState)state;
 
-- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player UpdatePosition:(CGFloat)position Duration:(CGFloat)duration;
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player UpdatePosition:(CGFloat)position Duration:(CGFloat)duration isDrag:(BOOL)isdrag;
+
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ControlViewDisplayStatus:(BOOL)isHidden;
+
 
 @end
 
@@ -64,7 +74,9 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
                                parameters: (NSDictionary *) parameters;
 
 - (void)setupPlayerWithPath:(NSString *)path;
+
 - (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters;
+
 
 @property (nonatomic, strong) CYPlayerDecoder *decoder;
 
@@ -76,7 +88,14 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
  *  播放器视图
  */
 @property (nonatomic, strong) UIView *view;
-
+@property (nonatomic, strong) UIView * presentView;
+@property (nonatomic, strong) CYPlayerGLView * glView;
+@property (nonatomic, strong) CYVideoPlayerControlView *controlView;
+@property (nonatomic, strong) CYVolBrigControl *volBrigControl;
+@property (nonatomic, strong) CYLoadingView *loadingView;
+@property (nonatomic, strong) CYVideoPlayerMoreSettingsView *moreSettingView;
+@property (nonatomic, strong) CYVideoPlayerMoreSettingSecondaryView *moreSecondarySettingView;
+@property (nonatomic, strong) CYPlayerGestureControl *gestureControl;
 
 @property (readonly) BOOL playing;
 
@@ -162,6 +181,7 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 - (void)resetSetting;// 重置配置
 - (CYVideoPlayerSettings *)settings;
 
+
 /*!
  *  Call when the rate changes.
  *
@@ -208,6 +228,10 @@ extern NSString * const CYPlayerParameterDisableDeinterlacing;   // BOOL
 - (BOOL)pause;
 
 - (void)stop;
+
+- (void)hideBackBtn;
+
+- (void)showBackBtn;
 
 @property (nonatomic, copy) LockScreen lockscreen;
 
