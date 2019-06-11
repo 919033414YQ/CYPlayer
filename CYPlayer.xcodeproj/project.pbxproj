@@ -421,15 +421,15 @@
 		0E24070B20FE1630008BEAB5 /* CYSlider */ = {
 			isa = PBXGroup;
 			children = (
-				0E24070C20FE1630008BEAB5 /* CYSlider.m */,
-				0E24070D20FE1630008BEAB5 /* CYLabelSlider.h */,
 				0E24070E20FE1630008BEAB5 /* CYButtonSlider.h */,
-				0E24070F20FE1630008BEAB5 /* CYCommonSlider.h */,
-				0E24071020FE1630008BEAB5 /* README.md */,
-				0E24071120FE1630008BEAB5 /* CYSlider.h */,
-				0E24071220FE1630008BEAB5 /* CYLabelSlider.m */,
 				0E24071320FE1630008BEAB5 /* CYButtonSlider.m */,
+				0E24070F20FE1630008BEAB5 /* CYCommonSlider.h */,
 				0E24071420FE1630008BEAB5 /* CYCommonSlider.m */,
+				0E24070D20FE1630008BEAB5 /* CYLabelSlider.h */,
+				0E24071220FE1630008BEAB5 /* CYLabelSlider.m */,
+				0E24071120FE1630008BEAB5 /* CYSlider.h */,
+				0E24070C20FE1630008BEAB5 /* CYSlider.m */,
+				0E24071020FE1630008BEAB5 /* README.md */,
 			);
 			path = CYSlider;
 			sourceTree = "<group>";
