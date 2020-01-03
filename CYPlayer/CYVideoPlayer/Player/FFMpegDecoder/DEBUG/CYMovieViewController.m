@@ -13,7 +13,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <QuartzCore/QuartzCore.h>
 #import "CYPlayerDecoder.h"
-#import <FFmpeg-Decoder/CYAudioManager.h>
+#import "CYAudioManager.h"
 #import "CYPlayerGLView.h"
 #import "CYLogger.h"
 

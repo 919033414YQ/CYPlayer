@@ -99,6 +99,7 @@
 		84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BF1A46A0AF00C8CAA9 /* LaunchScreen.xib */; };
 		84B261CD1A46A0AF00C8CAA9 /* TestVideoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261CC1A46A0AF00C8CAA9 /* TestVideoTests.m */; };
 		BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */; };
+		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
 		BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6C22AF9D050091AB1C /* logo.png */; };
 		BC8ADA6F22AF9D060091AB1C /* test.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6D22AF9D060091AB1C /* test.mp4 */; };
 /* End PBXBuildFile section */
@@ -954,6 +955,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -1100,6 +1102,7 @@
 				0E2407D320FE1631008BEAB5 /* CYOrentationObserver.m in Sources */,
 				0E2407A720FE1630008BEAB5 /* UIView+CYUIFactory.m in Sources */,
 				0E2406C520FE0EDD008BEAB5 /* PlayerViewController.m in Sources */,
+				BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */,
 				0E2407EA20FE1631008BEAB5 /* CYAttributeWorker.m in Sources */,
 				0E2407C920FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m in Sources */,
 				0E2407D220FE1631008BEAB5 /* Utilities.m in Sources */,

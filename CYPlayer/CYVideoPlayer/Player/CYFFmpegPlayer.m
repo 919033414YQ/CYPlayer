@@ -3064,13 +3064,16 @@ CYAudioManagerDelegate>
     _cyHiddenViews(@[
                      self.controlView.draggingProgressView,
                      self.controlView.topControlView.previewBtn,
-                     self.controlView.leftControlView.lockBtn,
+//                     self.controlView.leftControlView.lockBtn,
                      self.controlView.centerControlView.failedBtn,
                      self.controlView.centerControlView.replayBtn,
                      self.controlView.bottomControlView.playBtn,
                      self.controlView.bottomProgressSlider,
                      self.controlView.draggingProgressView.imageView,
                      ]);
+    
+    [self _unlockScreenState];
+    
     [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
         make.width.equalTo(@0);
     }];
@@ -3498,11 +3501,12 @@ CYAudioManagerDelegate>
 - (void)hideBackBtn {
     _cyHiddenViews(@[
                      self.controlView.topControlView.previewBtn,
-                     self.controlView.leftControlView,
+//                     self.controlView.leftControlView,
 //                     self.controlView.centerControlView,
 //                     self.controlView.bottomControlView,
                      self.controlView.draggingProgressView,
                      ]);
+    self.hiddenLeftControlView = YES;
     [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
         make.width.equalTo(@0);
     }];
@@ -3520,11 +3524,12 @@ CYAudioManagerDelegate>
                    self.controlView.topControlView.titleBtn]);
     _cyHiddenViews(@[
                      self.controlView.topControlView.previewBtn,
-                     self.controlView.leftControlView,
+//                     self.controlView.leftControlView,
 //                     self.controlView.centerControlView,
 //                     self.controlView.bottomControlView,
                      self.controlView.draggingProgressView,
                      ]);
+    self.hiddenLeftControlView = YES;
     [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
         make.width.equalTo(@0);
     }];
