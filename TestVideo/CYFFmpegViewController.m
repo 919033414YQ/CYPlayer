@@ -81,6 +81,10 @@
     }];
     
     vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
+    [vc settingPlayer:^(CYVideoPlayerSettings *settings) {
+        settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
+        settings.enableSelections = YES;
+    }];
     vc.autoplay = YES;
     vc.generatPreviewImages = YES;
     [contentView addSubview:vc.view];

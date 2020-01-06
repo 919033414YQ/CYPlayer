@@ -34,6 +34,7 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
     CYFFmpegPlayerPlayState_Ready
 };
 
+
 typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames, NSError * error);
 
 
@@ -218,6 +219,8 @@ CYVideoPlayerMoreSettingSecondaryView;
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player endedPan:(CYPlayerGestureControl *)control direction:(CYPanDirection)direction location:(CYPanLocation)location;
 
 @end
+
+
 
 @interface CYFFmpegPlayer (Control)
 

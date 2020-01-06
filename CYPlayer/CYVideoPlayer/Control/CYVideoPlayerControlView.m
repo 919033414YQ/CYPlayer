@@ -27,6 +27,7 @@ UIGestureRecognizerDelegate>
 @synthesize topControlView = _topControlView;
 @synthesize leftControlView = _leftControlView;
 @synthesize centerControlView = _centerControlView;
+@synthesize selectTableView = _selectTableView;
 @synthesize bottomControlView = _bottomControlView;
 @synthesize draggingProgressView = _draggingProgressView;
 
@@ -40,6 +41,11 @@ UIGestureRecognizerDelegate>
     _bottomControlView.delegate = self;
     _previewView.delegate = self;
     __weak typeof(self) _self = self;
+    
+    _selectTableView.numberOfRowsInSection = ^NSInteger(UITableView * _Nonnull tableView, NSInteger section) {
+        return 0;
+    };
+    
     self.setting = ^(CYVideoPlayerSettings * _Nonnull setting) {
         __strong typeof(_self) self = _self;
         if ( !self ) return;
@@ -96,6 +102,7 @@ UIGestureRecognizerDelegate>
     [self.containerView addSubview:self.topControlView];
     [self.containerView addSubview:self.leftControlView];
     [self.containerView addSubview:self.centerControlView];
+    [self.containerView addSubview:self.selectTableView];
     [self.containerView addSubview:self.bottomControlView];
     [self.containerView addSubview:self.previewView];
     [self.containerView addSubview:self.bottomProgressSlider];
@@ -122,6 +129,12 @@ UIGestureRecognizerDelegate>
         make.center.offset(0);
         make.width.equalTo(_centerControlView.superview).multipliedBy(0.382);
         make.height.equalTo(_centerControlView.mas_width);
+    }];
+    
+    [_selectTableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.offset(0);
+        make.width.equalTo(_centerControlView.superview).multipliedBy(0.382);
+        make.height.equalTo(_centerControlView.superview.mas_height);
     }];
     
     [_bottomControlView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -155,6 +168,13 @@ UIGestureRecognizerDelegate>
     if ( _centerControlView ) return _centerControlView;
     _centerControlView = [CYVideoPlayerCenterControlView new];
     return _centerControlView;
+}
+
+- (CYVideoPlayerSelectTableView *)selectTableView
+{
+    if ( _selectTableView ) return _selectTableView;
+    _selectTableView = [CYVideoPlayerSelectTableView new];
+    return _selectTableView;
 }
 
 - (CYVideoPlayerBottomControlView *)bottomControlView {

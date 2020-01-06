@@ -35,13 +35,15 @@ inline static void _cyErrorLog(id msg) {
 
 inline static void _cyHiddenViews(NSArray<UIView *> *views) {
     [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.alpha = 0.001;
+        obj.alpha = 0.00;
+        obj.hidden = YES;
     }];
 }
 
 inline static void _cyShowViews(NSArray<UIView *> *views) {
     [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         obj.alpha = 1;
+        obj.hidden = NO;
     }];
 }
 

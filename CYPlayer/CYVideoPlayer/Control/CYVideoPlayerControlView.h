@@ -14,6 +14,7 @@
 #import "CYVideoPlayerCenterControlView.h"
 #import "CYVideoPlayerPreviewView.h"
 #import "CYVideoPlayerDraggingProgressView.h"
+#import "CYVideoPlayerSelectTableView.h"
 
 
 #define CYControlTopH (90)
@@ -37,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) CYVideoPlayerPreviewView *previewView;
 @property (nonatomic, strong, readonly) CYVideoPlayerLeftControlView *leftControlView;
 @property (nonatomic, strong, readonly) CYVideoPlayerCenterControlView *centerControlView;
+@property (nonatomic, strong, readonly) CYVideoPlayerSelectTableView * selectTableView;
 @property (nonatomic, strong, readonly) CYVideoPlayerBottomControlView *bottomControlView;
 @property (nonatomic, strong, readonly) CYSlider *bottomProgressSlider;
 @property (nonatomic, strong, readonly) CYVideoPlayerDraggingProgressView *draggingProgressView;

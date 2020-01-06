@@ -55,13 +55,15 @@ inline static void _cyErrorLog(id msg) {
 
 inline static void _cyHiddenViews(NSArray<UIView *> *views) {
     [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.alpha = 0.001;
+        obj.alpha = 0.0;
+        obj.hidden = YES;
     }];
 }
 
 inline static void _cyShowViews(NSArray<UIView *> *views) {
     [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.alpha = 1;
+        obj.alpha = 1.0;
+        obj.hidden = NO;
     }];
 }
 
@@ -1652,8 +1654,8 @@ CYAudioManagerDelegate>
     if (_buffered &&
         (
          (
-          (_videoBufferedDuration > _minBufferedDuration) ||
-          (_audioBufferedDuration > _minBufferedDuration)
+          (_videoBufferedDuration > _maxBufferedDuration) ||
+          (_audioBufferedDuration > _maxBufferedDuration)
           ) ||
          _decoder.isEOF
          )
@@ -1662,8 +1664,8 @@ CYAudioManagerDelegate>
         _tickCorrectionTime = 0;
         _cantPlayStartTime = 0;
         _buffered = NO;
-        if ((_videoBufferedDuration > _minBufferedDuration) ||
-            (_audioBufferedDuration > _minBufferedDuration))
+        if ((_videoBufferedDuration > _maxBufferedDuration) ||
+            (_audioBufferedDuration > _maxBufferedDuration))
         {
             [self play];
         }
@@ -2307,7 +2309,8 @@ CYAudioManagerDelegate>
         }
         self.hideControl = NO;
         _cyAnima(^{
-            self.controlView.previewView.hidden = YES;
+//            self.controlView.previewView.hidden = YES;
+            _cyHiddenViews(@[self.controlView.previewView]);
             self.hiddenMoreSecondarySettingView = YES;
             self.hiddenMoreSettingView = YES;
             self.hiddenLeftControlView = !observer.isFullScreen;
@@ -2387,10 +2390,34 @@ CYAudioManagerDelegate>
         }
         if ( self.isLockedScrren ) return NO;
         CGPoint point = [gesture locationInView:gesture.view];
-        if (CGRectContainsPoint(self.moreSettingView.frame, point) ||
-            CGRectContainsPoint(self.moreSecondarySettingView.frame, point) ||
-            CGRectContainsPoint(self.controlView.previewView.frame, point) ) {
-            return NO;
+        if (CGRectContainsPoint(self.moreSettingView.frame, point) || CGRectContainsPoint(self.moreSecondarySettingView.frame, point))
+        {
+            if (CGRectContainsPoint(self.controlView.previewView.frame, point))
+            {
+                if (self.controlView.previewView.alpha == 0.0)
+                {
+                    return YES;
+                }
+                else
+                {
+                    return NO;
+                }
+            }
+            else
+            {
+                return NO;
+            }
+        }
+        else if (CGRectContainsPoint(self.controlView.previewView.frame, point))
+        {
+            if (self.controlView.previewView.alpha == 0.0)
+            {
+                return YES;
+            }
+            else
+            {
+                return NO;
+            }
         }
         else return YES;
     };
@@ -2818,8 +2845,14 @@ CYAudioManagerDelegate>
         case CYVideoPlayControlViewTag_Preview: {
             [self _cancelDelayHiddenControl];
             _cyAnima(^{
-                self.controlView.previewView.hidden = !self.controlView.previewView.isHidden;
+//                self.controlView.previewView.hidden = !self.controlView.previewView.isHidden;
+                if (self.controlView.previewView.alpha == 0.00) {
+                    _cyShowViews(@[self.controlView.previewView]);
+                }else{
+                    _cyHiddenViews(@[self.controlView.previewView]);
+                }
             });
+            
         }
             break;
         case CYVideoPlayControlViewTag_Lock: {
@@ -3060,17 +3093,21 @@ CYAudioManagerDelegate>
     _cyShowViews(@[self.controlView]);
     
     // hidden
-    self.controlView.previewView.hidden = YES;
+//    self.controlView.previewView.alpha = 0;
+//    self.controlView.previewView.hidden = YES;
     _cyHiddenViews(@[
-                     self.controlView.draggingProgressView,
-                     self.controlView.topControlView.previewBtn,
-//                     self.controlView.leftControlView.lockBtn,
-                     self.controlView.centerControlView.failedBtn,
-                     self.controlView.centerControlView.replayBtn,
-                     self.controlView.bottomControlView.playBtn,
-                     self.controlView.bottomProgressSlider,
-                     self.controlView.draggingProgressView.imageView,
-                     ]);
+        self.controlView.previewView,
+        self.controlView.draggingProgressView,
+        self.controlView.topControlView.previewBtn,
+        //                     self.controlView.leftControlView.lockBtn,
+        self.controlView.centerControlView.failedBtn,
+        self.controlView.centerControlView.replayBtn,
+        self.controlView.bottomControlView.playBtn,
+        self.controlView.bottomProgressSlider,
+        self.controlView.draggingProgressView.imageView,
+        self.controlView.selectTableView,
+        
+    ]);
     
     [self _unlockScreenState];
     
@@ -3185,7 +3222,11 @@ CYAudioManagerDelegate>
     _cyShowViews(@[self.controlView.bottomProgressSlider]);
     
     // hidden
-    self.controlView.previewView.hidden = YES;
+    _cyHiddenViews(@[
+        self.controlView.previewView,
+        self.controlView.selectTableView,
+    ]);
+//    self.controlView.previewView.hidden = YES;
     
     // transform hidden
     self.controlView.topControlView.transform = CGAffineTransformMakeTranslation(0, -CYControlTopH);
@@ -3209,8 +3250,12 @@ CYAudioManagerDelegate>
 - (void)_showControlState {
     
     // hidden
-    _cyHiddenViews(@[self.controlView.bottomProgressSlider]);
-    self.controlView.previewView.hidden = YES;
+    _cyHiddenViews(@[self.controlView.bottomProgressSlider,
+                     self.controlView.previewView,
+                     self.controlView.selectTableView,
+    ]);
+//    _cyHiddenViews(@[self.controlView.previewView]);
+//    self.controlView.previewView.hidden = YES;
     
     // transform show
     if (self.orentation.fullScreen ) {
@@ -3376,6 +3421,9 @@ CYAudioManagerDelegate>
         setting.title = @"";
     }
     setting.enableProgressControl = YES;
+    
+    setting.definitionTypes = CYFFmpegPlayerDefinitionNone;
+    setting.enableSelections = NO;
 }
 
 - (void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {

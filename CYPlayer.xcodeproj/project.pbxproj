@@ -99,6 +99,7 @@
 		84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BF1A46A0AF00C8CAA9 /* LaunchScreen.xib */; };
 		84B261CD1A46A0AF00C8CAA9 /* TestVideoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261CC1A46A0AF00C8CAA9 /* TestVideoTests.m */; };
 		BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */; };
+		BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */; };
 		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
 		BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6C22AF9D050091AB1C /* logo.png */; };
 		BC8ADA6F22AF9D060091AB1C /* test.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6D22AF9D060091AB1C /* test.mp4 */; };
@@ -336,6 +337,8 @@
 		A2A86123A5DA3ACF4A945CAE /* Pods-TestVideo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TestVideo.release.xcconfig"; path = "Pods/Target Support Files/Pods-TestVideo/Pods-TestVideo.release.xcconfig"; sourceTree = "<group>"; };
 		BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYHardwareDecompressVideo.m; sourceTree = "<group>"; };
 		BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYHardwareDecompressVideo.h; sourceTree = "<group>"; };
+		BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSelectTableView.h; sourceTree = "<group>"; };
+		BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerSelectTableView.m; sourceTree = "<group>"; };
 		BC8ADA6C22AF9D050091AB1C /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = SOURCE_ROOT; };
 		BC8ADA6D22AF9D060091AB1C /* test.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = test.mp4; sourceTree = SOURCE_ROOT; };
 		F82A6770E16FD3C855878832 /* libPods-TestVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TestVideo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -605,6 +608,8 @@
 				0E24075420FE1630008BEAB5 /* CYVideoPlayerCenterControlView.m */,
 				0E24074C20FE1630008BEAB5 /* CYVideoPlayerBottomControlView.h */,
 				0E24075520FE1630008BEAB5 /* CYVideoPlayerBottomControlView.m */,
+				BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */,
+				BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */,
 			);
 			path = Control;
 			sourceTree = "<group>";
@@ -1072,6 +1077,7 @@
 				0E2407C520FE1630008BEAB5 /* CYVideoPlayerTopControlView.m in Sources */,
 				0E2407AE20FE1630008BEAB5 /* CYButtonSlider.m in Sources */,
 				0E2407FC20FF1D1C008BEAB5 /* CYRtspPlayer.m in Sources */,
+				BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */,
 				0E2407D520FE1631008BEAB5 /* UIResponder+CYExtension.m in Sources */,
 				0E2407B120FE1630008BEAB5 /* CYVideoPlayerRegistrar.m in Sources */,
 				0E2407C220FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondaryView.m in Sources */,

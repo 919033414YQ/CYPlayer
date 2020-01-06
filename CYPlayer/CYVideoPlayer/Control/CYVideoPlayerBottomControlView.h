@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) UILabel *currentTimeLabel;
 @property (nonatomic, strong, readonly) UILabel *separateLabel;
 @property (nonatomic, strong, readonly) UILabel *durationTimeLabel;
+@property (nonatomic, strong, readonly) UIButton *definitionBtn;
+@property (nonatomic, strong, readonly) UIButton *selectionsBtn;
 @property (nonatomic, strong, readonly) CYSlider *progressSlider;
 @property (nonatomic, strong, readonly) UIButton *fullBtn;
 

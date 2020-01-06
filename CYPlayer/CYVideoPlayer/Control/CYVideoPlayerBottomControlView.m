@@ -24,6 +24,8 @@
 @synthesize durationTimeLabel = _durationTimeLabel;
 @synthesize playBtn = _playBtn;
 @synthesize pauseBtn = _pauseBtn;
+@synthesize definitionBtn = _definitionBtn;
+@synthesize selectionsBtn = _selectionsBtn;
 @synthesize currentTimeLabel = _currentTimeLabel;
 @synthesize progressSlider = _progressSlider;
 @synthesize fullBtn = _fullBtn;
@@ -65,73 +67,73 @@
             self.playBtn.hidden = NO;
             self.pauseBtn.hidden = NO;
         }
+        
+        //是否可选清晰度
+        if (setting.definitionTypes !=  CYFFmpegPlayerDefinitionNone)
+        {
+            self.definitionBtn.hidden = NO;
+        }
+        else
+        {
+            self.definitionBtn.hidden = YES;
+        }
+        
+        //是否可选集
+        if (setting.enableSelections == YES)
+        {
+            self.selectionsBtn.hidden = NO;
+        }
+        else
+        {
+            self.selectionsBtn.hidden = YES;
+        }
+        
+        if (self.definitionBtn.hidden && self.selectionsBtn.hidden)
+        {
+            [self.currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.centerY.equalTo(self.playBtn);
+                make.leading.equalTo(self.playBtn.mas_trailing).offset(0);
+            }];
+            
+            [self.separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.centerY.equalTo(self.playBtn);
+                make.leading.equalTo(self.currentTimeLabel.mas_trailing);
+            }];
+            
+            [self.durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.centerY.equalTo(self.playBtn);
+                make.leading.equalTo(self.separateLabel.mas_trailing);
+            }];
+        }
+        else
+        {
+            [self.currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.top.equalTo(self.playBtn);
+                make.leading.equalTo(self.playBtn.mas_trailing).offset(0);
+            }];
+            
+            [self.separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.top.equalTo(self.playBtn);
+                make.leading.equalTo(self.currentTimeLabel.mas_trailing);
+            }];
+            
+            [self.durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+                //        make.centerY.equalTo(_playBtn);
+                make.top.equalTo(self.playBtn);
+                make.leading.equalTo(self.separateLabel.mas_trailing);
+            }];
+
+        }
     };
     return self;
 }
 
-- (void)clickedBtn:(UIButton *)btn {
-    if ( ![_delegate respondsToSelector:@selector(bottomControlView:clickedBtnTag:)] ) return;
-    [_delegate bottomControlView:self clickedBtnTag:btn.tag];
-}
-
-- (void)_bottomSetupView {
-    [self.containerView addSubview:self.controlMaskView];
-    [self.containerView addSubview:self.playBtn];
-    [self.containerView addSubview:self.pauseBtn];
-    [self.containerView addSubview:self.currentTimeLabel];
-    [self.containerView addSubview:self.separateLabel];
-    [self.containerView addSubview:self.durationTimeLabel];
-    [self.containerView addSubview:self.progressSlider];
-    [self.containerView addSubview:self.fullBtn];
-    
-    [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(_controlMaskView.superview);
-    }];
-
-    [_playBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.offset(0);
-        make.size.offset(49);
-        make.bottom.offset(-8);
-    }];
-    
-    [_pauseBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(_playBtn);
-    }];
-    
-    [_currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(_separateLabel);
-        make.leading.equalTo(_playBtn.mas_trailing).offset(0);
-    }];
-    
-    [_separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.equalTo(_playBtn);
-        make.leading.equalTo(_currentTimeLabel.mas_trailing);
-    }];
-
-    [_durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(_separateLabel.mas_trailing);
-        make.centerY.equalTo(_separateLabel);
-    }];
-    
-    [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(_playBtn.mas_trailing).offset(86 + 8);
-        make.height.centerY.equalTo(_playBtn);
-        make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
-    }];
-    
-    [_fullBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.size.equalTo(_playBtn);
-        make.centerY.equalTo(_playBtn);
-        make.trailing.offset(0);
-    }];
-    
-    
-    [CYUIFactory boundaryProtectedWithView:_currentTimeLabel];
-    [CYUIFactory boundaryProtectedWithView:_separateLabel];
-    [CYUIFactory boundaryProtectedWithView:_durationTimeLabel];
-    [CYUIFactory boundaryProtectedWithView:_progressSlider];
-}
-
+# pragma mark - Getter/Setter
 - (UIButton *)playBtn {
     if ( _playBtn ) return _playBtn;
     _playBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Play];
@@ -144,6 +146,28 @@
     _pauseBtn = [CYUIButtonFactory buttonWithImageName:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_Pause];
     [_pauseBtn setImageEdgeInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
     return _pauseBtn;
+}
+
+- (UIButton *)definitionBtn
+{
+    if (_definitionBtn) return _definitionBtn;
+    _definitionBtn = [CYUIButtonFactory buttonWithTitle:@"超清" titleColor:[UIColor greenColor] font:[UIFont systemFontOfSize:13] target:self sel:@selector(onDefinitionBtnClick:)];
+    _definitionBtn.layer.cornerRadius = 2.0;
+    _definitionBtn.layer.borderWidth = 0.5;
+    _definitionBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    _definitionBtn.backgroundColor = [UIColor clearColor];
+    return _definitionBtn;
+}
+
+- (UIButton *)selectionsBtn
+{
+    if (_selectionsBtn) return _selectionsBtn;
+    _selectionsBtn = [CYUIButtonFactory buttonWithTitle:@"选集" titleColor:[UIColor orangeColor] font:[UIFont systemFontOfSize:13] target:self sel:@selector(onSelectionsBtnClick:)];
+    _selectionsBtn.layer.cornerRadius = 2.0;
+    _selectionsBtn.layer.borderWidth = 0.5;
+    _selectionsBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    _selectionsBtn.backgroundColor = [UIColor clearColor];
+    return _selectionsBtn;
 }
 
 - (CYSlider *)progressSlider {
@@ -183,6 +207,105 @@
     if ( _controlMaskView ) return _controlMaskView;
     _controlMaskView = [[CYVideoPlayerControlMaskView alloc] initWithStyle:CYMaskStyle_bottom];
     return _controlMaskView;
+}
+
+
+# pragma mark - Private Methods
+- (void)_bottomSetupView {
+    [self.containerView addSubview:self.controlMaskView];
+    [self.containerView addSubview:self.playBtn];
+    [self.containerView addSubview:self.pauseBtn];
+    [self.containerView addSubview:self.definitionBtn];
+    [self.containerView addSubview:self.selectionsBtn];
+    [self.containerView addSubview:self.currentTimeLabel];
+    [self.containerView addSubview:self.separateLabel];
+    [self.containerView addSubview:self.durationTimeLabel];
+    [self.containerView addSubview:self.progressSlider];
+    [self.containerView addSubview:self.fullBtn];
+    
+    [_controlMaskView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(_controlMaskView.superview);
+    }];
+    
+    [_playBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.leading.offset(0);
+        make.size.offset(49);
+        make.bottom.offset(-8);
+    }];
+    
+    [_pauseBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(_playBtn);
+    }];
+    
+    [_currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        //        make.centerY.equalTo(_playBtn);
+        make.top.equalTo(_playBtn);
+        make.leading.equalTo(_playBtn.mas_trailing).offset(0);
+    }];
+    
+    [_separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        //        make.centerY.equalTo(_playBtn);
+        make.top.equalTo(_playBtn);
+        make.leading.equalTo(_currentTimeLabel.mas_trailing);
+    }];
+    
+    [_durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        //        make.centerY.equalTo(_playBtn);
+        make.top.equalTo(_playBtn);
+        make.leading.equalTo(_separateLabel.mas_trailing);
+    }];
+    
+    //清晰度btn
+    [_definitionBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(_playBtn);
+        make.leading.equalTo(_playBtn.mas_trailing);
+        make.width.equalTo(_selectionsBtn.mas_width);
+    }];
+    
+    [_selectionsBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(_playBtn);
+        make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
+        make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
+        make.width.equalTo(_definitionBtn.mas_width);
+    }];
+    
+    
+    [_progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
+        make.height.centerY.equalTo(_playBtn);
+        make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+    }];
+    
+    [_fullBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.size.equalTo(_playBtn);
+        make.centerY.equalTo(_playBtn);
+        make.trailing.offset(0);
+    }];
+    
+    
+    [CYUIFactory boundaryProtectedWithView:_currentTimeLabel];
+    [CYUIFactory boundaryProtectedWithView:_separateLabel];
+    [CYUIFactory boundaryProtectedWithView:_durationTimeLabel];
+    [CYUIFactory boundaryProtectedWithView:_progressSlider];
+}
+
+
+
+
+# pragma mark - Events
+- (void)onDefinitionBtnClick:(UIButton *)sender
+{
+    
+}
+
+- (void)onSelectionsBtnClick:(UIButton *)sender
+{
+    
+}
+
+- (void)clickedBtn:(UIButton *)btn {
+    if ( ![_delegate respondsToSelector:@selector(bottomControlView:clickedBtnTag:)] ) return;
+    [_delegate bottomControlView:self clickedBtnTag:btn.tag];
 }
 
 @end

@@ -8,6 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSUInteger, CYFFmpegPlayerDefinitionType) {
+    CYFFmpegPlayerDefinitionNone = 0,
+    CYFFmpegPlayerDefinitionLLD = 1 << 0,//流畅(LLD)
+    CYFFmpegPlayerDefinitionLSD = 1 << 1,//标清(LSD)
+    CYFFmpegPlayerDefinitionLHD = 1 << 2,//高清(LHD)
+    CYFFmpegPlayerDefinitionLUD = 1 << 3//超清(LUD)
+};
+
 extern NSNotificationName const CYSettingsPlayerNotification;
 
 @class UIImage, UIColor;
@@ -56,6 +64,12 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 // MARK: Control
 @property (nonatomic, assign, readwrite) BOOL enableProgressControl;
 
+
+/// 清晰度选项类型
+@property (nonatomic, assign, readwrite) CYFFmpegPlayerDefinitionType definitionTypes;
+
+/// 可选集
+@property (nonatomic, assign, readwrite) BOOL enableSelections;
 
 + (instancetype)sharedVideoPlayerSettings;
 
