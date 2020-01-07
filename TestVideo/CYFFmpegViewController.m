@@ -13,7 +13,7 @@
 
 #define kiPad  ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) //ipad
 
-@interface CYFFmpegViewController ()
+@interface CYFFmpegViewController ()<CYFFmpegPlayerDelegate>
 {
     NSArray *_localMovies;
     NSArray *_remoteMovies;
@@ -85,6 +85,7 @@
         settings.definitionTypes = CYFFmpegPlayerDefinitionLLD | CYFFmpegPlayerDefinitionLHD | CYFFmpegPlayerDefinitionLSD | CYFFmpegPlayerDefinitionLUD;
         settings.enableSelections = YES;
     }];
+    vc.delegate = self;
     vc.autoplay = YES;
     vc.generatPreviewImages = YES;
     [contentView addSubview:vc.view];
@@ -189,6 +190,43 @@
             make.height.equalTo(self.contentView.mas_width).multipliedBy(9.0 / 16.0);
         }];
     }
+}
+
+
+# pragma mark - CYFFmpegPlayerDelegate
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeDefinition:(CYFFmpegPlayerDefinitionType)definition
+{
+    NSString * url = @"";
+    switch (definition) {
+        case CYFFmpegPlayerDefinitionLLD:
+        {
+            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4";
+        }
+            break;
+        case CYFFmpegPlayerDefinitionLSD:
+        {
+            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+        }
+            break;
+        case CYFFmpegPlayerDefinitionLHD:
+        {
+            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/04ad8e1641699cd71819fe38ec2be506-sd.mp4";
+        }
+            break;
+        case CYFFmpegPlayerDefinitionLUD:
+        {
+            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/b43889cb2eb86103abb977d2b246cb83-hd.mp4";
+        }
+            break;
+            
+        default:
+        {
+            url = @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
+        }
+            break;
+    }
+//    NSString * localV = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"mp4"];
+    [vc changePath:url];
 }
 
 @end

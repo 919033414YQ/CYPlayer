@@ -164,6 +164,7 @@ typedef void(^CYPlayerCompeletionThread)(NSArray<CYPlayerFrame *> * frames);
 - (void) flush;
 
 - (BOOL) setupVideoFrameFormat: (CYVideoFrameFormat) format;
+- (CYVideoFrameFormat)getVideoFrameFormat;
 
 - (NSArray *) decodeFrames: (CGFloat) minDuration;
 

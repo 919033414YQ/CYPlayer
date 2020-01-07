@@ -16,13 +16,15 @@ typedef UITableViewCell *(^CellForRowAtIndexPath)(UITableView * __nonnull tableV
 typedef CGFloat(^HeightForRowAtIndexPath)(UITableView * __nonnull tableView, NSIndexPath * __nonnull indexPath);
 typedef CGFloat(^HeightForHeaderInSection)(UITableView * __nonnull tableView, NSInteger section);
 typedef CGFloat(^HeightForFooterInSection)(UITableView * __nonnull tableView, NSInteger section);
-
+typedef void(^DidSelectRowAtIndexPath)(UITableView * __nonnull tableView, NSIndexPath * __nonnull indexPath);
 
 
 
 @interface CYVideoPlayerSelectTableView : CYVideoPlayerBaseView
 
 @property (nonatomic, strong, readonly) UITableView * selectTableView;
+
+@property (nonatomic, strong) NSMutableArray * dataArray;
 
 //tableView DataSource
 @property (nonatomic, copy) NumberOfSectionsInTableView numberOfSectionsInTableView;
@@ -31,6 +33,10 @@ typedef CGFloat(^HeightForFooterInSection)(UITableView * __nonnull tableView, NS
 @property (nonatomic, copy) HeightForRowAtIndexPath heightForRowAtIndexPath;
 @property (nonatomic, copy) HeightForHeaderInSection heightForHeaderInSection;
 @property (nonatomic, copy) HeightForFooterInSection heightForFooterInSection;
+@property (nonatomic, copy) DidSelectRowAtIndexPath didSelectRowAtIndexPath;
+
+
+- (void)reloadTableView;
 
 @end
 

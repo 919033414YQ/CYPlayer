@@ -280,6 +280,9 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
 
 - (void) setFrame: (CYVideoFrame *) frame
 {
+    if (![frame isKindOfClass:[CYVideoFrameYUV class]]) {
+        return;
+    }
     CYVideoFrameYUV *yuvFrame = (CYVideoFrameYUV *)frame;
     
     assert(yuvFrame.luma.length == yuvFrame.width * yuvFrame.height);
@@ -295,8 +298,8 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
         glGenTextures(3, _textures);
 
     const UInt8 *pixels[3] = { yuvFrame.luma.bytes, yuvFrame.chromaB.bytes, yuvFrame.chromaR.bytes };
-    const NSUInteger widths[3]  = { frameWidth, frameWidth / 2, frameWidth / 2 };
-    const NSUInteger heights[3] = { frameHeight, frameHeight / 2, frameHeight / 2 };
+    const GLsizei widths[3]  = { (GLsizei)frameWidth, (GLsizei)(frameWidth / 2), (GLsizei)(frameWidth / 2) };
+    const GLsizei heights[3] = { (GLsizei)frameHeight, (GLsizei)(frameHeight / 2), (GLsizei)(frameHeight / 2) };
     
     for (int i = 0; i < 3; ++i) {
         
@@ -363,6 +366,8 @@ enum {
     GLfloat         _vertices[8];
     
     id<CYPlayerGLRenderer> _renderer;
+    
+    dispatch_semaphore_t _glRenderLock;
 }
 
 + (Class) layerClass
@@ -375,6 +380,8 @@ enum {
 {
     self = [super initWithFrame:frame];
     if (self) {
+        
+        _glRenderLock = dispatch_semaphore_create(1);//初始化锁
         
         _decoder = decoder;
         
@@ -450,6 +457,11 @@ enum {
     }
     
     return self;
+}
+
+- (void)setDecoder:(CYPlayerDecoder *)decoder
+{
+    _decoder = decoder;
 }
 
 - (UIImage*)snapshot
@@ -670,8 +682,7 @@ exit:
 
 - (void)render: (CYVideoFrame *) frame
 {
-    NSLock * lock = [[NSLock alloc] init];
-    [lock lock];
+    dispatch_semaphore_wait(self->_glRenderLock, DISPATCH_TIME_FOREVER);//加锁
     static const GLfloat texCoords[] = {
         0.0f, 1.0f,
         1.0f, 1.0f,
@@ -715,7 +726,7 @@ exit:
     
     glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
     [_context presentRenderbuffer:GL_RENDERBUFFER];
-    [lock unlock];
+    dispatch_semaphore_signal(self->_glRenderLock);//放行
 }
 
 @end

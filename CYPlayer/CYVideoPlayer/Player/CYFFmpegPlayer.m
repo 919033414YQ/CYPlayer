@@ -154,6 +154,9 @@ CYAudioManagerDelegate>
     NSDate              *_debugAudioStatusTS;
 #endif
     
+    //当前清晰度
+    CYFFmpegPlayerDefinitionType _definitionType;
+    BOOL _isChangingDefinition;
     
 }
 
@@ -214,6 +217,14 @@ CYAudioManagerDelegate>
     }
 }
 
+- (instancetype)init
+{
+    if (self = [super init]) {
+        [self resetSetting];
+    }
+    return self;
+}
+
 + (id) movieViewWithContentPath: (NSString *) path
                      parameters: (NSDictionary *) parameters
 {
@@ -227,6 +238,7 @@ CYAudioManagerDelegate>
     
     self = [super init];
     if (self) {
+        [self resetSetting];
         [self setupPlayerWithPath:path parameters:parameters];
         self.rate = 1.0;
     }
@@ -242,11 +254,9 @@ CYAudioManagerDelegate>
     [self view];
     [self orentation];
     [self volBrig];
-    __weak typeof(self) _self = self;
+    //__weak typeof(self) _self = self;
     [self settingPlayer:^(CYVideoPlayerSettings * _Nonnull settings) {
-        __strong typeof(_self) self = _self;
-        if ( !self ) return ;
-        [self resetSetting];
+
     }];
     [self registrar];
     
@@ -304,6 +314,7 @@ CYAudioManagerDelegate>
         
         NSError *error = nil;
         [decoder openFile:path error:&error];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
         
         if (strongSelf) {
             dispatch_sync(dispatch_get_main_queue(), ^{
@@ -318,6 +329,96 @@ CYAudioManagerDelegate>
         }
     });
 }
+
+- (void)changePath:(NSString *)path
+{
+    _path = path;
+    
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
+    CYVideoDecodeType type = _decoder.decodeType;
+    [decoder setDecodeType:type];
+    __weak __typeof(&*self)weakSelf = self;
+    
+    decoder.interruptCallback = ^BOOL(){
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        return strongSelf ? [strongSelf interruptDecoder] : YES;
+    };
+    self.autoplay = YES;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        
+        NSError *error = nil;
+        [decoder openFile:path error:&error];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
+        
+        if (strongSelf) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                __strong __typeof(&*self)strongSelf2 = weakSelf;
+                if (strongSelf2 && !strongSelf.stopped) {
+                    [decoder setPosition:strongSelf.decoder.position];
+                    //关闭原先的解码器
+//                    [strongSelf.decoder closeFile];
+                    strongSelf2.controlView.decoder = decoder;
+                    //播放器连接新的解码器decoder
+                    [strongSelf2 setMovieDecoder:decoder withError:error];
+                    
+                    [strongSelf2 showTitle:@"切换完成"];
+                    strongSelf2->_isChangingDefinition = NO;
+                }
+                else if (error) {
+                    [weakSelf _itemPlayFailed];
+                    strongSelf2->_isChangingDefinition = NO;
+                }
+            });
+        }
+    });
+}
+
+- (void)refreshDefinitionBtnStatus
+{
+    NSString * title = @"";
+    if (_isChangingDefinition)
+    {
+        [self.controlView.bottomControlView.definitionBtn setTitle:@"正在切换" forState:UIControlStateNormal];
+        self.controlView.bottomControlView.definitionBtn.enabled = NO;
+    }
+    else
+    {
+        switch (_definitionType) {
+            case CYFFmpegPlayerDefinitionLLD:
+            {
+                title = @"流畅";
+            }
+                break;
+            case CYFFmpegPlayerDefinitionLSD:
+            {
+                title = @"标清";
+            }
+                break;
+            case CYFFmpegPlayerDefinitionLHD:
+            {
+                title = @"高清";
+            }
+                break;
+            case CYFFmpegPlayerDefinitionLUD:
+            {
+                title = @"超清";
+            }
+                break;
+                
+            default:
+            {
+                title = @"标清";
+            }
+                break;
+        }
+
+        [self.controlView.bottomControlView.definitionBtn setTitle:title forState:UIControlStateNormal];
+        self.controlView.bottomControlView.definitionBtn.enabled = YES;
+    }
+}
+
+
 
 - (void) dealloc
 {
@@ -904,12 +1005,12 @@ CYAudioManagerDelegate>
     
     if (!error && decoder) {
         _decoder        = decoder;
-        _asyncDecodeQueue  = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
-        _videoFrames    = [NSMutableArray array];
-        _audioFrames    = [NSMutableArray array];
+        if (!_asyncDecodeQueue) _asyncDecodeQueue  = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
+        if (!_videoFrames)_videoFrames    = [NSMutableArray array];
+        if (!_audioFrames)_audioFrames    = [NSMutableArray array];
         
         if (_decoder.subtitleStreamsCount) {
-            _subtitles = [NSMutableArray array];
+           if (!_subtitles) _subtitles = [NSMutableArray array];
         }
         
         if (_decoder.isNetwork) {
@@ -965,70 +1066,95 @@ CYAudioManagerDelegate>
 
 - (void) setupPresentView
 {
-    CGRect bounds = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height * 9/16);
-    
-    if (_decoder.validVideo) {
-        _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
-        _glView.contentScaleFactor = [UIScreen mainScreen].scale;
-    }
-    
-    if (!_glView) {
-        
-        LoggerVideo(0, @"fallback to use RGB video frame and UIKit");
-        [_decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
-        _imageView = [[UIImageView alloc] initWithFrame:bounds];
-        _imageView.backgroundColor = [UIColor blackColor];
-    }
-    
-    UIView *frameView = [self presentView];
-    frameView.contentMode = UIViewContentModeScaleAspectFit;
-    frameView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin;
-    
-    [self.view insertSubview:frameView atIndex:0];
-    [frameView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(@0);
-    }];
-    
-    if (_decoder.validVideo) {
-        __weak typeof(self) _self = self;
-        if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"]) {
-            return;
+    @synchronized (_glView) {
+        UIView *frameView = [self presentView];
+        if (frameView) {
+            if ([frameView isKindOfClass:[CYPlayerGLView class]]) {
+                if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
+                    [((CYPlayerGLView *)frameView) setDecoder:_decoder];
+                    [((CYPlayerGLView *)frameView) updateVertices];
+                }else {
+                    [frameView removeFromSuperview];
+                    frameView = nil;
+                }
+            }else if ([frameView isKindOfClass:[UIImageView class]]){
+                if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
+                    [frameView removeFromSuperview];
+                    frameView = nil;
+                }
+            }
         }
-        [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
-            __strong typeof(_self) self = _self;
-            if ( !self ) return;
-            if (error)
-            {
-                _self.hasBeenGeneratedPreviewImages = NO;
+        
+        if (!frameView) {
+            CGRect bounds = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height * 9/16);
+            
+            if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
+                _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
+                _glView.contentScaleFactor = [UIScreen mainScreen].scale;
+            }
+            
+            if (!_glView) {
+                
+                LoggerVideo(0, @"fallback to use RGB video frame and UIKit");
+                [_decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
+                _imageView = [[UIImageView alloc] initWithFrame:bounds];
+                _imageView.backgroundColor = [UIColor blackColor];
+            }
+            
+            frameView = [self presentView];
+            frameView.contentMode = UIViewContentModeScaleAspectFit;
+            frameView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin;
+            
+            [self.view insertSubview:frameView atIndex:0];
+            [frameView mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.edges.equalTo(@0);
+            }];
+        }
+        
+        if (_decoder.validVideo) {
+            __weak typeof(self) _self = self;
+            if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"]) {
                 return;
             }
-            _self.hasBeenGeneratedPreviewImages = YES;
-            if ( _self.orentation.fullScreen ) {
-                _cyAnima(^{
-                    _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
-                    [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
-                        make.width.equalTo(@49);
-                    }];
-                });
-            }
-            _self.controlView.previewView.previewFrames = frames;
-        }];
+            [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
+                __strong typeof(_self) self = _self;
+                if ( !self ) return;
+                if (error)
+                {
+                    _self.hasBeenGeneratedPreviewImages = NO;
+                    return;
+                }
+                _self.hasBeenGeneratedPreviewImages = YES;
+                if ( _self.orentation.fullScreen ) {
+                    _cyAnima(^{
+                        _cyShowViews(@[_self.controlView.topControlView.previewBtn]);
+                        [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                            make.width.equalTo(@49);
+                        }];
+                    });
+                }
+                _self.controlView.previewView.previewFrames = frames;
+            }];
+            
+        }
+        else
+        {
+            
+            _imageView.image = [UIImage imageNamed:@"cyplayer.bundle/music_icon.png"];
+            _imageView.contentMode = UIViewContentModeCenter;
+        }
         
-    } else {
+        if (_decoder.duration == MAXFLOAT) {
+            
+        } else {
+            
+        }
         
-        _imageView.image = [UIImage imageNamed:@"cyplayer.bundle/music_icon.png"];
-        _imageView.contentMode = UIViewContentModeCenter;
+        if (_decoder.subtitleStreamsCount) {
+            
+        }
     }
     
-    if (_decoder.duration == MAXFLOAT) {
-        
-    } else {
-        
-    }
-    
-    if (_decoder.subtitleStreamsCount) {
-        
-    }
 }
 
 - (void) handleDecoderMovieError: (NSError *) error
@@ -1780,8 +1906,9 @@ CYAudioManagerDelegate>
         if ([self.decoder validVideo])
         {
             if (!leftFrames ||
-                !(_videoBufferedDuration > _maxBufferedDuration) ||
-                !(_audioBufferedDuration > _maxBufferedDuration))
+                !(_videoBufferedDuration > _maxBufferedDuration)
+//                || !(_audioBufferedDuration > _maxBufferedDuration)
+                )
             {
                 //            [self asyncDecodeFrames];
                 [self concurrentAsyncDecodeFrames];
@@ -1832,6 +1959,10 @@ CYAudioManagerDelegate>
             if ([weakSelf.delegate respondsToSelector:@selector(CYFFmpegPlayer:UpdatePosition:Duration:isDrag:)])
             {
                 [weakSelf.delegate CYFFmpegPlayer:weakSelf UpdatePosition:position Duration:duration isDrag:strongSelf->_isDraging];
+            }
+            
+            if (strongSelf.settings.definitionTypes != CYFFmpegPlayerDefinitionNone) {
+                [strongSelf refreshDefinitionBtnStatus];
             }
         }
     });
@@ -1991,7 +2122,9 @@ CYAudioManagerDelegate>
     {
         if (_glView) {
             
-            [_glView render:frame];
+            @synchronized (_glView) {
+                [_glView render:frame];
+            }
             
         } else {
             
@@ -2390,36 +2523,29 @@ CYAudioManagerDelegate>
         }
         if ( self.isLockedScrren ) return NO;
         CGPoint point = [gesture locationInView:gesture.view];
+        BOOL result = YES;
         if (CGRectContainsPoint(self.moreSettingView.frame, point) || CGRectContainsPoint(self.moreSecondarySettingView.frame, point))
         {
-            if (CGRectContainsPoint(self.controlView.previewView.frame, point))
-            {
-                if (self.controlView.previewView.alpha == 0.0)
-                {
-                    return YES;
-                }
-                else
-                {
-                    return NO;
-                }
-            }
-            else
-            {
-                return NO;
-            }
+            result = NO;
         }
-        else if (CGRectContainsPoint(self.controlView.previewView.frame, point))
+        
+        if (CGRectContainsPoint(self.controlView.previewView.frame, point))
         {
-            if (self.controlView.previewView.alpha == 0.0)
+            if (self.controlView.previewView.alpha != 0.0)
             {
-                return YES;
-            }
-            else
-            {
-                return NO;
+                result = NO;
             }
         }
-        else return YES;
+        
+        if (CGRectContainsPoint(self.controlView.selectTableView.frame, point))
+        {
+            if (self.controlView.selectTableView.alpha != 0.0)
+            {
+                result = NO;
+            }
+        }
+        
+        return result;
     };
     
     
@@ -2439,6 +2565,11 @@ CYAudioManagerDelegate>
             else {
                 self.hideControl = !self.isHiddenControl;
             }
+            
+            if (self.controlView.selectTableView.alpha != 0.0) {
+                _cyHiddenViews(@[self.controlView.selectTableView]);
+            }
+            
         });
     };
     
@@ -3002,6 +3133,93 @@ CYAudioManagerDelegate>
     });
 }
 
+- (void)controlViewOnDefinitionBtnClick:(CYVideoPlayerControlView *)controlView
+{
+    __weak typeof(self) _self = self;
+    
+    _cyAnima(^{
+        _cyShowViews(@[self.controlView.selectTableView]);
+        self.hideControl = YES;
+    });
+    
+    //构造视频清晰度数据
+    __block NSMutableArray * definitions = [[NSMutableArray alloc] initWithCapacity:4];
+    if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLLD) {
+        [definitions addObject:@"流畅"];
+    }
+    if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLSD) {
+        [definitions addObject:@"标清"];
+    }
+    if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLHD) {
+        [definitions addObject:@"高清"];
+    }
+    if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLUD) {
+        [definitions addObject:@"超清"];
+    }
+    
+    self.controlView.selectTableView.dataArray = definitions;
+    
+    self.controlView.selectTableView.numberOfRowsInSection = ^NSInteger(UITableView * _Nonnull tableView, NSInteger section) {
+        return definitions.count;
+    };
+    
+    self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+        cell.backgroundColor = [UIColor clearColor];
+        cell.textLabel.textColor = [UIColor whiteColor];
+        cell.textLabel.font = [UIFont fontWithName:@"PingFang-SC-Medium" size:20];
+        cell.textLabel.textAlignment = NSTextAlignmentCenter;
+        cell.textLabel.text = definitions[indexPath.row];
+        return cell;
+    };
+    
+    self.controlView.selectTableView.heightForRowAtIndexPath = ^CGFloat(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        __strong typeof(_self) self = _self;
+        return self.controlView.selectTableView.frame.size.height / 4.0;
+    };
+    
+    self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        __strong typeof(_self) self = _self;
+        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ChangeDefinition:)])
+        {
+            NSString * definitionStr = [definitions objectAtIndex:indexPath.row];
+            CYFFmpegPlayerDefinitionType definiType = 0;
+            if ([definitionStr isEqualToString:@"流畅"])
+            {
+                definiType = CYFFmpegPlayerDefinitionLLD;
+            }
+            else if ([definitionStr isEqualToString:@"标清"])
+            {
+                definiType = CYFFmpegPlayerDefinitionLSD;
+            }
+            else if ([definitionStr isEqualToString:@"高清"])
+            {
+                definiType = CYFFmpegPlayerDefinitionLHD;
+            }
+            else if ([definitionStr isEqualToString:@"超清"])
+            {
+                definiType = CYFFmpegPlayerDefinitionLUD;
+            }
+            if (self->_definitionType != definiType) {
+                self->_definitionType = definiType;
+                [self.delegate CYFFmpegPlayer:self ChangeDefinition:definiType];
+                //切换清晰度的btn界面处理
+                self->_isChangingDefinition = YES;
+            }
+        }
+        _cyAnima(^{
+            _cyHiddenViews(@[self.controlView.selectTableView]);
+        });
+    };
+    
+    [self.controlView.selectTableView reloadTableView];
+}
+
+- (void)controlViewOnSelectionsBtnClick:(CYVideoPlayerControlView *)controlView
+{
+    
+}
+
 @end
 
 # pragma mark -
@@ -3224,7 +3442,7 @@ CYAudioManagerDelegate>
     // hidden
     _cyHiddenViews(@[
         self.controlView.previewView,
-        self.controlView.selectTableView,
+//        self.controlView.selectTableView,
     ]);
 //    self.controlView.previewView.hidden = YES;
     
@@ -3252,7 +3470,7 @@ CYAudioManagerDelegate>
     // hidden
     _cyHiddenViews(@[self.controlView.bottomProgressSlider,
                      self.controlView.previewView,
-                     self.controlView.selectTableView,
+//                     self.controlView.selectTableView,
     ]);
 //    _cyHiddenViews(@[self.controlView.previewView]);
 //    self.controlView.previewView.hidden = YES;

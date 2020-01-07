@@ -90,19 +90,19 @@
         
         if (self.definitionBtn.hidden && self.selectionsBtn.hidden)
         {
-            [self.currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.currentTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.centerY.equalTo(self.playBtn);
                 make.leading.equalTo(self.playBtn.mas_trailing).offset(0);
             }];
             
-            [self.separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.separateLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.centerY.equalTo(self.playBtn);
                 make.leading.equalTo(self.currentTimeLabel.mas_trailing);
             }];
             
-            [self.durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.durationTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.centerY.equalTo(self.playBtn);
                 make.leading.equalTo(self.separateLabel.mas_trailing);
@@ -110,19 +110,19 @@
         }
         else
         {
-            [self.currentTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.currentTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.top.equalTo(self.playBtn);
                 make.leading.equalTo(self.playBtn.mas_trailing).offset(0);
             }];
             
-            [self.separateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.separateLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.top.equalTo(self.playBtn);
                 make.leading.equalTo(self.currentTimeLabel.mas_trailing);
             }];
             
-            [self.durationTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            [self.durationTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
                 //        make.centerY.equalTo(_playBtn);
                 make.top.equalTo(self.playBtn);
                 make.leading.equalTo(self.separateLabel.mas_trailing);
@@ -151,7 +151,7 @@
 - (UIButton *)definitionBtn
 {
     if (_definitionBtn) return _definitionBtn;
-    _definitionBtn = [CYUIButtonFactory buttonWithTitle:@"超清" titleColor:[UIColor greenColor] font:[UIFont systemFontOfSize:13] target:self sel:@selector(onDefinitionBtnClick:)];
+    _definitionBtn = [CYUIButtonFactory buttonWithTitle:@"超清" titleColor:[UIColor greenColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onDefinitionBtnClick:)];
     _definitionBtn.layer.cornerRadius = 2.0;
     _definitionBtn.layer.borderWidth = 0.5;
     _definitionBtn.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -162,7 +162,7 @@
 - (UIButton *)selectionsBtn
 {
     if (_selectionsBtn) return _selectionsBtn;
-    _selectionsBtn = [CYUIButtonFactory buttonWithTitle:@"选集" titleColor:[UIColor orangeColor] font:[UIFont systemFontOfSize:13] target:self sel:@selector(onSelectionsBtnClick:)];
+    _selectionsBtn = [CYUIButtonFactory buttonWithTitle:@"选集" titleColor:[UIColor orangeColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onSelectionsBtnClick:)];
     _selectionsBtn.layer.cornerRadius = 2.0;
     _selectionsBtn.layer.borderWidth = 0.5;
     _selectionsBtn.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -260,6 +260,7 @@
         make.bottom.equalTo(_playBtn);
         make.leading.equalTo(_playBtn.mas_trailing);
         make.width.equalTo(_selectionsBtn.mas_width);
+        make.height.equalTo(@30);
     }];
     
     [_selectionsBtn mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -267,6 +268,7 @@
         make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
         make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
         make.width.equalTo(_definitionBtn.mas_width);
+        make.height.equalTo(@30);
     }];
     
     
@@ -295,12 +297,17 @@
 # pragma mark - Events
 - (void)onDefinitionBtnClick:(UIButton *)sender
 {
-    
+    if ([_delegate respondsToSelector:@selector(bottomControlViewOnDefinitionBtnClick:)]) {
+        [_delegate bottomControlViewOnDefinitionBtnClick:self];
+    }
 }
 
 - (void)onSelectionsBtnClick:(UIButton *)sender
 {
-    
+    if ([_delegate respondsToSelector:@selector(bottomControlViewOnSelectionsBtnClick:)])
+    {
+        [_delegate bottomControlViewOnSelectionsBtnClick:self];
+    }
 }
 
 - (void)clickedBtn:(UIButton *)btn {

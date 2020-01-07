@@ -1416,6 +1416,7 @@ static int interrupt_callback(void *ctx);
 
 -(void) closeFile
 {
+    dispatch_semaphore_wait(self->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
     [self closeAudioStream];
     [self closeVideoStream];
     [self closeSubtitleStream];
@@ -1441,6 +1442,7 @@ static int interrupt_callback(void *ctx);
     
     _interruptCallback = nil;
     _isEOF = NO;
+    dispatch_semaphore_signal(self->_avReadFrameLock);//放行
 }
 
 - (void) closeFilter
@@ -2075,7 +2077,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame.duration,
                 av_frame_get_pkt_pos(videoFrame));
     
-    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//    CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
     //NSLog(@"Linked in %f ms", linkTime *1000.0);
 #endif
     
@@ -2655,6 +2657,11 @@ error:
     return _videoFrameFormat == format;
 }
 
+- (CYVideoFrameFormat)getVideoFrameFormat
+{
+    return _videoFrameFormat;
+}
+
 
 - (void) asyncDecodeFrames:(CGFloat)minDuration targetPosition:(CGFloat)targetPos compeletionHandler:(CYPlayerCompeletionDecode)compeletion
 {
@@ -2757,9 +2764,11 @@ error:
 
 - (void)flush
 {
+    dispatch_semaphore_wait(self->_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
     if (_formatCtx) {
         avformat_flush(_formatCtx);
     }
+    dispatch_semaphore_signal(self->_avReadFrameLock);//放行
 }
 
 - (void) concurrentDecodeFrames:(CGFloat)minDuration compeletionHandler:(CYPlayerCompeletionDecode)compeletion

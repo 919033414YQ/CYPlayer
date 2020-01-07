@@ -64,6 +64,8 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ControlViewDisplayStatus:(BOOL)isHidden;
 
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeDefinition:(CYFFmpegPlayerDefinitionType)definition;
+
 
 @end
 
@@ -77,6 +79,8 @@ CYVideoPlayerMoreSettingSecondaryView;
 - (void)setupPlayerWithPath:(NSString *)path;
 
 - (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters;
+
+- (void)changePath:(NSString *)path;
 
 
 @property (nonatomic, strong) CYPlayerDecoder *decoder;

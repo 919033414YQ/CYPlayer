@@ -51,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)controlView:(CYVideoPlayerControlView *)controlView clickedBtnTag:(CYVideoPlayControlViewTag)tag;
 - (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewItem:(CYVideoPreviewModel *)item;
 - (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewFrame:(CYVideoFrame *)frame;
+- (void)controlViewOnDefinitionBtnClick:(CYVideoPlayerControlView *)controlView;
+
+- (void)controlViewOnSelectionsBtnClick:(CYVideoPlayerControlView *)controlView;
+
 
 @end
 

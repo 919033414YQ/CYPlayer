@@ -68,7 +68,7 @@
 
 - (UIButton *)failedBtn {
     if ( _failedBtn ) return _failedBtn;
-    _failedBtn = [CYUIButtonFactory buttonWithTitle:@"加载失败,点击重试" titleColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:14] backgroundColor:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_LoadFailed];
+    _failedBtn = [CYUIButtonFactory buttonWithTitle:@" 加载失败 \n 点击重试 " titleColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:14] backgroundColor:nil target:self sel:@selector(clickedBtn:) tag:CYVideoPlayControlViewTag_LoadFailed];
     _failedBtn.layer.cornerRadius = 2.0;
     _failedBtn.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
     _failedBtn.clipsToBounds = YES;

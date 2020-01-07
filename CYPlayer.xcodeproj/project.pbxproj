@@ -636,15 +636,15 @@
 		0E24076020FE1630008BEAB5 /* Player */ = {
 			isa = PBXGroup;
 			children = (
-				0E24076420FE1630008BEAB5 /* FFMpegDecoder */,
-				0E24076320FE1630008BEAB5 /* CYVideoPlayerView.h */,
-				0E24076120FE1630008BEAB5 /* CYVideoPlayerView.m */,
-				0E24076C20FE1630008BEAB5 /* CYVideoPlayer.h */,
-				0E24076220FE1630008BEAB5 /* CYVideoPlayer.m */,
 				0ECD4C0D2111A33C0078D24A /* CYFFmpegPlayer.h */,
 				0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */,
 				0ECD4C0F2111A33C0078D24A /* CYPlayerGLView.h */,
 				0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */,
+				0E24076C20FE1630008BEAB5 /* CYVideoPlayer.h */,
+				0E24076220FE1630008BEAB5 /* CYVideoPlayer.m */,
+				0E24076320FE1630008BEAB5 /* CYVideoPlayerView.h */,
+				0E24076120FE1630008BEAB5 /* CYVideoPlayerView.m */,
+				0E24076420FE1630008BEAB5 /* FFMpegDecoder */,
 			);
 			path = Player;
 			sourceTree = "<group>";

@@ -45,11 +45,18 @@
     }];
 }
 
+
+# pragma mark - Public Methods
+- (void)reloadTableView
+{
+    [self.selectTableView reloadData];
+}
+
 # pragma mark - Getter/Setter
 - (UITableView *)selectTableView
 {
     if (_selectTableView) return _selectTableView;
-    _selectTableView = [CYUITableViewFactory tableViewWithStyle:UITableViewStylePlain backgroundColor:[UIColor colorWithRed:255 green:255 blue:255 alpha:0.5] separatorStyle:UITableViewCellSeparatorStyleSingleLine showsVerticalScrollIndicator:YES delegate:self dataSource:self];
+    _selectTableView = [CYUITableViewFactory tableViewWithStyle:UITableViewStylePlain backgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] separatorStyle:UITableViewCellSeparatorStyleSingleLineEtched showsVerticalScrollIndicator:YES delegate:self dataSource:self];
     return _selectTableView;
 }
 
@@ -99,6 +106,14 @@
         return self.heightForFooterInSection(tableView, section);
     }
     return 0.01;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (self.didSelectRowAtIndexPath)
+    {
+        self.didSelectRowAtIndexPath(tableView, indexPath);
+    }
 }
 
 @end

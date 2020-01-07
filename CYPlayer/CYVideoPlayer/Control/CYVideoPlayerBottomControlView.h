@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (void)bottomControlView:(CYVideoPlayerBottomControlView *)view clickedBtnTag:(CYVideoPlayControlViewTag)tag;
 
+- (void)bottomControlViewOnDefinitionBtnClick:(CYVideoPlayerBottomControlView *)view;
+
+- (void)bottomControlViewOnSelectionsBtnClick:(CYVideoPlayerBottomControlView *)view;
+
 @end
 
 NS_ASSUME_NONNULL_END

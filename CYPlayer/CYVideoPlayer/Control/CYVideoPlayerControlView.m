@@ -134,7 +134,7 @@ UIGestureRecognizerDelegate>
     [_selectTableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
         make.width.equalTo(_centerControlView.superview).multipliedBy(0.382);
-        make.height.equalTo(_centerControlView.superview.mas_height);
+        make.height.equalTo(_centerControlView.superview.mas_height).multipliedBy(0.618);
     }];
     
     [_bottomControlView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -174,6 +174,8 @@ UIGestureRecognizerDelegate>
 {
     if ( _selectTableView ) return _selectTableView;
     _selectTableView = [CYVideoPlayerSelectTableView new];
+    _selectTableView.layer.cornerRadius = 3.0;
+    _selectTableView.layer.masksToBounds = YES;
     return _selectTableView;
 }
 
@@ -208,6 +210,20 @@ UIGestureRecognizerDelegate>
 - (void)bottomControlView:(CYVideoPlayerBottomControlView *)view clickedBtnTag:(CYVideoPlayControlViewTag)tag {
     if ( ![_delegate respondsToSelector:@selector(controlView:clickedBtnTag:)] ) return;
     [_delegate controlView:self clickedBtnTag:tag];
+}
+
+- (void)bottomControlViewOnSelectionsBtnClick:(CYVideoPlayerBottomControlView *)view
+{
+    if ([_delegate respondsToSelector:@selector(controlViewOnSelectionsBtnClick:)]) {
+        [_delegate controlViewOnSelectionsBtnClick:self];
+    }
+}
+
+- (void)bottomControlViewOnDefinitionBtnClick:(CYVideoPlayerBottomControlView *)view
+{
+    if ([_delegate respondsToSelector:@selector(controlViewOnDefinitionBtnClick:)]) {
+        [_delegate controlViewOnDefinitionBtnClick:self];
+    }
 }
 
 - (void)previewView:(CYVideoPlayerPreviewView *)view didSelectItem:(CYVideoPreviewModel *)item {
