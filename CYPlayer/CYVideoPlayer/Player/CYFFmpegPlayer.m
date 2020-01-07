@@ -1962,6 +1962,9 @@ CYAudioManagerDelegate>
             }
             
             if (strongSelf.settings.definitionTypes != CYFFmpegPlayerDefinitionNone) {
+                if (strongSelf->_definitionType == 0) {
+                    strongSelf->_definitionType = CYFFmpegPlayerDefinitionLSD;
+                }
                 [strongSelf refreshDefinitionBtnStatus];
             }
         }
