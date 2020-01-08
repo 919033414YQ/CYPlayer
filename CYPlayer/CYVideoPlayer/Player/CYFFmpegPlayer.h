@@ -37,6 +37,7 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerPlayState) {
 
 typedef void (^CYPlayerImageGeneratorCompletionHandler)(NSMutableArray<CYVideoFrame *> * frames, NSError * error);
 
+typedef void (^CYPlayerSelectionsHandler)(NSInteger selectionsNumber);
 
 
 extern NSString * const CYPlayerParameterMinBufferedDuration;    // Float
@@ -66,6 +67,9 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player ChangeDefinition:(CYFFmpegPlayerDefinitionType)definition;
 
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player SetSelectionsNumber:(CYPlayerSelectionsHandler)setNumHandler;
+
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player changeSelections:(NSInteger)selectionsNum;
 
 @end
 
@@ -80,7 +84,8 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)setupPlayerWithPath:(NSString *)path parameters: (NSDictionary *) parameters;
 
-- (void)changePath:(NSString *)path;
+- (void)changeDefinitionPath:(NSString *)path;
+- (void)changeSelectionsPath:(NSString *)path;
 
 
 @property (nonatomic, strong) CYPlayerDecoder *decoder;

@@ -157,6 +157,8 @@ CYAudioManagerDelegate>
     //当前清晰度
     CYFFmpegPlayerDefinitionType _definitionType;
     BOOL _isChangingDefinition;
+    NSInteger _currentSelections;
+    BOOL _isChangingSelections;
     
 }
 
@@ -330,7 +332,56 @@ CYAudioManagerDelegate>
     });
 }
 
-- (void)changePath:(NSString *)path
+
+- (void)changeSelectionsPath:(NSString *)path
+{
+    _path = path;
+    
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
+    CYVideoDecodeType type = _decoder.decodeType;
+    [decoder setDecodeType:type];
+    __weak __typeof(&*self)weakSelf = self;
+    
+    decoder.interruptCallback = ^BOOL(){
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        return strongSelf ? [strongSelf interruptDecoder] : YES;
+    };
+    [self pause];
+    self.autoplay = YES;
+    self.suspend = NO;//手动暂停会挂起,这里要取消挂起才会自动播放
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        
+        NSError *error = nil;
+        [decoder openFile:path error:&error];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
+        
+        if (strongSelf) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                __strong __typeof(&*self)strongSelf2 = weakSelf;
+                if (strongSelf2 && !strongSelf.stopped) {
+                    [decoder setPosition:0];
+                    //关闭原先的解码器
+//                    [strongSelf.decoder closeFile];
+                    strongSelf2.controlView.decoder = decoder;
+                    //清除旧的缓存
+                    [strongSelf2 freeBufferedFrames];
+                    //播放器连接新的解码器decoder
+                    [strongSelf2 setMovieDecoder:decoder withError:error];
+                    
+                    [strongSelf2 showTitle:@"切换完成"];
+                    strongSelf2->_isChangingSelections = NO;
+                }
+                else if (error) {
+                    [weakSelf _itemPlayFailed];
+                    strongSelf2->_isChangingSelections = NO;
+                }
+            });
+        }
+    });
+}
+
+- (void)changeDefinitionPath:(NSString *)path
 {
     _path = path;
     
@@ -372,6 +423,20 @@ CYAudioManagerDelegate>
             });
         }
     });
+}
+
+- (void)refreshSelectionsBtnStatus
+{
+    if (_isChangingSelections)
+    {
+        [self.controlView.bottomControlView.selectionsBtn setTitle:@"正在切换" forState:UIControlStateNormal];
+        self.controlView.bottomControlView.selectionsBtn.enabled = NO;
+    }
+    else
+    {
+        [self.controlView.bottomControlView.selectionsBtn setTitle:@"选集" forState:UIControlStateNormal];
+        self.controlView.bottomControlView.selectionsBtn.enabled = YES;
+    }
 }
 
 - (void)refreshDefinitionBtnStatus
@@ -417,7 +482,6 @@ CYAudioManagerDelegate>
         self.controlView.bottomControlView.definitionBtn.enabled = YES;
     }
 }
-
 
 
 - (void) dealloc
@@ -1967,6 +2031,10 @@ CYAudioManagerDelegate>
                 }
                 [strongSelf refreshDefinitionBtnStatus];
             }
+            
+            if (strongSelf.settings.enableSelections) {
+                [strongSelf refreshSelectionsBtnStatus];
+            }
         }
     });
 }
@@ -2791,7 +2859,7 @@ CYAudioManagerDelegate>
     _cyAnima(^{
         self.hideControl = NO;
     });
-    if ( self.autoplay && !self.userClickedPause && !self.suspend ) {
+    if ( self.isAutoplay && !self.userClickedPause && !self.suspend ) {
         if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayerStartAutoPlaying:)])
         {
             [self.delegate CYFFmpegPlayerStartAutoPlaying:self];
@@ -3220,7 +3288,62 @@ CYAudioManagerDelegate>
 
 - (void)controlViewOnSelectionsBtnClick:(CYVideoPlayerControlView *)controlView
 {
+    if (![self.delegate respondsToSelector:@selector(CYFFmpegPlayer:SetSelectionsNumber:)]) {
+        return;
+    }
     
+    _cyAnima(^{
+        _cyShowViews(@[self.controlView.selectTableView]);
+        self.hideControl = YES;
+    });
+    
+    __weak typeof(self) _self = self;
+    [self.delegate CYFFmpegPlayer:self SetSelectionsNumber:^(NSInteger selectionsNumber) {
+        __strong typeof(_self) self = _self;
+        if (!self) {
+            return;
+        }
+        __block NSInteger selectionsNum = selectionsNumber;
+        self.controlView.selectTableView.numberOfRowsInSection = ^NSInteger(UITableView * _Nonnull tableView, NSInteger section) {
+            return selectionsNum;
+        };
+        
+        self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+            UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+            cell.backgroundColor = [UIColor clearColor];
+            cell.textLabel.textColor = [UIColor whiteColor];
+            cell.textLabel.font = [UIFont fontWithName:@"PingFang-SC-Medium" size:19];
+            cell.textLabel.textAlignment = NSTextAlignmentCenter;
+            cell.textLabel.text = [NSString stringWithFormat:@"第%ld节",(long)indexPath.row + 1];
+            return cell;
+        };
+        
+        self.controlView.selectTableView.heightForRowAtIndexPath = ^CGFloat(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+            __strong typeof(_self) self = _self;
+            if (selectionsNumber > 4) {
+                return 30.0;
+            }
+            return self.controlView.selectTableView.frame.size.height / 4.0;
+        };
+        
+        self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+            __strong typeof(_self) self = _self;
+            if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:changeSelections:)])
+            {
+                if (self->_currentSelections != indexPath.row) {
+                    self->_currentSelections = indexPath.row;
+                    [self.delegate CYFFmpegPlayer:self changeSelections:indexPath.row];
+                    //切换清晰度的btn界面处理
+                    self->_isChangingSelections = YES;
+                }
+            }
+            _cyAnima(^{
+                _cyHiddenViews(@[self.controlView.selectTableView]);
+            });
+        };
+        
+        [self.controlView.selectTableView reloadTableView];
+    }];
 }
 
 @end
