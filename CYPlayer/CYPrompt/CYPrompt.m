@@ -62,14 +62,12 @@
     if ( !_presentView ) return;
     CGFloat maxWdith = 0 != self.config.maxWidth ? self.config.maxWidth : _presentView.frame.size.width * 0.6;
     CGSize size = [self _sizeForTitle:title constraints:CGSizeMake(maxWdith, CGFLOAT_MAX)];
-    [_backgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_backgroundView mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.center.offset(0);
         make.width.equalTo(@(size.width + self.config.insets.left + self.config.insets.right));
         make.height.equalTo(@(size.height + self.config.insets.top + + self.config.insets.bottom));
     }];
-    [_promptLabel mas_updateConstraints:^(MASConstraintMaker *make) {
-        make.size.mas_offset(size);
-    }];
+    
     _promptLabel.text = title;
     [self _show];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_hidden) object:nil];
@@ -138,7 +136,7 @@
         result = [title sizeWithFont:self.config.font constrainedToSize:size lineBreakMode:NSLineBreakByWordWrapping];
 #pragma clang diagnostic pop
     }
-    return CGSizeMake(ceil(result.width), ceil(result.height));
+    return CGSizeMake(ceil(result.width + 5), ceil(result.height));
 }
 
 @end
