@@ -2027,7 +2027,16 @@ CYAudioManagerDelegate>
             
             if (strongSelf.settings.definitionTypes != CYFFmpegPlayerDefinitionNone) {
                 if (strongSelf->_definitionType == 0) {
-                    strongSelf->_definitionType = CYFFmpegPlayerDefinitionLSD;
+                    if (strongSelf.settings.definitionTypes & CYFFmpegPlayerDefinitionLLD) {
+                        strongSelf->_definitionType = CYFFmpegPlayerDefinitionLLD;
+                    }else if (strongSelf.settings.definitionTypes & CYFFmpegPlayerDefinitionLSD) {
+                        strongSelf->_definitionType = CYFFmpegPlayerDefinitionLSD;
+                    }else if (strongSelf.settings.definitionTypes & CYFFmpegPlayerDefinitionLHD) {
+                        strongSelf->_definitionType = CYFFmpegPlayerDefinitionLHD;
+                    }else if (strongSelf.settings.definitionTypes & CYFFmpegPlayerDefinitionLUD) {
+                        strongSelf->_definitionType = CYFFmpegPlayerDefinitionLUD;
+                    }
+                    
                 }
                 [strongSelf refreshDefinitionBtnStatus];
             }
@@ -3216,16 +3225,32 @@ CYAudioManagerDelegate>
     //构造视频清晰度数据
     __block NSMutableArray * definitions = [[NSMutableArray alloc] initWithCapacity:4];
     if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLLD) {
-        [definitions addObject:@"流畅"];
+        if (_definitionType == CYFFmpegPlayerDefinitionLLD) {
+            [definitions addObject:@">>流畅"];
+        }else {
+            [definitions addObject:@"流畅"];
+        }
     }
     if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLSD) {
-        [definitions addObject:@"标清"];
+        if (_definitionType == CYFFmpegPlayerDefinitionLSD) {
+            [definitions addObject:@">>标清"];
+        }else {
+            [definitions addObject:@"标清"];
+        }
     }
     if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLHD) {
-        [definitions addObject:@"高清"];
+        if (_definitionType == CYFFmpegPlayerDefinitionLHD) {
+            [definitions addObject:@">>高清"];
+        }else {
+            [definitions addObject:@"高清"];
+        }
     }
     if (self.settings.definitionTypes & CYFFmpegPlayerDefinitionLUD) {
-        [definitions addObject:@"超清"];
+        if (_definitionType == CYFFmpegPlayerDefinitionLUD) {
+            [definitions addObject:@">>超清"];
+        }else {
+            [definitions addObject:@"超清"];
+        }
     }
     
     self.controlView.selectTableView.dataArray = definitions;
@@ -3240,13 +3265,19 @@ CYAudioManagerDelegate>
         cell.textLabel.textColor = [UIColor whiteColor];
         cell.textLabel.font = [UIFont fontWithName:@"PingFang-SC-Medium" size:20];
         cell.textLabel.textAlignment = NSTextAlignmentCenter;
-        cell.textLabel.text = definitions[indexPath.row];
+        NSString * text = definitions[indexPath.row];
+        cell.textLabel.text = text;
+        if ([text containsString:@">>"])
+        {
+            cell.textLabel.text = [text stringByReplacingOccurrencesOfString:@">>" withString:@""];
+            cell.textLabel.textColor = [UIColor greenColor];
+        }
         return cell;
     };
     
     self.controlView.selectTableView.heightForRowAtIndexPath = ^CGFloat(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
         __strong typeof(_self) self = _self;
-        return self.controlView.selectTableView.frame.size.height / 4.0;
+        return self.controlView.selectTableView.frame.size.height / definitions.count;
     };
     
     self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
@@ -3255,19 +3286,19 @@ CYAudioManagerDelegate>
         {
             NSString * definitionStr = [definitions objectAtIndex:indexPath.row];
             CYFFmpegPlayerDefinitionType definiType = 0;
-            if ([definitionStr isEqualToString:@"流畅"])
+            if ([definitionStr containsString:@"流畅"])
             {
                 definiType = CYFFmpegPlayerDefinitionLLD;
             }
-            else if ([definitionStr isEqualToString:@"标清"])
+            else if ([definitionStr containsString:@"标清"])
             {
                 definiType = CYFFmpegPlayerDefinitionLSD;
             }
-            else if ([definitionStr isEqualToString:@"高清"])
+            else if ([definitionStr containsString:@"高清"])
             {
                 definiType = CYFFmpegPlayerDefinitionLHD;
             }
-            else if ([definitionStr isEqualToString:@"超清"])
+            else if ([definitionStr containsString:@"超清"])
             {
                 definiType = CYFFmpegPlayerDefinitionLUD;
             }
@@ -3309,12 +3340,16 @@ CYAudioManagerDelegate>
         };
         
         self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+            __strong typeof(_self) self = _self;
             UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
             cell.backgroundColor = [UIColor clearColor];
             cell.textLabel.textColor = [UIColor whiteColor];
             cell.textLabel.font = [UIFont fontWithName:@"PingFang-SC-Medium" size:19];
             cell.textLabel.textAlignment = NSTextAlignmentCenter;
             cell.textLabel.text = [NSString stringWithFormat:@"第%ld节",(long)indexPath.row + 1];
+            if (self->_currentSelections == indexPath.row) {
+                cell.textLabel.textColor = [UIColor orangeColor];
+            }
             return cell;
         };
         
@@ -3323,7 +3358,7 @@ CYAudioManagerDelegate>
             if (selectionsNumber > 4) {
                 return 30.0;
             }
-            return self.controlView.selectTableView.frame.size.height / 4.0;
+            return self.controlView.selectTableView.frame.size.height / selectionsNumber;
         };
         
         self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
@@ -3343,6 +3378,7 @@ CYAudioManagerDelegate>
         };
         
         [self.controlView.selectTableView reloadTableView];
+        [self.controlView.selectTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:_currentSelections inSection:0]];
     }];
 }
 

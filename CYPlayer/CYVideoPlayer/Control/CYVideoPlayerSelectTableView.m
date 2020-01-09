@@ -52,6 +52,11 @@
     [self.selectTableView reloadData];
 }
 
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self.selectTableView scrollToRowAtIndexPath:indexPath atScrollPosition:(UITableViewScrollPositionMiddle) animated:YES];
+}
+
 # pragma mark - Getter/Setter
 - (UITableView *)selectTableView
 {

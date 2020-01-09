@@ -37,6 +37,7 @@ typedef void(^DidSelectRowAtIndexPath)(UITableView * __nonnull tableView, NSInde
 
 
 - (void)reloadTableView;
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
