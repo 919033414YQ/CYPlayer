@@ -3342,6 +3342,11 @@ CYAudioManagerDelegate>
             return selectionsNum;
         };
         
+        if (self.settings.setCurrentSelectionsIndex)
+        {
+            self->_currentSelections = self.settings.setCurrentSelectionsIndex();
+        }
+        
         self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
             __strong typeof(_self) self = _self;
             UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];

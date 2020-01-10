@@ -18,6 +18,8 @@ typedef NS_ENUM(NSUInteger, CYFFmpegPlayerDefinitionType) {
 
 extern NSNotificationName const CYSettingsPlayerNotification;
 
+typedef NSInteger(^CYPlayerSettingsSetCurrentSelectionsIndex)();
+
 @class UIImage, UIColor;
 
 @interface CYVideoPlayerSettings : NSObject
@@ -70,6 +72,9 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 
 /// 可选集
 @property (nonatomic, assign, readwrite) BOOL enableSelections;
+
+/// 外部设置当前播放第几集
+@property (nonatomic, copy, readwrite) CYPlayerSettingsSetCurrentSelectionsIndex setCurrentSelectionsIndex;
 
 + (instancetype)sharedVideoPlayerSettings;
 
