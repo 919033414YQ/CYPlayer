@@ -361,6 +361,7 @@ CYAudioManagerDelegate>
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2 && !strongSelf.stopped) {
                     [decoder setPosition:0];
+                    strongSelf2->_moviePosition = 0;
                     //关闭原先的解码器
 //                    [strongSelf.decoder closeFile];
                     strongSelf2.controlView.decoder = decoder;
@@ -888,6 +889,7 @@ CYAudioManagerDelegate>
     BOOL playMode = self.playing;
     
     self.playing = NO;
+    _buffered = NO;
     _disableUpdateHUD = YES;
     
     __weak typeof(&*self)weakSelf = self;
@@ -900,6 +902,7 @@ CYAudioManagerDelegate>
 - (void) setMoviePosition: (CGFloat) position playMode:(BOOL)playMode
 {
     self.playing = NO;
+    _buffered = NO;
     _disableUpdateHUD = YES;
     
     __weak typeof(&*self)weakSelf = self;
