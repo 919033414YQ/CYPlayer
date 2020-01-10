@@ -20,6 +20,8 @@ extern NSNotificationName const CYSettingsPlayerNotification;
 
 typedef NSInteger(^CYPlayerSettingsSetCurrentSelectionsIndex)();
 
+typedef NSString *(^CYPlayerSettingsNextAutoPlaySelectionsPath)();
+
 @class UIImage, UIColor;
 
 @interface CYVideoPlayerSettings : NSObject
@@ -75,6 +77,9 @@ typedef NSInteger(^CYPlayerSettingsSetCurrentSelectionsIndex)();
 
 /// 外部设置当前播放第几集
 @property (nonatomic, copy, readwrite) CYPlayerSettingsSetCurrentSelectionsIndex setCurrentSelectionsIndex;
+
+/// 外部设置待下一集自动播放的链接
+@property (nonatomic, copy, readwrite) CYPlayerSettingsNextAutoPlaySelectionsPath nextAutoPlaySelectionsPath;
 
 + (instancetype)sharedVideoPlayerSettings;
 

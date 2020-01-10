@@ -370,7 +370,7 @@ CYAudioManagerDelegate>
                     //播放器连接新的解码器decoder
                     [strongSelf2 setMovieDecoder:decoder withError:error];
                     
-                    [strongSelf2 showTitle:@"切换完成"];
+//                    [strongSelf2 showTitle:@"切换完成"];
                     strongSelf2->_isChangingSelections = NO;
                 }
                 else if (error) {
@@ -3559,15 +3559,23 @@ CYAudioManagerDelegate>
 
 - (void)_playEndState {
     
-    // show
-    _cyShowViews(@[self.controlView.centerControlView.replayBtn,
-                   self.controlView.bottomControlView.playBtn]);
-    
-    // hidden
-    _cyHiddenViews(@[self.controlView.bottomControlView.pauseBtn]);
-    
-    
-    self.state = CYFFmpegPlayerPlayState_PlayEnd;
+    if (self.settings.nextAutoPlaySelectionsPath) {
+        
+        NSString * path = self.settings.nextAutoPlaySelectionsPath();
+        
+        [self changeSelectionsPath:path];
+        
+    }else {
+        // show
+           _cyShowViews(@[self.controlView.centerControlView.replayBtn,
+                          self.controlView.bottomControlView.playBtn]);
+           
+           // hidden
+           _cyHiddenViews(@[self.controlView.bottomControlView.pauseBtn]);
+           
+           
+           self.state = CYFFmpegPlayerPlayState_PlayEnd;
+    }
 }
 
 - (void)_playFailedState {
