@@ -3563,18 +3563,25 @@ CYAudioManagerDelegate>
         
         NSString * path = self.settings.nextAutoPlaySelectionsPath();
         
-        [self changeSelectionsPath:path];
+        if (path.length > 0) {
+            [self changeSelectionsPath:path];
+        }else {
+            goto end;
+        }
+    }
+    else {
         
-    }else {
+    end: {
         // show
-           _cyShowViews(@[self.controlView.centerControlView.replayBtn,
-                          self.controlView.bottomControlView.playBtn]);
-           
-           // hidden
-           _cyHiddenViews(@[self.controlView.bottomControlView.pauseBtn]);
-           
-           
-           self.state = CYFFmpegPlayerPlayState_PlayEnd;
+        _cyShowViews(@[self.controlView.centerControlView.replayBtn,
+                       self.controlView.bottomControlView.playBtn]);
+        
+        // hidden
+        _cyHiddenViews(@[self.controlView.bottomControlView.pauseBtn]);
+        
+        
+        self.state = CYFFmpegPlayerPlayState_PlayEnd;
+    }
     }
 }
 
