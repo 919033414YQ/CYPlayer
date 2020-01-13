@@ -1183,6 +1183,15 @@ CYAudioManagerDelegate>
             if (!self.generatPreviewImages || [self.decoder.path hasPrefix:@"rtmp"] || [self.decoder.path hasPrefix:@"rtsp"]) {
                 return;
             }
+            //先隐藏previewbtn
+            _cyAnima(^{
+                _cyHiddenViews(@[self.controlView.topControlView.previewBtn]);
+                [self.controlView.topControlView.previewBtn mas_updateConstraints:^(MASConstraintMaker *make) {
+                    make.width.equalTo(@0);
+                }];
+            });
+            self.controlView.previewView.previewFrames = @[];
+            
             [self generatedPreviewImagesWithCount:20 completionHandler:^(NSMutableArray<CYVideoFrame *> *frames, NSError *error) {
                 __strong typeof(_self) self = _self;
                 if ( !self ) return;
