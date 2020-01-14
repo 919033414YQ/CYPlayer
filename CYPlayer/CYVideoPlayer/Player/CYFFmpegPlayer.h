@@ -13,6 +13,7 @@
 #import "CYVideoPlayerControlView.h"
 #import "CYVideoPlayerSettings.h"
 #import "CYPlayerGLView.h"
+#import "CYFFmpegMetalView.h"
 
 @class
 //CYPlayerDecoder,
@@ -100,6 +101,7 @@ CYVideoPlayerMoreSettingSecondaryView;
 @property (nonatomic, strong) UIView *view;
 @property (nonatomic, strong) UIView * presentView;
 @property (nonatomic, strong) CYPlayerGLView * glView;
+@property (nonatomic, strong) CYFFmpegMetalView * metalView;
 @property (nonatomic, strong) CYVideoPlayerControlView *controlView;
 @property (nonatomic, strong) CYVolBrigControl *volBrigControl;
 @property (nonatomic, strong) CYLoadingView *loadingView;

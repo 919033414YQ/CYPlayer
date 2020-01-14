@@ -37,6 +37,8 @@
 
 //Others
 #import <objc/message.h>
+#import <sys/sysctl.h>
+#import <mach/mach.h>
 
 
 //#define USE_OPENAL @"UseCYPCMAudioManager"
@@ -92,7 +94,9 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
-#define NETWORK_MAX_BUFFERED_DURATION 4.0
+#define NETWORK_MAX_BUFFERED_DURATION 8.0
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90
+#define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 100
 
 @interface CYFFmpegPlayer ()<
 CYVideoPlayerControlViewDelegate,
@@ -223,6 +227,7 @@ CYAudioManagerDelegate>
 {
     if (self = [super init]) {
         [self resetSetting];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsPlayerNotification:) name:CYSettingsPlayerNotification object:nil];
     }
     return self;
 }
@@ -317,7 +322,7 @@ CYAudioManagerDelegate>
         NSError *error = nil;
         [decoder openFile:path error:&error];
         [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
-        
+        [decoder setUseHWDecompressor:strongSelf.settings.useHWDecompressor];
         if (strongSelf) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
@@ -1153,14 +1158,24 @@ CYAudioManagerDelegate>
         }
         
         if (!frameView) {
-            CGRect bounds = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height * 9/16);
+            CGRect bounds = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.width * 9.0/16.0);
             
-            if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
-                _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
-                _glView.contentScaleFactor = [UIScreen mainScreen].scale;
+//            if (@available(iOS 8.0, *))
+//            {
+//                if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
+//                    _metalView = [[CYFFmpegMetalView alloc] initWithFrame:bounds];
+//                }
+//            }
+//            else
+            {
+                if (_decoder.validVideo && [_decoder getVideoFrameFormat] == CYVideoFrameFormatYUV) {
+                    _glView = [[CYPlayerGLView alloc] initWithFrame:bounds decoder:_decoder];
+                    _glView.contentScaleFactor = [UIScreen mainScreen].scale;
+                }
             }
             
-            if (!_glView) {
+            
+            if (!_glView && !_metalView) {
                 
                 LoggerVideo(0, @"fallback to use RGB video frame and UIKit");
                 [_decoder setupVideoFrameFormat:CYVideoFrameFormatRGB];
@@ -1245,7 +1260,11 @@ CYAudioManagerDelegate>
 
 - (UIView *)presentView
 {
-    return _glView ? _glView : _imageView;
+    UIView * result = _glView ? _glView : _imageView;
+//    if (@available(iOS 8.0, *)) {
+//        result = _metalView ? _metalView : _imageView;
+//    }
+    return result;
 }
 
 - (BOOL) interruptDecoder
@@ -1283,6 +1302,10 @@ CYAudioManagerDelegate>
     [self pause];
     
     LoggerStream(1, @"applicationWillResignActive");
+}
+
+- (void)settingsPlayerNotification:(NSNotification *)notifi {
+    [self.decoder setUseHWDecompressor:self.settings.useHWDecompressor];
 }
 
 
@@ -1617,7 +1640,7 @@ CYAudioManagerDelegate>
         }
     }
     
-    return self.playing && (_videoBufferedDuration < _maxBufferedDuration || _audioBufferedDuration < _maxBufferedDuration);
+    return self.playing && (_videoBufferedDuration < _maxBufferedDuration || _audioBufferedDuration < _maxBufferedDuration) && ([self getMemoryUsedPercent] < MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY;
 }
 
 - (void) videoTick
@@ -1639,16 +1662,17 @@ CYAudioManagerDelegate>
         (_decoder.validVideo ? _videoFrames.count : 0) +
         (_decoder.validAudio ? _audioFrames.count : 0);
         
-        if (!leftFrames ||
-            !(_videoBufferedDuration > _maxBufferedDuration) ||
-            !(_audioBufferedDuration > _maxBufferedDuration))
+        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
-            
-            //            [self asyncDecodeFrames];
-            [self concurrentAsyncDecodeFrames];
+            if (!leftFrames ||
+                !(_videoBufferedDuration > _maxBufferedDuration) ||
+                !(_audioBufferedDuration > _maxBufferedDuration))
+            {
+                //            [self asyncDecodeFrames];
+                [self concurrentAsyncDecodeFrames];
+            }
         }
-        
-        
+    
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
@@ -1831,9 +1855,11 @@ CYAudioManagerDelegate>
         (_decoder.validVideo ? _videoFrames.count : 0) +
         (_decoder.validAudio ? _audioFrames.count : 0);
         
-        if (!leftFrames ||
+        if ((!leftFrames ||
             !(_videoBufferedDuration > _maxBufferedDuration) ||
             !(_audioBufferedDuration > _maxBufferedDuration))
+            &&
+            ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY)
         {
             
             //            [self asyncDecodeFrames];
@@ -1859,18 +1885,27 @@ CYAudioManagerDelegate>
           (_videoBufferedDuration > _maxBufferedDuration) ||
           (_audioBufferedDuration > _maxBufferedDuration)
           ) ||
-         _decoder.isEOF
+         _decoder.isEOF ||
+         ([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && !(HAS_PLENTY_OF_MEMORY))
          )
         )
     {
         _tickCorrectionTime = 0;
         _cantPlayStartTime = 0;
         _buffered = NO;
-        if ((_videoBufferedDuration > _maxBufferedDuration) ||
-            (_audioBufferedDuration > _maxBufferedDuration))
+        if (([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && !(HAS_PLENTY_OF_MEMORY))
         {
             [self play];
         }
+        else
+        {
+            if ((_videoBufferedDuration > _maxBufferedDuration) ||
+                (_audioBufferedDuration > _maxBufferedDuration))
+            {
+                [self play];
+            }
+        }
+        
     }
     
     if (self.playing) {
@@ -1981,22 +2016,29 @@ CYAudioManagerDelegate>
         
         if ([self.decoder validVideo])
         {
-            if (!leftFrames ||
-                !(_videoBufferedDuration > _maxBufferedDuration)
-//                || !(_audioBufferedDuration > _maxBufferedDuration)
-                )
+            if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
             {
-                //            [self asyncDecodeFrames];
-                [self concurrentAsyncDecodeFrames];
+                 if (!leftFrames ||
+                                !(_videoBufferedDuration > _maxBufferedDuration)
+                //                || !(_audioBufferedDuration > _maxBufferedDuration)
+                                )
+                            {
+                                //            [self asyncDecodeFrames];
+                                [self concurrentAsyncDecodeFrames];
+                            }
             }
+           
         }
         else if (![self.decoder validVideo] && [self.decoder validAudio])
         {
-            if (!leftFrames ||
-                !(_audioBufferedDuration > _maxBufferedDuration))
+            if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
             {
-                //            [self asyncDecodeFrames];
-                [self concurrentAsyncDecodeFrames];
+                if (!leftFrames ||
+                    !(_audioBufferedDuration > _maxBufferedDuration))
+                {
+                    //            [self asyncDecodeFrames];
+                    [self concurrentAsyncDecodeFrames];
+                }
             }
         }
         
@@ -2212,13 +2254,22 @@ CYAudioManagerDelegate>
 {
     if([UIApplication sharedApplication].applicationState == UIApplicationStateActive)
     {
-        if (_glView) {
+        if (_glView)
+        {
             
             @synchronized (_glView) {
                 [_glView render:frame];
             }
             
-        } else {
+        }
+        else if (_metalView)
+        {
+            @synchronized (_metalView) {
+                [_metalView renderWithPixelBuffer:((CYVideoFrameYUV *)frame).pixelBuffer];
+            }
+        }
+        else
+        {
             
             CYVideoFrameRGB *rgbFrame = (CYVideoFrameRGB *)frame;
             _imageView.image = [rgbFrame asImage];
@@ -2933,6 +2984,66 @@ CYAudioManagerDelegate>
         progress = 0.0;
     }
     self.controlView.bottomControlView.progressSlider.bufferProgress = progress;
+}
+
+# pragma mark tools
+- (double)getAvailableMemorySize
+{
+    vm_statistics_data_t vmStats;
+    mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
+    kern_return_t kernReturn = host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t)&vmStats, &infoCount);
+    if (kernReturn != KERN_SUCCESS)
+    {
+        return NSNotFound;
+    }
+
+    return ((vm_page_size * vmStats.free_count)) / 1024.0 / 1024.0;// + vm_page_size * vmStats.inactive_count
+}
+
+- (double)usedMemory
+{
+    task_basic_info_data_t taskInfo;
+    mach_msg_type_number_t infoCount =TASK_BASIC_INFO_COUNT;
+    kern_return_t kernReturn =task_info(mach_task_self(),
+                                        TASK_BASIC_INFO,
+                                        (task_info_t)&taskInfo,
+                                        &infoCount);
+    if (kernReturn != KERN_SUCCESS) {
+        return NSNotFound;
+    }
+    return taskInfo.resident_size / 1024.0 / 1024.0;
+    
+}
+
+- (double)memoryUsage
+{
+    vm_size_t memory = memory_usage();
+    return memory / 1000.0 /1000.0;
+}
+
+
+vm_size_t memory_usage(void) {
+    struct task_basic_info info;
+    mach_msg_type_number_t size = sizeof(info);
+    kern_return_t kerr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size);
+    return (kerr == KERN_SUCCESS) ? info.resident_size : 0; // size in bytes
+}
+
+- (double)getMemoryUsedPercent
+{
+    
+    double result = 1;
+    
+    result = [self getAvailableMemorySize] / [self getTotalMemorySize];
+    
+    result = 1 - result;
+    
+    return result >= 0 ? result * 100 : 100;
+}
+
+- (double)getTotalMemorySize
+{
+    return [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
 }
 
 
@@ -3836,6 +3947,7 @@ CYAudioManagerDelegate>
     
     setting.definitionTypes = CYFFmpegPlayerDefinitionNone;
     setting.enableSelections = NO;
+    setting.useHWDecompressor = NO;
 }
 
 - (void (^)(CYFFmpegPlayer * _Nonnull))rateChanged {

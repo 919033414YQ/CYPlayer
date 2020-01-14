@@ -101,6 +101,9 @@
 		BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */; };
 		BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */; };
 		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
+		BC7A698123CC4E5E00B9494D /* CYFFmpegMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */; };
+		BC7A698923CD7C8900B9494D /* PlayESView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698823CD7C8800B9494D /* PlayESView.m */; };
+		BC7A698E23CD899800B9494D /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BC7A698D23CD899800B9494D /* Shaders.metal */; };
 		BC8ADA6E22AF9D060091AB1C /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6C22AF9D050091AB1C /* logo.png */; };
 		BC8ADA6F22AF9D060091AB1C /* test.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC8ADA6D22AF9D060091AB1C /* test.mp4 */; };
 /* End PBXBuildFile section */
@@ -339,6 +342,12 @@
 		BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYHardwareDecompressVideo.h; sourceTree = "<group>"; };
 		BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSelectTableView.h; sourceTree = "<group>"; };
 		BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYVideoPlayerSelectTableView.m; sourceTree = "<group>"; };
+		BC7A697F23CC4E5D00B9494D /* CYFFmpegMetalView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYFFmpegMetalView.h; sourceTree = "<group>"; };
+		BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CYFFmpegMetalView.m; sourceTree = "<group>"; };
+		BC7A698723CD7C8800B9494D /* PlayESView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayESView.h; sourceTree = "<group>"; };
+		BC7A698823CD7C8800B9494D /* PlayESView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayESView.m; sourceTree = "<group>"; };
+		BC7A698D23CD899800B9494D /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		BC7A698F23CD8A7700B9494D /* CYPlayerMetalShaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYPlayerMetalShaders.h; sourceTree = "<group>"; };
 		BC8ADA6C22AF9D050091AB1C /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = SOURCE_ROOT; };
 		BC8ADA6D22AF9D060091AB1C /* test.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = test.mp4; sourceTree = SOURCE_ROOT; };
 		F82A6770E16FD3C855878832 /* libPods-TestVideo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TestVideo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -638,8 +647,14 @@
 			children = (
 				0ECD4C0D2111A33C0078D24A /* CYFFmpegPlayer.h */,
 				0ECD4C0C2111A33B0078D24A /* CYFFmpegPlayer.m */,
+				BC7A698723CD7C8800B9494D /* PlayESView.h */,
+				BC7A698823CD7C8800B9494D /* PlayESView.m */,
+				BC7A698F23CD8A7700B9494D /* CYPlayerMetalShaders.h */,
+				BC7A698D23CD899800B9494D /* Shaders.metal */,
 				0ECD4C0F2111A33C0078D24A /* CYPlayerGLView.h */,
 				0ECD4C0E2111A33C0078D24A /* CYPlayerGLView.m */,
+				BC7A697F23CC4E5D00B9494D /* CYFFmpegMetalView.h */,
+				BC7A698023CC4E5E00B9494D /* CYFFmpegMetalView.m */,
 				0E24076C20FE1630008BEAB5 /* CYVideoPlayer.h */,
 				0E24076220FE1630008BEAB5 /* CYVideoPlayer.m */,
 				0E24076320FE1630008BEAB5 /* CYVideoPlayerView.h */,
@@ -1064,6 +1079,7 @@
 				0E2407BD20FE1630008BEAB5 /* CYVideoPlayerMoreSettingsFooterSlidersView.m in Sources */,
 				0E2407BB20FE1630008BEAB5 /* CYVideoPlayerResources.m in Sources */,
 				0E2407D420FE1631008BEAB5 /* UIViewController+CYExtension.m in Sources */,
+				BC7A698E23CD899800B9494D /* Shaders.metal in Sources */,
 				0E2407E420FE1631008BEAB5 /* CYCTData.m in Sources */,
 				0E2407B020FE1630008BEAB5 /* CYVideoPlayerPresentView.m in Sources */,
 				0E2407E720FE1631008BEAB5 /* CYCTImageData.m in Sources */,
@@ -1099,6 +1115,7 @@
 				84B261B31A46A0AF00C8CAA9 /* main.m in Sources */,
 				0E2407DC20FE1631008BEAB5 /* UINavigationController+CYVideoPlayerAdd.m in Sources */,
 				0E2407C320FE1630008BEAB5 /* CYVolBrigControl.m in Sources */,
+				BC7A698923CD7C8900B9494D /* PlayESView.m in Sources */,
 				0E2407DF20FE1631008BEAB5 /* CYPrompt.m in Sources */,
 				0E2407E920FE1631008BEAB5 /* CYLabel.m in Sources */,
 				0E2407DE20FE1631008BEAB5 /* CYPromptConfig.m in Sources */,
@@ -1110,6 +1127,7 @@
 				0E2406C520FE0EDD008BEAB5 /* PlayerViewController.m in Sources */,
 				BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */,
 				0E2407EA20FE1631008BEAB5 /* CYAttributeWorker.m in Sources */,
+				BC7A698123CC4E5E00B9494D /* CYFFmpegMetalView.m in Sources */,
 				0E2407C920FE1630008BEAB5 /* CYVideoPlayerPreviewCollectionViewCell.m in Sources */,
 				0E2407D220FE1631008BEAB5 /* Utilities.m in Sources */,
 				0E2407AD20FE1630008BEAB5 /* CYLabelSlider.m in Sources */,

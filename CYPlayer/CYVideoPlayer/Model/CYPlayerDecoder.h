@@ -99,6 +99,7 @@ typedef enum {
 @property (readonly, nonatomic, strong) NSData *luma;
 @property (readonly, nonatomic, strong) NSData *chromaB;
 @property (readonly, nonatomic, strong) NSData *chromaR;
+@property (readonly, nonatomic, assign) CVPixelBufferRef pixelBuffer;
 @end
 
 @interface CYArtworkFrame : CYPlayerFrame

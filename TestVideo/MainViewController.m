@@ -52,6 +52,7 @@
                           @"http://vodplay.yayi360.com/e70a963f79984f99905d44ed5f2c425a/c1b18c03b4004fa2b90103bc07a3f360-298874594a43b9f3d00f8ca6e291a23f-hd.m3u8",
                           @"http://vodplay.yayi360.com/e70a963f79984f99905d44ed5f2c425a/c1b18c03b4004fa2b90103bc07a3f360-0dc484f2d30047fab9a2dcab3e565ef5-hd.mp4",
                           @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4",
+                          @"rtmp://play2.yayi360.com/dentalink-vod/436559711018450944?auth_key=1579004614-0-0-027949ea4433c5c8fddbaaa551f4b3ff",
                           localV
                           ];
         

@@ -481,6 +481,7 @@ static int interrupt_callback(void *ctx);
 @property (readwrite, nonatomic, strong) NSData *luma;
 @property (readwrite, nonatomic, strong) NSData *chromaB;
 @property (readwrite, nonatomic, strong) NSData *chromaR;
+@property (readwrite, nonatomic, assign) CVPixelBufferRef pixelBuffer;
 @end
 
 @implementation CYVideoFrameYUV
@@ -676,6 +677,8 @@ static int interrupt_callback(void *ctx);
     NSInteger           _fileCount;
     int                 _dstWidth;
     int                 _dstHeight;
+    
+    CVPixelBufferPoolRef _pixelBufferPool;//转CVPixelBuffer时用到的复用池
 }
 
 @property (readwrite, nonatomic) BOOL validFilter;
@@ -1868,6 +1871,66 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     }
 }
 
+- (CVPixelBufferRef)getCVPixelBufferRefWithAVFrame:(AVFrame *)frame
+{
+    CVReturn theError;
+    if (!self->_pixelBufferPool){  //创建pixelBuffer缓存池，从缓存池中创建pixelBuffer以便复用
+        NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
+        [attributes setObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange] forKey:(NSString*)kCVPixelBufferPixelFormatTypeKey];
+        [attributes setObject:[NSNumber numberWithInt:frame->width] forKey: (NSString*)kCVPixelBufferWidthKey];
+        [attributes setObject:[NSNumber numberWithInt:frame->height] forKey: (NSString*)kCVPixelBufferHeightKey];
+        [attributes setObject:@(frame->linesize[0]) forKey:(NSString*)kCVPixelBufferBytesPerRowAlignmentKey];
+        [attributes setObject:[NSDictionary dictionary] forKey:(NSString*)kCVPixelBufferIOSurfacePropertiesKey];
+        theError = CVPixelBufferPoolCreate(kCFAllocatorDefault, NULL, (__bridge CFDictionaryRef) attributes, &self->_pixelBufferPool);
+        if (theError != kCVReturnSuccess){
+            NSLog(@"CVPixelBufferPoolCreate Failed");
+        }
+    }
+    
+    CVPixelBufferRef pixelBuffer = nil;
+    theError = CVPixelBufferPoolCreatePixelBuffer(NULL, self->_pixelBufferPool, &pixelBuffer);
+    if(theError != kCVReturnSuccess){
+        NSLog(@"CVPixelBufferPoolCreatePixelBuffer Failed");
+    }
+
+    theError = CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    if (theError != kCVReturnSuccess) {
+        NSLog(@"lock error");
+    }
+    /*
+     PixelBuffer中Y数据存放在Plane0中，UV数据存放在Plane1中，数据格式如下
+     frame->data[0]  .........   YYYYYYYYY
+     frame->data[1]  .........   UUUUUUUU
+     frame->data[2]  .........   VVVVVVVVV
+     PixelBuffer->Plane0 .......  YYYYYYYY
+     PixelBuffer->Plane1 .......  UVUVUVUVUV
+     所以需要把Y数据拷贝到Plane0上，把U和V数据交叉拷到Plane1上
+     */
+    size_t bytePerRowY = MIN(CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0), frame->width);
+    size_t bytesPerRowUV = MIN(CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1) / 2, frame->width / 2);
+    //获取Plane0的起始地址
+    Byte* base = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    memcpy(base, frame->data[0], bytePerRowY * frame->height);
+    //获取Plane1的起始地址
+    base = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+    uint32_t size = (uint32_t)bytesPerRowUV * frame->height / 2;
+    //把UV数据交叉存储到dstData然后拷贝到Plane1上
+    NSMutableData *dstNSData = [NSMutableData dataWithLength: 2 * size];
+    Byte* dstData = dstNSData.mutableBytes;
+    for (int i = 0; i < 2 * size; i++){
+        if (i % 2 == 0){
+            dstData[i] = frame->data[1][i/2];
+        }else {
+            dstData[i] = frame->data[2][i/2];
+        }
+    }
+    memcpy(base, dstData, size * 2);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//    CVPixelBufferRelease(pixelBuffer);
+    return pixelBuffer;
+    
+}
+
 - (CYVideoFrame *) handleVideoFrame:(AVFrame *)videoFrame Picture:(CYPicture *)picture isPictureValid:(BOOL *)isPictureValid
 {
     if (!videoFrame->data[0])
@@ -1910,7 +1973,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame = [[CYVideoFrameYUV alloc] init];
                 frame.position = position;
                 frame.duration = duration;
-                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
                 //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
             }
                 return nil;
@@ -1920,7 +1983,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                 frame = [[CYVideoFrameRGB alloc] init];
                 frame.position = position;
                 frame.duration = duration;
-                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//                CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
                 //NSLog(@"Linked handleVideoFrame in %f ms", linkTime *1000.0);
             }
                 return nil;;
@@ -1943,8 +2006,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         height = _dstHeight;
     }
     
-    if (_videoFrameFormat == CYVideoFrameFormatYUV) {
-        
+    if (_videoFrameFormat == CYVideoFrameFormatYUV)
+    {
         if (_videoCodecCtx->width != width)//宽高发生了改变
         {
             if (!_swsContext &&
@@ -1982,20 +2045,27 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
             
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
-            yuvFrame.luma = copyFrameData((*picture).data[0],
-                                          (*picture).linesize[0],
-                                          width,
-                                          height);
-            
-            yuvFrame.chromaB = copyFrameData((*picture).data[1],
-                                             (*picture).linesize[1],
-                                             width / 2,
-                                             height / 2);
-            
-            yuvFrame.chromaR = copyFrameData((*picture).data[2],
-                                             (*picture).linesize[2],
-                                             width / 2,
-                                             height / 2);
+//            if (@available(iOS 8.0, *))
+//            {
+//                yuvFrame.pixelBuffer = [self getCVPixelBufferRefWithAVFrame:videoFrame];
+//            }
+//            else
+            {
+                yuvFrame.luma = copyFrameData((*picture).data[0],
+                                              (*picture).linesize[0],
+                                              width,
+                                              height);
+                
+                yuvFrame.chromaB = copyFrameData((*picture).data[1],
+                                                 (*picture).linesize[1],
+                                                 width / 2,
+                                                 height / 2);
+                
+                yuvFrame.chromaR = copyFrameData((*picture).data[2],
+                                                 (*picture).linesize[2],
+                                                 width / 2,
+                                                 height / 2);
+            }
             
             frame = yuvFrame;
             
@@ -2006,26 +2076,37 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
         {
             CYVideoFrameYUV * yuvFrame = [[CYVideoFrameYUV alloc] init];
             
-            yuvFrame.luma = copyFrameData(videoFrame->data[0],
-                                          videoFrame->linesize[0],
-                                          width,
-                                          height);
-            
-            yuvFrame.chromaB = copyFrameData(videoFrame->data[1],
-                                             videoFrame->linesize[1],
-                                             width / 2,
-                                             height / 2);
-            
-            yuvFrame.chromaR = copyFrameData(videoFrame->data[2],
-                                             videoFrame->linesize[2],
-                                             width / 2,
-                                             height / 2);
+//            if (@available(iOS 8.0, *))
+//            {
+//                yuvFrame.pixelBuffer = [self getCVPixelBufferRefWithAVFrame:videoFrame];
+//            }
+//            else
+            {
+                yuvFrame.luma = copyFrameData(videoFrame->data[0],
+                                              videoFrame->linesize[0],
+                                              width,
+                                              height);
+                
+                yuvFrame.chromaB = copyFrameData(videoFrame->data[1],
+                                                 videoFrame->linesize[1],
+                                                 width / 2,
+                                                 height / 2);
+                
+                yuvFrame.chromaR = copyFrameData(videoFrame->data[2],
+                                                 videoFrame->linesize[2],
+                                                 width / 2,
+                                                 height / 2);
+            }
             
             frame = yuvFrame;
+            
+            
         }
         
         
-    } else {
+    }
+    else
+    {
         
         if (!_swsContext &&
             ![self setupScalerWithPicture:picture isValid:isPictureValid Width:width Heigth:height DstFormat:AV_PIX_FMT_RGB24]) {
@@ -2618,10 +2699,6 @@ error:
 - (void)setUseHWDecompressor:(BOOL)useHWDecompressor
 {
     _useHWDecompressor = useHWDecompressor;
-    if (!self.validVideo || _videoCodecCtx->codec_id != AV_CODEC_ID_H264)
-    {
-        _useHWDecompressor = NO;
-    }
 }
 
 - (void)setRate:(CGFloat)rate
@@ -2836,9 +2913,10 @@ error:
 {
     __block CYPlayerFrame * result_frame = nil;
     CGFloat curr_targetPos = self.targetPosition;
-    if ((*packet).stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo) {
+    if ((*packet).stream_index ==_videoStream && self.decodeType & CYVideoDecodeTypeVideo)
+    {
     
-        if (_useHWDecompressor)
+        if (_useHWDecompressor && self.validVideo && _videoCodecCtx->codec_id == AV_CODEC_ID_H264)
         {
             switch (_videoCodecCtx->profile) {
                 case FF_PROFILE_H264_MAIN:
@@ -2854,7 +2932,7 @@ error:
                         
                         CVPixelBufferLockBaseAddress(imageBuffer, 0);
                         
-                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
+//                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
                         int height = (int)CVPixelBufferGetHeight(imageBuffer);
                         
                         
@@ -2864,7 +2942,7 @@ error:
                             size_t yBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
                             size_t cbBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
                             size_t crBytes = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 2);
-                            size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
+//                            size_t totalByte = yBytes*height + cbBytes*height/2 + crBytes*height/2;
                             // y的数据， 度:yBytes*height
                             Byte* luma = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
                             // cb的数据， 度:cbBytes*height/2
@@ -2882,7 +2960,7 @@ error:
                             
                             frame = yuvFrame;
                             
-                            frame.width = width;
+                            frame.width = yBytes;
                             frame.height = height;
                             frame.position = position;
                             frame.duration = duration;
@@ -3016,7 +3094,9 @@ error:
                 pktSize -= len;
             }
         }
-    } else if ((*packet).stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio) {
+    }
+    else if ((*packet).stream_index == _audioStream && self.decodeType & CYVideoDecodeTypeAudio)
+    {
         
         int pktSize = (*packet).size;
         
@@ -3052,7 +3132,9 @@ error:
             pktSize -= len;
         }
         
-    } else if ((*packet).stream_index == _artworkStream) {
+    }
+    else if ((*packet).stream_index == _artworkStream)
+    {
         
         if ((*packet).size) {
             
@@ -3064,7 +3146,9 @@ error:
             }
         }
         
-    } else if ((*packet).stream_index == _subtitleStream) {
+    }
+    else if ((*packet).stream_index == _subtitleStream)
+    {
         
         int pktSize = (*packet).size;
         

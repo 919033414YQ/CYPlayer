@@ -68,6 +68,9 @@ typedef NSString *(^CYPlayerSettingsNextAutoPlaySelectionsPath)();
 // MARK: Control
 @property (nonatomic, assign, readwrite) BOOL enableProgressControl;
 
+/// 是否使用硬件解码
+@property (nonatomic, assign, readwrite) BOOL useHWDecompressor;
+
 
 /// 清晰度选项类型
 @property (nonatomic, assign, readwrite) CYFFmpegPlayerDefinitionType definitionTypes;
