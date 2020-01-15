@@ -481,6 +481,7 @@ static int interrupt_callback(void *ctx);
 @property (readwrite, nonatomic, strong) NSData *luma;
 @property (readwrite, nonatomic, strong) NSData *chromaB;
 @property (readwrite, nonatomic, strong) NSData *chromaR;
+@property (readwrite, nonatomic, assign) NSInteger * lineSize;
 @property (readwrite, nonatomic, assign) CVPixelBufferRef pixelBuffer;
 @end
 
@@ -2065,6 +2066,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                                                  (*picture).linesize[2],
                                                  width / 2,
                                                  height / 2);
+                struct CYPixelBufferBytesPerRowOfPlane p = {width, width / 2.0, width / 2.0};
+                yuvFrame.bytesPerRowOfPlans = p;
             }
             
             frame = yuvFrame;
@@ -2096,6 +2099,8 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
                                                  videoFrame->linesize[2],
                                                  width / 2,
                                                  height / 2);
+                struct CYPixelBufferBytesPerRowOfPlane p = {width, width / 2.0, width / 2.0};
+                yuvFrame.bytesPerRowOfPlans = p;
             }
             
             frame = yuvFrame;
@@ -2932,7 +2937,7 @@ error:
                         
                         CVPixelBufferLockBaseAddress(imageBuffer, 0);
                         
-//                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
+                        int width = (int)CVPixelBufferGetWidth(imageBuffer);
                         int height = (int)CVPixelBufferGetHeight(imageBuffer);
                         
                         
@@ -2958,9 +2963,12 @@ error:
                             
                             if(chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
                             
+                            struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
+                            yuvFrame.bytesPerRowOfPlans = p;
+                            
                             frame = yuvFrame;
                             
-                            frame.width = yBytes;
+                            frame.width = width;
                             frame.height = height;
                             frame.position = position;
                             frame.duration = duration;
@@ -3014,6 +3022,9 @@ error:
                         if (chromaB) yuvFrame.chromaB = [NSData dataWithBytes:chromaB length:cbBytes*height/2];
                         
                         if (chromaR) yuvFrame.chromaR = [NSData dataWithBytes:chromaR length:crBytes*height/2];
+                        
+                        struct CYPixelBufferBytesPerRowOfPlane p = {yBytes, cbBytes, crBytes};
+                        yuvFrame.bytesPerRowOfPlans = p;
                         
                         frame = yuvFrame;
                         
