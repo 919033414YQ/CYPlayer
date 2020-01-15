@@ -73,6 +73,12 @@ typedef enum {
 
 } CYPlayerFilterType;
 
+struct CYPixelBufferBytesPerRowOfPlane {
+    size_t yBytes;
+    size_t cbBytes;
+    size_t crBytes;
+};
+
 @interface CYPlayerFrame : NSObject
 @property (readonly, nonatomic) CYPlayerFrameType type;
 @property (readonly, nonatomic) CGFloat position;
@@ -100,6 +106,7 @@ typedef enum {
 @property (readonly, nonatomic, strong) NSData *chromaB;
 @property (readonly, nonatomic, strong) NSData *chromaR;
 @property (readonly, nonatomic, assign) CVPixelBufferRef pixelBuffer;
+@property (readwrite, nonatomic, assign) struct CYPixelBufferBytesPerRowOfPlane bytesPerRowOfPlans;
 @end
 
 @interface CYArtworkFrame : CYPlayerFrame

@@ -1,5 +1,6 @@
 # CYPlayer
 ```ruby
+#podfile添加如下行
 pod 'CYPlayer'
 ```
 ### Sample
@@ -10,7 +11,7 @@ pod 'CYPlayer'
 
 <img src="https://github.com/yellowei/CYPlayer/blob/master/TestVideo/shoot_3.png" />
 
-### Use
+### How To Use
 ```Objective-C
 vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
     [vc settingPlayer:^(CYVideoPlayerSettings *settings) {
@@ -61,4 +62,7 @@ vc = [CYFFmpegPlayer movieViewWithContentPath:path parameters:parameters];
 
 ##注意:
 
-pod安装后, 请到CYPlayer找到"Support Files/CYPlayer.xcconfig"文件, 删除OTHER_LDFLAGS中的-read_only_relocs suppress, 方可真机运行
+```tex
+pod安装CYPlayer后,如果遇到xcode无法调试的问题，请到xocde工程Pod目录下CYPlayer找到"Support Files/CYPlayer.xcconfig"文件, 删除OTHER_LDFLAGS中的-read_only_relocs suppress, 尝试真机能否运行
+```
+

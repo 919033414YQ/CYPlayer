@@ -284,12 +284,12 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
         return;
     }
     CYVideoFrameYUV *yuvFrame = (CYVideoFrameYUV *)frame;
-    
-    assert(yuvFrame.luma.length == yuvFrame.width * yuvFrame.height);
-    assert(yuvFrame.chromaB.length == ((yuvFrame.width / 2) * (yuvFrame.height / 2)));
-    assert(yuvFrame.chromaR.length == ((yuvFrame.width / 2) * (yuvFrame.height / 2)));
 
-    const NSUInteger frameWidth = frame.width;
+    assert(yuvFrame.luma.length == yuvFrame.bytesPerRowOfPlans.yBytes * yuvFrame.height);
+    assert(yuvFrame.chromaB.length == ((yuvFrame.bytesPerRowOfPlans.cbBytes) * (yuvFrame.height / 2)));
+    assert(yuvFrame.chromaR.length == ((yuvFrame.bytesPerRowOfPlans.crBytes) * (yuvFrame.height / 2)));
+
+//    const NSUInteger frameWidth = frame.width;
     const NSUInteger frameHeight = frame.height;    
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -298,7 +298,7 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
         glGenTextures(3, _textures);
 
     const UInt8 *pixels[3] = { yuvFrame.luma.bytes, yuvFrame.chromaB.bytes, yuvFrame.chromaR.bytes };
-    const GLsizei widths[3]  = { (GLsizei)frameWidth, (GLsizei)(frameWidth / 2), (GLsizei)(frameWidth / 2) };
+    const GLsizei widths[3]  = { (GLsizei)(yuvFrame.bytesPerRowOfPlans.yBytes), (GLsizei)(yuvFrame.bytesPerRowOfPlans.cbBytes), (GLsizei)(yuvFrame.bytesPerRowOfPlans.crBytes) };
     const GLsizei heights[3] = { (GLsizei)frameHeight, (GLsizei)(frameHeight / 2), (GLsizei)(frameHeight / 2) };
     
     for (int i = 0; i < 3; ++i) {
