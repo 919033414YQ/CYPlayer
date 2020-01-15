@@ -94,8 +94,8 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
-#define NETWORK_MAX_BUFFERED_DURATION 8.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90
+#define NETWORK_MAX_BUFFERED_DURATION 4.0
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100
 #define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 100
 
 @interface CYFFmpegPlayer ()<
@@ -1665,8 +1665,10 @@ CYAudioManagerDelegate>
         if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
             if (!leftFrames ||
-                !(_videoBufferedDuration > _maxBufferedDuration) ||
-                !(_audioBufferedDuration > _maxBufferedDuration))
+                !(_videoBufferedDuration > _maxBufferedDuration)
+//                ||
+//                !(_audioBufferedDuration > _maxBufferedDuration)
+                )
             {
                 //            [self asyncDecodeFrames];
                 [self concurrentAsyncDecodeFrames];
@@ -1886,14 +1888,14 @@ CYAudioManagerDelegate>
           (_audioBufferedDuration > _maxBufferedDuration)
           ) ||
          _decoder.isEOF ||
-         ([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && !(HAS_PLENTY_OF_MEMORY))
+         ([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT || !(HAS_PLENTY_OF_MEMORY))
          )
         )
     {
         _tickCorrectionTime = 0;
         _cantPlayStartTime = 0;
         _buffered = NO;
-        if (([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && !(HAS_PLENTY_OF_MEMORY))
+        if (([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) || !(HAS_PLENTY_OF_MEMORY))
         {
             [self play];
         }
