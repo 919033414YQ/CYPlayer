@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
 s.name         = "CYPlayer"
-s.version      = "2.4.7"
+s.version      = "2.4.8"
 s.summary      = 'A iOS video player, using AVPlayer&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg'
 s.description  = 'A iOS video player, using AVFoundation&FFmpeg. Libraries: CYSMBClient, CYfdkAAC, CYx264, CYFFmpeg. https://github.com/yellowei/CYPlayer'
 s.homepage     = 'https://github.com/yellowei/CYPlayer'

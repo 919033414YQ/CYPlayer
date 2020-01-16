@@ -52,7 +52,11 @@
                           @"http://vodplay.yayi360.com/e70a963f79984f99905d44ed5f2c425a/c1b18c03b4004fa2b90103bc07a3f360-298874594a43b9f3d00f8ca6e291a23f-hd.m3u8",
                           @"http://vodplay.yayi360.com/e70a963f79984f99905d44ed5f2c425a/c1b18c03b4004fa2b90103bc07a3f360-0dc484f2d30047fab9a2dcab3e565ef5-hd.mp4",
                           @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/1d5b7ad50866e8e80140d658c5e59f8e-fd.mp4",
-                         @"http://vodplay.yayi360.com/0a5abcaf843f481da5a5504f195c877a/c1222f7eb98349cb96b96fb72bf5d159-83aca99c7bb007d63deec34112584a6f-ld.mp4", @"rtmp://play2.yayi360.com/dentalink-vod/436559711018450944?auth_key=1579079216-0-0-98ba7ce68b71ba8576cee5f4592566dd",
+                         @"http://vodplay.yayi360.com/0a5abcaf843f481da5a5504f195c877a/c1222f7eb98349cb96b96fb72bf5d159-83aca99c7bb007d63deec34112584a6f-ld.mp4",
+                          @"rtmp://play2.yayi360.com/dentalink-vod/436559711018450944?auth_key=1579180928-0-0-fac633ebddb3387e5eccd96a4f46f9d2",
+                          @"rtmp://play2.yayi360.com/dentalink-vod/436559711018450944_lsd?auth_key=1579180928-0-0-80acac49983d5837a87141cd51808919",
+                          @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
+                        
                           localV
                           ];
         

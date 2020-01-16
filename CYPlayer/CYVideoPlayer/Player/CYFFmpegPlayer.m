@@ -94,9 +94,9 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MIN_BUFFERED_DURATION   0.2
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
-#define NETWORK_MAX_BUFFERED_DURATION 4.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100
-#define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 100
+#define NETWORK_MAX_BUFFERED_DURATION 8.0
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
+#define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 0//0相当于关闭
 
 @interface CYFFmpegPlayer ()<
 CYVideoPlayerControlViewDelegate,
@@ -1665,7 +1665,7 @@ CYAudioManagerDelegate>
         if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
         {
             if (!leftFrames ||
-                !(_videoBufferedDuration > _maxBufferedDuration)
+                (_videoBufferedDuration < _maxBufferedDuration)
 //                ||
 //                !(_audioBufferedDuration > _maxBufferedDuration)
                 )
@@ -1695,7 +1695,7 @@ CYAudioManagerDelegate>
     //fillSignalF(outData,numFrames,numChannels);
     //return;
     
-    if (_buffered) {
+    if (_buffered && _audioFrames.count <= 0) {
         memset(outData, 0, numFrames * numChannels * sizeof(float));
         return;
     }
@@ -1759,13 +1759,13 @@ CYAudioManagerDelegate>
             }
             if (_currentAudioFrame) {
                 
-                const void *bytes = (Byte *)_currentAudioFrame.bytes + _currentAudioFramePos;
+                const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
                 const NSUInteger bytesLeft = (_currentAudioFrame.length - _currentAudioFramePos);
                 const NSUInteger frameSizeOf = numChannels * sizeof(float);
                 const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
                 const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
                 
-                memcpy(outData, bytes, bytesToCopy);
+                memcpy(outData, bytes, bytesToCopy * 2);
                 numFrames -= framesToCopy;
                 outData += framesToCopy * numChannels;
                 
@@ -1799,8 +1799,10 @@ CYAudioManagerDelegate>
         audioManager.delegate = self;
         
         audioManager.outputBlock = ^(float *outData, UInt32 numFrames, UInt32 numChannels) {
-            
+//            CFAbsoluteTime startTime =CFAbsoluteTimeGetCurrent();
             [self audioCallbackFillData: outData numFrames:numFrames numChannels:numChannels];
+//            CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//            NSLog(@"Linked audioCallbackFillData in %f ms", linkTime *1000.0);
         };
         
         [audioManager play];
@@ -1884,8 +1886,8 @@ CYAudioManagerDelegate>
     if (_buffered &&
         (
          (
-          (_videoBufferedDuration > _maxBufferedDuration) ||
-          (_audioBufferedDuration > _maxBufferedDuration)
+          (_videoBufferedDuration > _minBufferedDuration) ||
+          (_audioBufferedDuration > _minBufferedDuration)
           ) ||
          _decoder.isEOF ||
          ([self getMemoryUsedPercent] > MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT || !(HAS_PLENTY_OF_MEMORY))
@@ -1901,8 +1903,8 @@ CYAudioManagerDelegate>
         }
         else
         {
-            if ((_videoBufferedDuration > _maxBufferedDuration) ||
-                (_audioBufferedDuration > _maxBufferedDuration))
+            if ((_videoBufferedDuration > _minBufferedDuration) ||
+                (_audioBufferedDuration > _minBufferedDuration))
             {
                 [self play];
             }
@@ -2021,8 +2023,7 @@ CYAudioManagerDelegate>
             if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
             {
                  if (!leftFrames ||
-                                !(_videoBufferedDuration > _maxBufferedDuration)
-                //                || !(_audioBufferedDuration > _maxBufferedDuration)
+                                (_videoBufferedDuration < _maxBufferedDuration)
                                 )
                             {
                                 //            [self asyncDecodeFrames];
@@ -2036,7 +2037,7 @@ CYAudioManagerDelegate>
             if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
             {
                 if (!leftFrames ||
-                    !(_audioBufferedDuration > _maxBufferedDuration))
+                    (_audioBufferedDuration < _maxBufferedDuration))
                 {
                     //            [self asyncDecodeFrames];
                     [self concurrentAsyncDecodeFrames];
@@ -2044,7 +2045,7 @@ CYAudioManagerDelegate>
             }
         }
         
-        CGFloat interval = 0;
+        CGFloat interval = 0.1;
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
@@ -2125,7 +2126,7 @@ CYAudioManagerDelegate>
     //if ((_tickCounter % 200) == 0)
     //    LoggerStream(1, @"tick correction %.4f", correction);
     
-    if (correction > 1.f || correction < -1.f) {
+    if (correction > 2.f || correction < -2.f) {
         
         LoggerStream(1, @"tick correction reset %.2f", correction);
         correction = 0;
@@ -3226,105 +3227,147 @@ vm_size_t memory_usage(void) {
     }
 }
 
-- (void)replayFromInterruptWithDecoder:(CYPlayerDecoder *)decoder
+- (void)replayFromInterruptWithDecoder:(CYPlayerDecoder *)old_decoder
 {
+    
     if (self.state == CYFFmpegPlayerPlayState_Prepare)
     {
         return;
     }
-    if (!decoder)
-    {
-        [self setupPlayerWithPath:_path];
-        return;
-    }
-    [self _itemPrepareToPlay];
-
-    [decoder closeFile];
-    
+//    if (!decoder)
+//    {
+//        [self setupPlayerWithPath:_path];
+//        return;
+//    }
+//    [self _itemPrepareToPlay];
+    NSString * path = _path;
+        
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
+    CYVideoDecodeType type = old_decoder.decodeType;
+    [decoder setDecodeType:type];
     __weak __typeof(&*self)weakSelf = self;
+    
+    _interrupted = NO;
     decoder.interruptCallback = ^BOOL(){
         __strong __typeof(&*self)strongSelf = weakSelf;
         return strongSelf ? [strongSelf interruptDecoder] : YES;
     };
-    
-    //    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
-    
-    //    });
+    self.autoplay = YES;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(&*self)strongSelf = weakSelf;
         
-        __block NSError *error = nil;
-        [decoder openFile:decoder.path error:&error];
+        NSError *error = nil;
+        [decoder openFile:path error:&error];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
         
         if (strongSelf) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
-                if (strongSelf2) {
-                    
-                    LoggerStream(2, @"setMovieDecoder");
-                    
-                    if (!error && decoder) {
-                        strongSelf2->_decoder        = decoder;
-                        strongSelf2->_asyncDecodeQueue  = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
-                        strongSelf2->_videoFrames    = [NSMutableArray array];
-                        strongSelf2->_audioFrames    = [NSMutableArray array];
-                        
-                        if (strongSelf2->_decoder.subtitleStreamsCount) {
-                            strongSelf2->_subtitles = [NSMutableArray array];
-                        }
-                        
-                        if (strongSelf2->_decoder.isNetwork) {
-                            
-                            strongSelf2->_minBufferedDuration = NETWORK_MIN_BUFFERED_DURATION;
-                            strongSelf2->_maxBufferedDuration = NETWORK_MAX_BUFFERED_DURATION;
-                            
-                        } else {
-                            
-                            strongSelf2->_minBufferedDuration = LOCAL_MIN_BUFFERED_DURATION;
-                            strongSelf2->_maxBufferedDuration = LOCAL_MAX_BUFFERED_DURATION;
-                        }
-                        
-                        if (!strongSelf2->_decoder.validVideo)
-                            strongSelf2->_minBufferedDuration *= 10.0; // increase for audio
-                        
-                        // allow to tweak some parameters at runtime
-                        if (strongSelf2->_parameters.count) {
-                            
-                            id val;
-                            
-                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMinBufferedDuration];
-                            if ([val isKindOfClass:[NSNumber class]])
-                                strongSelf2->_minBufferedDuration = [val floatValue];
-                            
-                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMaxBufferedDuration];
-                            if ([val isKindOfClass:[NSNumber class]])
-                                strongSelf2->_maxBufferedDuration = [val floatValue];
-                            
-                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterDisableDeinterlacing];
-                            if ([val isKindOfClass:[NSNumber class]])
-                                strongSelf2->_decoder.disableDeinterlacing = [val boolValue];
-                            
-                            if (strongSelf2->_maxBufferedDuration < strongSelf2->_minBufferedDuration)
-                                strongSelf2->_maxBufferedDuration = strongSelf2->_minBufferedDuration * 2;
-                        }
-                        
-                        LoggerStream(2, @"buffered limit: %.1f - %.1f", strongSelf2->_minBufferedDuration, strongSelf2->_maxBufferedDuration);
-                        [strongSelf2 updatePosition:weakSelf.decoder.validVideo ? strongSelf->_moviePosition : strongSelf->_audioPosition playMode:YES];
-                        [strongSelf2 play];
-                        
-                        
-                    } else {
-                        if (!strongSelf2->_interrupted) {
-                            [strongSelf2 handleDecoderMovieError: error];
-                            strongSelf2.error = error;
-                            [strongSelf2 _itemPlayFailed];
-                        }
-                    }
-                    
+                if (strongSelf2 && !strongSelf.stopped && !error) {
+//                    [decoder setPosition:old_decoder.position];
+                    //关闭原先的解码器
+                    //                    [strongSelf.decoder closeFile];
+                    strongSelf2.controlView.decoder = decoder;
+                    //播放器连接新的解码器decoder
+                    [strongSelf2 setMovieDecoder:decoder withError:error];
+                }
+                else if (error) {
+                    [weakSelf handleDecoderMovieError: error];
+                    weakSelf.error = error;
+                    [weakSelf _itemPlayFailed];
+                }
+                else
+                {
+                   [weakSelf _itemPlayFailed];
                 }
             });
         }
     });
+    
+//    __weak __typeof(&*self)weakSelf = self;
+//    decoder.interruptCallback = ^BOOL(){
+//        __strong __typeof(&*self)strongSelf = weakSelf;
+//        return strongSelf ? [strongSelf interruptDecoder] : YES;
+//    };
+//
+//    //    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+//
+//    //    });
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        __strong __typeof(&*self)strongSelf = weakSelf;
+//
+//        __block NSError *error = nil;
+//        [decoder openFile:decoder.path error:&error];
+//
+//        if (strongSelf) {
+//            dispatch_sync(dispatch_get_main_queue(), ^{
+//                __strong __typeof(&*self)strongSelf2 = weakSelf;
+//                if (strongSelf2) {
+//
+//                    LoggerStream(2, @"setMovieDecoder");
+//
+//                    if (!error && decoder) {
+//                        strongSelf2->_decoder        = decoder;
+//                        strongSelf2->_asyncDecodeQueue  = dispatch_queue_create("CYPlayer AsyncDecode", DISPATCH_QUEUE_SERIAL);
+//                        strongSelf2->_videoFrames    = [NSMutableArray array];
+//                        strongSelf2->_audioFrames    = [NSMutableArray array];
+//
+//                        if (strongSelf2->_decoder.subtitleStreamsCount) {
+//                            strongSelf2->_subtitles = [NSMutableArray array];
+//                        }
+//
+//                        if (strongSelf2->_decoder.isNetwork) {
+//
+//                            strongSelf2->_minBufferedDuration = NETWORK_MIN_BUFFERED_DURATION;
+//                            strongSelf2->_maxBufferedDuration = NETWORK_MAX_BUFFERED_DURATION;
+//
+//                        } else {
+//
+//                            strongSelf2->_minBufferedDuration = LOCAL_MIN_BUFFERED_DURATION;
+//                            strongSelf2->_maxBufferedDuration = LOCAL_MAX_BUFFERED_DURATION;
+//                        }
+//
+//                        if (!strongSelf2->_decoder.validVideo)
+//                            strongSelf2->_minBufferedDuration *= 10.0; // increase for audio
+//
+//                        // allow to tweak some parameters at runtime
+//                        if (strongSelf2->_parameters.count) {
+//
+//                            id val;
+//
+//                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMinBufferedDuration];
+//                            if ([val isKindOfClass:[NSNumber class]])
+//                                strongSelf2->_minBufferedDuration = [val floatValue];
+//
+//                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterMaxBufferedDuration];
+//                            if ([val isKindOfClass:[NSNumber class]])
+//                                strongSelf2->_maxBufferedDuration = [val floatValue];
+//
+//                            val = [strongSelf2->_parameters valueForKey: CYPlayerParameterDisableDeinterlacing];
+//                            if ([val isKindOfClass:[NSNumber class]])
+//                                strongSelf2->_decoder.disableDeinterlacing = [val boolValue];
+//
+//                            if (strongSelf2->_maxBufferedDuration < strongSelf2->_minBufferedDuration)
+//                                strongSelf2->_maxBufferedDuration = strongSelf2->_minBufferedDuration * 2;
+//                        }
+//
+//                        LoggerStream(2, @"buffered limit: %.1f - %.1f", strongSelf2->_minBufferedDuration, strongSelf2->_maxBufferedDuration);
+//                        [strongSelf2 updatePosition:weakSelf.decoder.validVideo ? strongSelf->_moviePosition : strongSelf->_audioPosition playMode:YES];
+//                        [strongSelf2 play];
+//
+//
+//                    } else {
+//                        if (!strongSelf2->_interrupted) {
+//                            [strongSelf2 handleDecoderMovieError: error];
+//                            strongSelf2.error = error;
+//                            [strongSelf2 _itemPlayFailed];
+//                        }
+//                    }
+//
+//                }
+//            });
+//        }
+//    });
 }
 
 - (void)controlView:(CYVideoPlayerControlView *)controlView didSelectPreviewFrame:(CYVideoFrame *)frame
