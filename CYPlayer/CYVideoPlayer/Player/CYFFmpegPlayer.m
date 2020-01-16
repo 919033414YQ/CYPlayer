@@ -431,6 +431,49 @@ CYAudioManagerDelegate>
     });
 }
 
+- (void)changeLiveDefinitionPath:(NSString *)path
+{
+    _path = path;
+    
+    __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
+    CYVideoDecodeType type = _decoder.decodeType;
+    [decoder setDecodeType:type];
+    __weak __typeof(&*self)weakSelf = self;
+    
+    decoder.interruptCallback = ^BOOL(){
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        return strongSelf ? [strongSelf interruptDecoder] : YES;
+    };
+    self.autoplay = YES;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(&*self)strongSelf = weakSelf;
+        
+        NSError *error = nil;
+        [decoder openFile:path error:&error];
+        [decoder setupVideoFrameFormat:CYVideoFrameFormatYUV];
+        
+        if (strongSelf) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                __strong __typeof(&*self)strongSelf2 = weakSelf;
+                if (strongSelf2 && !strongSelf.stopped) {
+                    //关闭原先的解码器
+//                    [strongSelf.decoder closeFile];
+                    strongSelf2.controlView.decoder = decoder;
+                    //播放器连接新的解码器decoder
+                    [strongSelf2 setMovieDecoder:decoder withError:error];
+                    
+                    [strongSelf2 showTitle:@"切换完成"];
+                    strongSelf2->_isChangingDefinition = NO;
+                }
+                else if (error) {
+                    [weakSelf _itemPlayFailed];
+                    strongSelf2->_isChangingDefinition = NO;
+                }
+            });
+        }
+    });
+}
+
 - (void)refreshSelectionsBtnStatus
 {
     if (_isChangingSelections)

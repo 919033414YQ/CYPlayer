@@ -87,6 +87,7 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)changeDefinitionPath:(NSString *)path;
 - (void)changeSelectionsPath:(NSString *)path;
+- (void)changeLiveDefinitionPath:(NSString *)path;
 
 
 @property (nonatomic, strong) CYPlayerDecoder *decoder;
