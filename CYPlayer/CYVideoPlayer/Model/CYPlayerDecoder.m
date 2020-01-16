@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
 NSInteger CYPlayerDecoderMaxFPS = 26;
-NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
+NSInteger CYPlayerDecoderConCurrentThreadCount = 2;// range: 1 - 5;
 
 # pragma mark - struct CYPicture
 
@@ -2862,7 +2862,7 @@ error:
     NSInteger threadCount = CYPlayerDecoderConCurrentThreadCount;
     if ([self.path hasPrefix:@"rtsp"] || [self.path hasPrefix:@"rtmp"] || [[self.path lastPathComponent] containsString:@"m3u8"])
     {
-        threadCount = 4;
+        threadCount = 1;
     }
     for (int i = 0; i < threadCount; i++)
     {

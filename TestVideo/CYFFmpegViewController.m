@@ -90,7 +90,7 @@
         settings.nextAutoPlaySelectionsPath = ^NSString *{
             return @"http://vodplay.yayi360.com/9f76b359339f4bbc919f35e39e55eed4/efa9514952ef5e242a4dfa4ee98765fb-ld.mp4";
         };
-        settings.useHWDecompressor = YES;
+//        settings.useHWDecompressor = YES;
 //        settings.enableProgressControl = NO;
     }];
     vc.delegate = self;
