@@ -56,6 +56,8 @@
                           @"http://dliveshow.yayi360.com/live/record/dentalink/392800696954765312/2019-11-12-19-27-50_2019-11-12-20-09-57.mp4",
                           
                           @"http://dliveshow.yayi360.com/live/record/dentalink/421676001844559872/2019-12-09-19-29-23_2019-12-09-21-15-26.mp4",
+                          
+                          @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/22/49/77/34/430105247084544000.mp4",
                           @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
                         
                           localV

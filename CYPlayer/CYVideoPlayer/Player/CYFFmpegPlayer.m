@@ -1476,34 +1476,52 @@ CYAudioManagerDelegate>
                     if (!_positionUpdating)
                     {
                         NSInteger targetIndex = _videoFrames.count;
+                        BOOL hasInserted = NO;
                         for( int i = 0; i < _videoFrames.count; i ++ )
                         {
                             CYVideoFrame * targetFrame = [_videoFrames objectAtIndex:i];
                             if (frame.position <= targetFrame.position)
                             {
                                 targetIndex = i;
+                                if (frame.position == targetFrame.position) {
+                                    hasInserted = YES;
+                                }
                                 break;
                             }
                         }
-                        [_videoFrames insertObject:frame atIndex:targetIndex];
-                        _videoBufferedDuration += frame.duration;
+                        if (!hasInserted) {
+                            [_videoFrames insertObject:frame atIndex:targetIndex];
+                            _videoBufferedDuration += frame.duration;
+                        }else {
+                            LoggerVideo(0, @"skip hasInserted video frames");
+                        }
+                        
                     }
                     else
                     {
                         if (frame.position >= _targetPosition)
                         {
                             NSInteger targetIndex = _videoFrames.count;
+                            BOOL hasInserted = NO;
                             for( int i = 0; i < _videoFrames.count; i ++ )
                             {
                                 CYVideoFrame * targetFrame = [_videoFrames objectAtIndex:i];
                                 if (frame.position <= targetFrame.position)
                                 {
                                     targetIndex = i;
+                                    if (frame.position == targetFrame.position) {
+                                        hasInserted = YES;
+                                    }
                                     break;
                                 }
                             }
-                            [_videoFrames insertObject:frame atIndex:targetIndex];
-                            _videoBufferedDuration += frame.duration;
+                             if (!hasInserted) {
+                                 [_videoFrames insertObject:frame atIndex:targetIndex];
+                                 _videoBufferedDuration += frame.duration;
+                             }else {
+                                 LoggerVideo(0, @"skip hasInserted video frames");
+                             }
+                            
                         }
                     }
                 }
@@ -1520,34 +1538,50 @@ CYAudioManagerDelegate>
                     if (!_positionUpdating)
                     {
                         NSInteger targetIndex = _audioFrames.count;
+                        BOOL hasInserted = NO;
                         for( int i = 0; i < _audioFrames.count; i ++ )
                         {
                             CYAudioFrame * targetFrame = [_audioFrames objectAtIndex:i];
                             if (frame.position <= targetFrame.position)
                             {
                                 targetIndex = i;
+                                if (frame.position == targetFrame.position) {
+                                    hasInserted = YES;
+                                }
                                 break;
                             }
                         }
-                        [_audioFrames insertObject:frame atIndex:targetIndex];
-                        _audioBufferedDuration += frame.duration;
+                         if (!hasInserted) {
+                             [_audioFrames insertObject:frame atIndex:targetIndex];
+                             _audioBufferedDuration += frame.duration;
+                         }else {
+                             LoggerVideo(0, @"skip hasInserted audio frames");
+                         }
                     }
                     else
                     {
                         if (frame.position >= _targetPosition)
                         {
                             NSInteger targetIndex = _audioFrames.count;
+                            BOOL hasInserted = NO;
                             for( int i = 0; i < _audioFrames.count; i ++ )
                             {
                                 CYAudioFrame * targetFrame = [_audioFrames objectAtIndex:i];
                                 if (frame.position <= targetFrame.position)
                                 {
                                     targetIndex = i;
+                                    if (frame.position == targetFrame.position) {
+                                        hasInserted = YES;
+                                    }
                                     break;
                                 }
                             }
-                            [_audioFrames insertObject:frame atIndex:targetIndex];
-                            _audioBufferedDuration += frame.duration;
+                            if (!hasInserted) {
+                                [_audioFrames insertObject:frame atIndex:targetIndex];
+                                _audioBufferedDuration += frame.duration;
+                            }else {
+                                LoggerVideo(0, @"skip hasInserted audio frames");
+                            }
                         }
                     }
                 }
@@ -1571,32 +1605,48 @@ CYAudioManagerDelegate>
                     if (!_positionUpdating)
                     {
                         NSInteger targetIndex = _subtitles.count;
+                        BOOL hasInserted = NO;
                         for( int i = 0; i < _subtitles.count; i ++ )
                         {
                             CYSubtitleFrame * targetFrame = [_subtitles objectAtIndex:i];
                             if (frame.position <= targetFrame.position)
                             {
                                 targetIndex = i;
+                                if (frame.position == targetFrame.position) {
+                                    hasInserted = YES;
+                                }
                                 break;
                             }
                         }
-                        [_subtitles insertObject:frame atIndex:targetIndex];
+                        if (!hasInserted) {
+                            [_subtitles insertObject:frame atIndex:targetIndex];
+                        }else {
+                            LoggerVideo(0, @"skip hasInserted subtitles frames");
+                        }
                     }
                     else
                     {
                         if (frame.position >= _targetPosition)
                         {
                             NSInteger targetIndex = _subtitles.count;
+                            BOOL hasInserted = NO;
                             for( int i = 0; i < _subtitles.count; i ++ )
                             {
                                 CYSubtitleFrame * targetFrame = [_subtitles objectAtIndex:i];
                                 if (frame.position <= targetFrame.position)
                                 {
                                     targetIndex = i;
+                                    if (frame.position == targetFrame.position) {
+                                        hasInserted = YES;
+                                    }
                                     break;
                                 }
                             }
-                            [_subtitles insertObject:frame atIndex:targetIndex];
+                            if (!hasInserted) {
+                                [_subtitles insertObject:frame atIndex:targetIndex];
+                            }else {
+                                LoggerVideo(0, @"skip hasInserted subtitles frames");
+                            }
                         }
                     }
                 }

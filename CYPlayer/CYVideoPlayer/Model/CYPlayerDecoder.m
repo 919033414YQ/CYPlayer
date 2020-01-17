@@ -728,7 +728,7 @@ static int interrupt_callback(void *ctx);
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_ANY);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_videoCodecCtx);
         
     }
@@ -736,7 +736,7 @@ static int interrupt_callback(void *ctx);
     if ([self validAudio]) {
         int64_t ts = (int64_t)(seconds / (_audioTimeBase));
 //        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_ANY);
+        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(_audioCodecCtx);
     }
     
