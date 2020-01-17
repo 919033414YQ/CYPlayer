@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 NSString * cyplayerErrorDomain = @"com.yellowei.www.CYPlayer";
 NSInteger CYPlayerDecoderMaxFPS = 26;
-NSInteger CYPlayerDecoderConCurrentThreadCount = 2;// range: 1 - 5;
+NSInteger CYPlayerDecoderConCurrentThreadCount = 1;// range: 1 - 5;
 
 # pragma mark - struct CYPicture
 
@@ -724,19 +724,23 @@ static int interrupt_callback(void *ctx);
     _position = seconds;
     _isEOF = NO;
     dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
+    dispatch_semaphore_wait(_avReadFrameLock, DISPATCH_TIME_FOREVER);//加锁
     if ([self validVideo]) {
         int64_t ts = (int64_t)(seconds / (_videoTimeBase ));
 //        avformat_seek_file(_formatCtx, (int)_videoStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, (int)_videoStream, ts, AVSEEK_FLAG_ANY);
         avcodec_flush_buffers(_videoCodecCtx);
+        
     }
     
     if ([self validAudio]) {
         int64_t ts = (int64_t)(seconds / (_audioTimeBase));
 //        avformat_seek_file(_formatCtx, (int)_audioStream, ts, ts, ts, AVSEEK_FLAG_FRAME);
-        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_BACKWARD);
+        av_seek_frame(_formatCtx, (int)_audioStream, ts, AVSEEK_FLAG_ANY);
         avcodec_flush_buffers(_audioCodecCtx);
     }
+    
+    dispatch_semaphore_signal(_avReadFrameLock);//放行
     dispatch_semaphore_signal(_avSendAndReceivePacketLock);
 }
 
@@ -3057,6 +3061,8 @@ error:
                 int gotframe = 0;
                 dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
                 int len = avcodec_send_packet(_videoCodecCtx, packet);
+                packet->size -= len;
+                packet->data += len;
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, videoFrame);
                 dispatch_semaphore_signal(_avSendAndReceivePacketLock);
                 
@@ -3117,6 +3123,8 @@ error:
             
             dispatch_semaphore_wait(_avSendAndReceivePacketLock, DISPATCH_TIME_FOREVER);//加锁
             int len = avcodec_send_packet(_audioCodecCtx, packet);
+            packet->size -= len;
+            packet->data += len;
             gotframe = !avcodec_receive_frame(_audioCodecCtx, audioFrame);
             dispatch_semaphore_signal(_avSendAndReceivePacketLock);
             
@@ -3327,6 +3335,8 @@ error:
                 
                 int gotframe = 0;
                 int len = avcodec_send_packet(_audioCodecCtx, &packet);
+                packet.size -= len;
+                packet.data += len;
                 gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
                 
                 if (len < 0) {
@@ -3372,6 +3382,8 @@ error:
                 //                                                &gotframe,
                 //                                                &packet);
                 int len = avcodec_send_packet(_videoCodecCtx, &packet);
+                packet.size -= len;
+                packet.data += len;
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
                 
                 if (len < 0) {
@@ -3486,6 +3498,8 @@ error:
                 
                 int gotframe = 0;
                 int len = avcodec_send_packet(_videoCodecCtx, &packet);
+                packet.size -= len;
+                packet.data += len;
                 gotframe = !avcodec_receive_frame(_videoCodecCtx, _videoFrame);
                 
                 if (len < 0) {
@@ -3526,6 +3540,8 @@ error:
                 int gotframe = 0;
                 
                 int len = avcodec_send_packet(_audioCodecCtx, &packet);
+                packet.size -= len;
+                packet.data += len;
                 gotframe = !avcodec_receive_frame(_audioCodecCtx, _audioFrame);
                 
                 if (len < 0) {

@@ -3281,12 +3281,19 @@ vm_size_t memory_usage(void) {
 //    {
 //        [self setupPlayerWithPath:_path];
 //        return;
-//    }
-//    [self _itemPrepareToPlay];
+    //    }
+    [self _itemPrepareToPlay];
     NSString * path = _path;
-        
+    id<CYAudioManager> audioManager = [CYAudioManager audioManager];
+    BOOL canUseAudio = [audioManager activateAudioSession];
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
-    CYVideoDecodeType type = old_decoder.decodeType;
+    CYVideoDecodeType type = CYVideoDecodeTypeVideo;
+    if (canUseAudio) {
+        type |= CYVideoDecodeTypeAudio;
+    }
+    if (old_decoder) {
+        type = old_decoder.decodeType;
+    }
     [decoder setDecodeType:type];
     __weak __typeof(&*self)weakSelf = self;
     
@@ -3307,7 +3314,7 @@ vm_size_t memory_usage(void) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 __strong __typeof(&*self)strongSelf2 = weakSelf;
                 if (strongSelf2 && !strongSelf.stopped && !error) {
-//                    [decoder setPosition:old_decoder.position];
+                    [decoder setPosition:old_decoder.position];
                     //关闭原先的解码器
                     //                    [strongSelf.decoder closeFile];
                     strongSelf2.controlView.decoder = decoder;
