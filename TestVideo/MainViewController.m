@@ -59,6 +59,8 @@
                           
                           @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/22/49/77/34/430105247084544000.mp4",
                           @"http://vodplay.yayi360.com/8f391c8d78ea4ef29319c5e5792c40d9/550c2ee07572458c83eeaad6f03229ce-592802bc25e1f9ea794d2180107eb14b-hd.mp4",
+                          
+                          @"http://dtcollege.oss-cn-qingdao.aliyuncs.com/5/23/8/88/304368212387233792_merge.m4a",
                         
                           localV
                           ];

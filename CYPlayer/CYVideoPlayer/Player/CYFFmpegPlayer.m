@@ -3035,6 +3035,7 @@ CYAudioManagerDelegate>
         [self play];
     }
     [self _readyState];
+    [self refreshProgressViews];
 }
 
 - (void)_itemPlayEnd {
@@ -3755,7 +3756,7 @@ vm_size_t memory_usage(void) {
         //                     self.controlView.leftControlView.lockBtn,
         self.controlView.centerControlView.failedBtn,
         self.controlView.centerControlView.replayBtn,
-        self.controlView.bottomControlView.playBtn,
+        self.controlView.bottomControlView.pauseBtn,
         self.controlView.bottomProgressSlider,
         self.controlView.draggingProgressView.imageView,
         self.controlView.selectTableView,
