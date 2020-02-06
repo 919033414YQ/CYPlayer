@@ -5,11 +5,11 @@ pod 'CYPlayer'
 ```
 ### Sample
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/blob/master/TestVideo/shoot_1.png" />
+<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_1.png" />
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/blob/master/TestVideo/shoot_2.png" />
+<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_2.png" />
 
-<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/blob/master/TestVideo/shoot_3.png" />
+<img src="https://raw.githubusercontent.com/yellowei/CYPlayer/master/TestVideo/shoot_3.png" />
 
 ### How To Use
 ```Objective-C
