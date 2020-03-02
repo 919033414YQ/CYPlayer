@@ -190,7 +190,7 @@ static NSMutableArray<UIImage *> * CY_screenshotImagesM;
     self.view.layer.shadowOpacity = 1;
     
     // delegate
-    self.delegate = (id)[UINavigationController class];
+//    self.delegate = (id)[UINavigationController class];
 }
 
 // observer

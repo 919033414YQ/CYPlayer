@@ -712,13 +712,13 @@
 		0E24077D20FE1630008BEAB5 /* CYVideoPlayerBackGR */ = {
 			isa = PBXGroup;
 			children = (
-				0E24077E20FE1630008BEAB5 /* UINavigationController+CYVideoPlayerAdd.h */,
-				0E24077F20FE1630008BEAB5 /* CYScreenshotView.m */,
-				0E24078020FE1630008BEAB5 /* UIViewController+CYVideoPlayerAdd.h */,
-				0E24078120FE1630008BEAB5 /* README.md */,
-				0E24078220FE1630008BEAB5 /* UINavigationController+CYVideoPlayerAdd.m */,
-				0E24078320FE1630008BEAB5 /* UIViewController+CYVideoPlayerAdd.m */,
 				0E24078420FE1630008BEAB5 /* CYScreenshotView.h */,
+				0E24077F20FE1630008BEAB5 /* CYScreenshotView.m */,
+				0E24078120FE1630008BEAB5 /* README.md */,
+				0E24077E20FE1630008BEAB5 /* UINavigationController+CYVideoPlayerAdd.h */,
+				0E24078220FE1630008BEAB5 /* UINavigationController+CYVideoPlayerAdd.m */,
+				0E24078020FE1630008BEAB5 /* UIViewController+CYVideoPlayerAdd.h */,
+				0E24078320FE1630008BEAB5 /* UIViewController+CYVideoPlayerAdd.m */,
 			);
 			path = CYVideoPlayerBackGR;
 			sourceTree = "<group>";
