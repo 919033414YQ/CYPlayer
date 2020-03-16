@@ -2,8 +2,8 @@
 //  CYAttributesFactory.m
 //  CYAttributesFactory
 //
-//  Created by 畅三江 on 2017/11/6.
-//  Copyright © 2017年 畅三江. All rights reserved.
+//  Created by yellowei on 2018/10/1.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #import "CYAttributesFactory.h"

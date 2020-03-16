@@ -2,7 +2,7 @@
 //  CYVideoPlayerDraggingProgressView.h
 //  CYVideoPlayerProject
 //
-//  Created by 畅三江 on 2017/12/4.
+//  Created by yellowei on 2017/12/4.
 //  Copyright © 2017年 yellowei. All rights reserved.
 //
 

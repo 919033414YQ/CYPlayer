@@ -2,8 +2,8 @@
 //  CYAttributesFactoryHeader.h
 //  CYAttributesFactory
 //
-//  Created by 畅三江 on 2017/11/15.
-//  Copyright © 2017年 畅三江. All rights reserved.
+//  Created by yellowei on 2017/11/15.
+//  Copyright © 2017年 yellowei. All rights reserved.
 //
 
 #ifndef CYAttributesFactoryHeader_h

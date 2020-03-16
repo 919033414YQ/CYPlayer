@@ -3539,7 +3539,7 @@ vm_size_t memory_usage(void) {
         if ([text containsString:@">>"])
         {
             cell.textLabel.text = [text stringByReplacingOccurrencesOfString:@">>" withString:@""];
-            cell.textLabel.textColor = [UIColor greenColor];
+            cell.textLabel.textColor = CYColorWithHEX(0x00c5b5);
         }
         return cell;
     };
@@ -3622,7 +3622,7 @@ vm_size_t memory_usage(void) {
             cell.textLabel.textAlignment = NSTextAlignmentCenter;
             cell.textLabel.text = [NSString stringWithFormat:@"第%ld节",(long)indexPath.row + 1];
             if (self->_currentSelections == indexPath.row) {
-                cell.textLabel.textColor = [UIColor orangeColor];
+                cell.textLabel.textColor = CYColorWithHEX(0x00c5b5);
             }
             return cell;
         };

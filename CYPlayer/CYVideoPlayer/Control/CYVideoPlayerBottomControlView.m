@@ -153,10 +153,10 @@
 - (UIButton *)definitionBtn
 {
     if (_definitionBtn) return _definitionBtn;
-    _definitionBtn = [CYUIButtonFactory buttonWithTitle:@"超清" titleColor:[UIColor greenColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onDefinitionBtnClick:)];
-    _definitionBtn.layer.cornerRadius = 2.0;
-    _definitionBtn.layer.borderWidth = 0.5;
-    _definitionBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    _definitionBtn = [CYUIButtonFactory buttonWithTitle:@"超清" titleColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onDefinitionBtnClick:)];
+//    _definitionBtn.layer.cornerRadius = 2.0;
+//    _definitionBtn.layer.borderWidth = 0.5;
+//    _definitionBtn.layer.borderColor = [UIColor whiteColor].CGColor;
     _definitionBtn.backgroundColor = [UIColor clearColor];
     return _definitionBtn;
 }
@@ -164,10 +164,10 @@
 - (UIButton *)selectionsBtn
 {
     if (_selectionsBtn) return _selectionsBtn;
-    _selectionsBtn = [CYUIButtonFactory buttonWithTitle:@"选集" titleColor:[UIColor orangeColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onSelectionsBtnClick:)];
-    _selectionsBtn.layer.cornerRadius = 2.0;
-    _selectionsBtn.layer.borderWidth = 0.5;
-    _selectionsBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    _selectionsBtn = [CYUIButtonFactory buttonWithTitle:@"选集" titleColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:12] target:self sel:@selector(onSelectionsBtnClick:)];
+//    _selectionsBtn.layer.cornerRadius = 2.0;
+//    _selectionsBtn.layer.borderWidth = 0.5;
+//    _selectionsBtn.layer.borderColor = [UIColor whiteColor].CGColor;
     _selectionsBtn.backgroundColor = [UIColor clearColor];
     return _selectionsBtn;
 }
@@ -216,49 +216,56 @@
 - (void)refreshConstrainsWithSettings:(CYVideoPlayerSettings *)settings
 {
     BOOL hasDefinitionOrSelectionsControl = settings.enableSelections || settings.definitionTypes != CYFFmpegPlayerDefinitionNone;
-    BOOL enableProgressControl = settings.enableProgressControl;
+    BOOL enableProgressControl = 	settings.enableProgressControl;
     
     if (hasDefinitionOrSelectionsControl && enableProgressControl)
     {
         [_currentTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-            //        make.centerY.equalTo(_playBtn);
-            make.top.equalTo(_playBtn);
+                    make.centerY.equalTo(_playBtn);
+//            make.top.equalTo(_playBtn);
             make.leading.equalTo(_playBtn.mas_trailing).offset(0);
         }];
         
         [_separateLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-            //        make.centerY.equalTo(_playBtn);
-            make.top.equalTo(_playBtn);
+                    make.centerY.equalTo(_playBtn);
+//            make.top.equalTo(_playBtn);
             make.leading.equalTo(_currentTimeLabel.mas_trailing);
         }];
         
         [_durationTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-            //        make.centerY.equalTo(_playBtn);
-            make.top.equalTo(_playBtn);
+                    make.centerY.equalTo(_playBtn);
+//            make.top.equalTo(_playBtn);
             make.leading.equalTo(_separateLabel.mas_trailing);
         }];
-        
-        //清晰度btn
-        [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-            make.bottom.equalTo(_playBtn);
-            make.leading.equalTo(_playBtn.mas_trailing);
-            make.width.equalTo(_selectionsBtn.mas_width);
-            make.height.equalTo(@30);
-        }];
-        
-        [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-            make.bottom.equalTo(_playBtn);
-            make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
-            make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
-            make.width.equalTo(_definitionBtn.mas_width);
-            make.height.equalTo(@30);
-        }];
-        
         
         [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
             make.height.centerY.equalTo(_playBtn);
-            make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+//            make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+            make.trailing.equalTo(_definitionBtn.mas_leading).offset(-8);
+        }];
+        
+        //清晰度btn
+        [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+            //            make.bottom.equalTo(_playBtn);
+            //            make.height.equalTo(@30);
+            //                    make.leading.equalTo(_playBtn.mas_trailing);
+            make.width.equalTo(_selectionsBtn.mas_width);
+            make.centerY.equalTo(_playBtn);
+            make.height.equalTo(@(20));
+            make.leading.equalTo(_progressSlider.mas_trailing);
+        }];
+        
+        [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+            //            make.bottom.equalTo(_playBtn);
+            //            make.height.equalTo(@30);
+            make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
+//            make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
+            
+            make.trailing.equalTo(_fullBtn.mas_leading);
+            make.width.equalTo(_definitionBtn.mas_width);
+            make.centerY.equalTo(_playBtn);
+            make.height.equalTo(@(20));
         }];
     }
     else if (!hasDefinitionOrSelectionsControl && enableProgressControl)
@@ -319,16 +326,16 @@
         //清晰度btn
         [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(_playBtn);
-            make.leading.equalTo(_durationTimeLabel.mas_trailing);
+            make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
             make.width.equalTo(@30);
-            make.height.equalTo(@30);
+            make.height.equalTo(@20);
         }];
         
         [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(_playBtn);
             make.leading.equalTo(_definitionBtn.mas_trailing).offset(8);
             make.width.equalTo(@30);
-            make.height.equalTo(@30);
+            make.height.equalTo(@20);
         }];
         
         
@@ -400,45 +407,51 @@
     }];
     
     [_currentTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-        //        make.centerY.equalTo(_playBtn);
-        make.top.equalTo(_playBtn);
+        make.centerY.equalTo(_playBtn);
+//        make.top.equalTo(_playBtn);
         make.leading.equalTo(_playBtn.mas_trailing).offset(0);
     }];
     
     [_separateLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-        //        make.centerY.equalTo(_playBtn);
-        make.top.equalTo(_playBtn);
+        make.centerY.equalTo(_playBtn);
+//        make.top.equalTo(_playBtn);
         make.leading.equalTo(_currentTimeLabel.mas_trailing);
     }];
     
     [_durationTimeLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-        //        make.centerY.equalTo(_playBtn);
-        make.top.equalTo(_playBtn);
+        make.centerY.equalTo(_playBtn);
+//        make.top.equalTo(_playBtn);
         make.leading.equalTo(_separateLabel.mas_trailing);
     }];
-    
-    //清晰度btn
-    [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-        make.bottom.equalTo(_playBtn);
-        make.leading.equalTo(_playBtn.mas_trailing);
-        make.width.equalTo(_selectionsBtn.mas_width);
-        make.height.equalTo(@30);
-    }];
-    
-    [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-        make.bottom.equalTo(_playBtn);
-        make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
-        make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
-        make.width.equalTo(_definitionBtn.mas_width);
-        make.height.equalTo(@30);
-    }];
-    
     
     [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
         make.height.centerY.equalTo(_playBtn);
+//        make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+        make.trailing.equalTo(_definitionBtn.mas_leading).offset(-8);
+    }];
+    
+    //清晰度btn
+    [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+//        make.bottom.equalTo(_playBtn);
+//        make.leading.equalTo(_playBtn.mas_trailing);
+        make.width.equalTo(_selectionsBtn.mas_width);
+//        make.height.equalTo(@30);
+        make.centerY.equalTo(_playBtn);
+        make.leading.equalTo(_progressSlider.mas_trailing);
+        make.height.equalTo(@20);
+    }];
+    
+    [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+//        make.bottom.equalTo(_playBtn);
+        make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
+//        make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
+        make.width.equalTo(_definitionBtn.mas_width);
+//        make.height.equalTo(@30);
+        make.height.equalTo(@20);
         make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
     }];
+    
     
     [_fullBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.size.equalTo(_playBtn);
