@@ -195,7 +195,7 @@
 
 - (void)_CYSliderInitialize {
     
-    self.trackHeight = 8.0;
+    self.trackHeight = 5.0;
     self.minValue = 0.0;
     self.maxValue = 1.0;
     self.borderWidth = 0.4;
