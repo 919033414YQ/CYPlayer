@@ -448,6 +448,7 @@
 //        make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
         make.width.equalTo(_definitionBtn.mas_width);
 //        make.height.equalTo(@30);
+        make.centerY.equalTo(_playBtn);
         make.height.equalTo(@20);
         make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
     }];
