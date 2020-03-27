@@ -3027,6 +3027,7 @@ CYAudioManagerDelegate>
     _cyAnima(^{
         self.hideControl = NO;
     });
+    [self _readyState];
     if ( self.isAutoplay && !self.userClickedPause && !self.suspend ) {
         if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayerStartAutoPlaying:)])
         {
@@ -3034,7 +3035,6 @@ CYAudioManagerDelegate>
         }
         [self play];
     }
-    [self _readyState];
     [self refreshProgressViews];
 }
 
