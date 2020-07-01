@@ -98,6 +98,8 @@
 		84B261BE1A46A0AF00C8CAA9 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BD1A46A0AF00C8CAA9 /* Images.xcassets */; };
 		84B261C11A46A0AF00C8CAA9 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84B261BF1A46A0AF00C8CAA9 /* LaunchScreen.xib */; };
 		84B261CD1A46A0AF00C8CAA9 /* TestVideoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 84B261CC1A46A0AF00C8CAA9 /* TestVideoTests.m */; };
+		BC0A026E24AB53EB0012BCAF /* CYSonicManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */; };
+		BC0A026F24AB53EB0012BCAF /* sonic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC0A026D24AB53EB0012BCAF /* sonic.cpp */; };
 		BC20A1A221A3B4DB00F88F45 /* CYHardwareDecompressVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */; };
 		BC3BE6FE23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC3BE6FD23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.m */; };
 		BC494C1523BEF07100F957FB /* CYMovieViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E5FA236210062C5002A7597 /* CYMovieViewController.m */; };
@@ -338,6 +340,10 @@
 		84B261CC1A46A0AF00C8CAA9 /* TestVideoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestVideoTests.m; sourceTree = "<group>"; };
 		99FA05E579685BD309A43463 /* libPods-CYPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CYPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2A86123A5DA3ACF4A945CAE /* Pods-TestVideo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TestVideo.release.xcconfig"; path = "Pods/Target Support Files/Pods-TestVideo/Pods-TestVideo.release.xcconfig"; sourceTree = "<group>"; };
+		BC0A026A24AB53E80012BCAF /* CYSonicManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYSonicManager.h; sourceTree = "<group>"; };
+		BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CYSonicManager.mm; sourceTree = "<group>"; };
+		BC0A026C24AB53EA0012BCAF /* sonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sonic.h; sourceTree = "<group>"; };
+		BC0A026D24AB53EB0012BCAF /* sonic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sonic.cpp; sourceTree = "<group>"; };
 		BC20A1A021A3B4DB00F88F45 /* CYHardwareDecompressVideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYHardwareDecompressVideo.m; sourceTree = "<group>"; };
 		BC20A1A121A3B4DB00F88F45 /* CYHardwareDecompressVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYHardwareDecompressVideo.h; sourceTree = "<group>"; };
 		BC3BE6FC23C2E6DF00B6662E /* CYVideoPlayerSelectTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CYVideoPlayerSelectTableView.h; sourceTree = "<group>"; };
@@ -520,6 +526,10 @@
 		0E24072820FE1630008BEAB5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				BC0A026A24AB53E80012BCAF /* CYSonicManager.h */,
+				BC0A026B24AB53E90012BCAF /* CYSonicManager.mm */,
+				BC0A026C24AB53EA0012BCAF /* sonic.h */,
+				BC0A026D24AB53EB0012BCAF /* sonic.cpp */,
 				0ECD4C192111DFFA0078D24A /* CYAudioManager.h */,
 				0ECD4C1A2111DFFA0078D24A /* CYAudioManager.m */,
 				0E24072A20FE1630008BEAB5 /* CYMoreSettingsFooterViewModel.h */,
@@ -1088,6 +1098,7 @@
 				0E2407CA20FE1630008BEAB5 /* CYVideoPlayerPreviewView.m in Sources */,
 				0E2407AF20FE1630008BEAB5 /* CYCommonSlider.m in Sources */,
 				0E2407B820FE1630008BEAB5 /* CYVideoPlayerMoreSettingSecondary.m in Sources */,
+				BC0A026E24AB53EB0012BCAF /* CYSonicManager.mm in Sources */,
 				0E2407C420FE1630008BEAB5 /* CYVideoPlayerTipsView.m in Sources */,
 				0E2407B220FE1630008BEAB5 /* CYVideoPlayerControlMaskView.m in Sources */,
 				0E2407C520FE1630008BEAB5 /* CYVideoPlayerTopControlView.m in Sources */,
@@ -1132,6 +1143,7 @@
 				0E2407D220FE1631008BEAB5 /* Utilities.m in Sources */,
 				0E2407AD20FE1630008BEAB5 /* CYLabelSlider.m in Sources */,
 				0EEAC86A212568EB0017CF3B /* CYTest.m in Sources */,
+				BC0A026F24AB53EB0012BCAF /* sonic.cpp in Sources */,
 				0E5FA22D21003E24002A7597 /* MainViewController.m in Sources */,
 				0ECD4C112111A33C0078D24A /* CYPlayerGLView.m in Sources */,
 				0ECD4C102111A33C0078D24A /* CYFFmpegPlayer.m in Sources */,
