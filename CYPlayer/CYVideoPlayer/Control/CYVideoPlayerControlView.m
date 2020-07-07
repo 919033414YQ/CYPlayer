@@ -226,6 +226,12 @@ UIGestureRecognizerDelegate>
     }
 }
 
+- (void)bottomControlViewOnRateBtnClick:(CYVideoPlayerBottomControlView *)view{
+    if ([_delegate respondsToSelector:@selector(controlViewOnRateBtnClick:)]) {
+        [_delegate controlViewOnRateBtnClick:self];
+    }
+}
+
 - (void)previewView:(CYVideoPlayerPreviewView *)view didSelectItem:(CYVideoPreviewModel *)item {
     if ( ![_delegate respondsToSelector:@selector(controlView:didSelectPreviewItem:)] ) return;
     [_delegate controlView:self didSelectPreviewItem:item];

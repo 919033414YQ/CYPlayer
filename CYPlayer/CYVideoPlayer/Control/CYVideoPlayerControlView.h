@@ -55,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)controlViewOnSelectionsBtnClick:(CYVideoPlayerControlView *)controlView;
 
+- (void)controlViewOnRateBtnClick:(CYVideoPlayerControlView *)controlView;
+
 
 @end
 

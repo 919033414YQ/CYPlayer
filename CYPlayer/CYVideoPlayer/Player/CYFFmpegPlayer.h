@@ -72,6 +72,9 @@ CYVideoPlayerMoreSettingSecondaryView;
 
 - (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player changeSelections:(NSInteger)selectionsNum;
 
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player changeRate:(double)rate;
+
+
 @end
 
 @interface CYFFmpegPlayer : NSObject

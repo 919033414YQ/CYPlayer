@@ -302,9 +302,9 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
     const GLsizei heights[3] = { (GLsizei)frameHeight, (GLsizei)(frameHeight / 2), (GLsizei)(frameHeight / 2) };
     
     for (int i = 0; i < 3; ++i) {
-        
+
         glBindTexture(GL_TEXTURE_2D, _textures[i]);
-        
+
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      GL_LUMINANCE,
@@ -314,12 +314,12 @@ static void mat4f_LoadOrtho(float left, float right, float bottom, float top, fl
                      GL_LUMINANCE,
                      GL_UNSIGNED_BYTE,
                      pixels[i]);
-        
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }     
+    }
 }
 
 - (BOOL) prepareRender
@@ -413,14 +413,18 @@ enum {
             return nil;
         }
         
-        glGenFramebuffers(1, &_framebuffer);
-        glGenRenderbuffers(1, &_renderbuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
-        [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &_backingWidth);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &_backingHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _renderbuffer);
+        //创建纹理
+        
+        //加载着色器
+        
+//        glGenFramebuffers(1, &_framebuffer);
+//        glGenRenderbuffers(1, &_renderbuffer);
+//        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+//        glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
+//        [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
+//        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &_backingWidth);
+//        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &_backingHeight);
+//        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _renderbuffer);
         
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -575,6 +579,53 @@ enum {
     }
 }
 
+- (BOOL)createFrameAndRenderBuffer
+{
+    //创建帧缓冲绑定
+    glGenFramebuffers(1, &_framebuffer);
+    //创建渲染缓冲
+    glGenRenderbuffers(1, &_renderbuffer);
+    
+    //将之前用glGenFramebuffers创建的帧缓冲绑定为当前的Framebuffer(绑定到context上？).
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+    //Renderbuffer绑定到context上,此时当前Framebuffer完全由renderbuffer控制
+    glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
+    
+    //分配空间
+    if (![_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer])
+    {
+        NSLog(@"attach渲染缓冲区失败");
+    }
+    
+    //这个函数看起来有点复杂，但其实它很好理解的。它要做的全部工作就是把把前面我们生成的深度缓存对像与当前的FBO对像进行绑定，当然我们要注意一个FBO有多个不同绑定点，这里是要绑定在FBO的深度缓冲绑定点上。
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _renderbuffer);
+    
+    //检查当前帧缓存的关联图像和帧缓存参数
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        NSLog(@"创建缓冲区错误 0x%x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        return NO;
+    }
+    return YES;
+}
+
+- (void)destoryFrameAndRenderBuffer
+{
+    if (_framebuffer)
+    {
+        //删除FBO
+        glDeleteFramebuffers(1, &_framebuffer);
+    }
+    
+    if (_renderbuffer)
+    {
+        //删除渲染缓冲区
+        glDeleteRenderbuffers(1, &_renderbuffer);
+    }
+    
+    _framebuffer = 0;
+    _renderbuffer = 0;
+}
 
 - (void)dealloc
 {
@@ -604,6 +655,8 @@ enum {
 
 - (void)layoutSubviews
 {
+    [self destoryFrameAndRenderBuffer];
+    [self createFrameAndRenderBuffer];
     glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
     [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
 	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &_backingWidth);
@@ -636,8 +689,10 @@ enum {
     BOOL result = NO;
     GLuint vertShader = 0, fragShader = 0;
     
+    //创建程序容器
 	_program = glCreateProgram();
 	
+   //编译着色
     vertShader = compileShader(GL_VERTEX_SHADER, vertexShaderString);
 	if (!vertShader)
         goto exit;
@@ -645,7 +700,8 @@ enum {
 	fragShader = compileShader(GL_FRAGMENT_SHADER, _renderer.fragmentShader);
     if (!fragShader)
         goto exit;
-    
+    //绑定shader到program
+
 	glAttachShader(_program, vertShader);
 	glAttachShader(_program, fragShader);
 	glBindAttribLocation(_program, ATTRIBUTE_VERTEX, "position");
@@ -725,7 +781,7 @@ exit:
 	glUseProgram(_program);
         
     if (frame) {
-        [_renderer setFrame:frame];        
+        [_renderer setFrame:frame];
     }
     
     if ([_renderer prepareRender]) {

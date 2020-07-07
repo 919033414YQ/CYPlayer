@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) UIButton *selectionsBtn;
 @property (nonatomic, strong, readonly) CYSlider *progressSlider;
 @property (nonatomic, strong, readonly) UIButton *fullBtn;
+@property (nonatomic, strong, readonly) UIButton *rateButton;
+@property (nonatomic, assign) BOOL is_FullScreen;
 
 @end
 
@@ -36,6 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)bottomControlViewOnDefinitionBtnClick:(CYVideoPlayerBottomControlView *)view;
 
 - (void)bottomControlViewOnSelectionsBtnClick:(CYVideoPlayerBottomControlView *)view;
+
+- (void)bottomControlViewOnRateBtnClick:(CYVideoPlayerBottomControlView *)view;
+
 
 @end
 

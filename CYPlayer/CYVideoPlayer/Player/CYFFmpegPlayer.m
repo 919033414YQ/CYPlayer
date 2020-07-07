@@ -34,6 +34,7 @@
 #import "CYPrompt.h"
 #import "CYVideoPlayerMoreSetting.h"
 #import "CYPCMAudioManager.h"
+#import "CYSonicManager.h"
 
 //Others
 #import <objc/message.h>
@@ -95,7 +96,7 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90//100 相当于关闭
 #define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 0//0相当于关闭
 
 @interface CYFFmpegPlayer ()<
@@ -341,6 +342,10 @@ CYAudioManagerDelegate>
 - (void)changeSelectionsPath:(NSString *)path
 {
     _path = path;
+    
+    //开始播放
+    self.rate = 1.0;
+    [[CYSonicManager sonicManager] setPlaySpeed:self.rate];
     
     __block CYPlayerDecoder *decoder = [[CYPlayerDecoder alloc] init];
     CYVideoDecodeType type = _decoder.decodeType;
@@ -1751,26 +1756,26 @@ CYAudioManagerDelegate>
     
     if (self.playing)
     {
-        const NSUInteger leftFrames =
-        (_decoder.validVideo ? _videoFrames.count : 0) +
-        (_decoder.validAudio ? _audioFrames.count : 0);
+//        const NSUInteger leftFrames =
+//        (_decoder.validVideo ? _videoFrames.count : 0) +
+//        (_decoder.validAudio ? _audioFrames.count : 0);
+//
+//        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
+//        {
+//            if (!leftFrames ||
+//                (_videoBufferedDuration < _maxBufferedDuration)
+////                ||
+////                !(_audioBufferedDuration > _maxBufferedDuration)
+//                )
+//            {
+//                //            [self asyncDecodeFrames];
+//                [self concurrentAsyncDecodeFrames];
+//            }
+//        }
         
-        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
-        {
-            if (!leftFrames ||
-                (_videoBufferedDuration < _maxBufferedDuration)
-//                ||
-//                !(_audioBufferedDuration > _maxBufferedDuration)
-                )
-            {
-                //            [self asyncDecodeFrames];
-                [self concurrentAsyncDecodeFrames];
-            }
-        }
-    
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);
         dispatch_after(popTime, _videoQueue, ^(void){
             [weakSelf videoTick];
         });
@@ -1788,6 +1793,24 @@ CYAudioManagerDelegate>
     //fillSignalF(outData,numFrames,numChannels);
     //return;
     
+    if (self.playing) {
+        const NSUInteger leftFrames =
+        (_decoder.validVideo ? _videoFrames.count : 0) +
+        (_decoder.validAudio ? _audioFrames.count : 0);
+    
+        if ((!leftFrames ||
+            !(_videoBufferedDuration > _maxBufferedDuration) ||
+            !(_audioBufferedDuration > _maxBufferedDuration))
+            &&
+            ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY)
+        {
+            
+            //            [self asyncDecodeFrames];
+            [self concurrentAsyncDecodeFrames];
+        }
+        
+    }
+    
     if (_buffered && _audioFrames.count <= 0) {
         memset(outData, 0, numFrames * numChannels * sizeof(float));
         return;
@@ -1798,7 +1821,7 @@ CYAudioManagerDelegate>
         while (numFrames > 0) {
             
             if (!_currentAudioFrame) {
-                
+                //_currentAudioFrame 为空
                 @synchronized(_audioFrames) {
                     
                     NSUInteger count = _audioFrames.count;
@@ -1810,39 +1833,11 @@ CYAudioManagerDelegate>
 #ifdef DUMP_AUDIO_DATA
                         LoggerAudio(2, @"Audio frame position: %f", frame.position);
 #endif
-//                        if (_decoder.validVideo) {
-//                            
-//                            const CGFloat delta = _moviePosition - frame.position;
-//                            
-//                            if (delta < -0.1) {
-//                                
-//                                memset(outData, 0, numFrames * numChannels * sizeof(float));
-//#ifdef DEBUG
-//                                LoggerStream(0, @"desync audio (outrun) wait %.4f %.4f", _moviePosition, frame.position);
-//                                _debugAudioStatus = 1;
-//                                _debugAudioStatusTS = [NSDate date];
-//#endif
-//                                //                                [_audioFrames removeObjectAtIndex:0];
-//                                //                                break; // silence and exit
-//                            }
-//                            
-//                            
-//                            if (delta > 0.1 && count > 1) {
-//                                
-//#ifdef DEBUG
-//                                LoggerStream(0, @"desync audio (lags) skip %.4f %.4f", _moviePosition, frame.position);
-//                                _debugAudioStatus = 2;
-//                                _debugAudioStatusTS = [NSDate date];
-//#endif
-//                                continue;
-//                            }
-//                            
-//                        }
                         [_audioFrames removeObjectAtIndex:0];
                         _audioPosition = frame.position;
                         _currentAudioFramePos = 0;
                         _audioBufferedDuration -= frame.duration;
-                        _currentAudioFrame = frame.samples;
+                        _currentAudioFrame = [[CYSonicManager sonicManager] setFloatData:frame.samples];
                     }
                 }
             }
@@ -1850,6 +1845,7 @@ CYAudioManagerDelegate>
             if (_positionUpdating) {
                 _positionUpdating = NO;
             }
+            
             if (_currentAudioFrame) {
                 
                 const void *bytes = (Byte *)(_currentAudioFrame.bytes) + _currentAudioFramePos;
@@ -1858,14 +1854,17 @@ CYAudioManagerDelegate>
                 const NSUInteger bytesToCopy = MIN(numFrames * frameSizeOf, bytesLeft);
                 const NSUInteger framesToCopy = bytesToCopy / frameSizeOf;
                 
-                memcpy(outData, bytes, bytesToCopy * 2);
+                //从bytes拷贝到outData 长度为bytesToCopy
+                memcpy(outData, bytes, bytesToCopy);
                 numFrames -= framesToCopy;
                 outData += framesToCopy * numChannels;
                 
-                if (bytesToCopy < bytesLeft)
+                if (bytesToCopy < bytesLeft){
                     _currentAudioFramePos += bytesToCopy;
-                else
+                }
+                else{
                     _currentAudioFrame = nil;
+                }
                 
             } else {
                 
@@ -1918,59 +1917,60 @@ CYAudioManagerDelegate>
 
 - (void)audioTick
 {
-#ifdef USE_OPENAL
-    __weak typeof(&*self)weakSelf = self;
-    CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
     
-    CGFloat interval = 0;
-    if (!_buffered)
-    {
-        if (_positionUpdating )
-        {
-            _positionUpdating = NO;
-        }
-        interval = [self presentAudioFrame];
-    }
-    else
-    {
-        //        const int bufSize = 100;
-        int bufSize = av_samples_get_buffer_size(NULL,
-                                                 (int)audioManager.avcodecContextNumOutputChannels,
-                                                 audioManager.audioCtx->frame_size,
-                                                 AV_SAMPLE_FMT_S16,
-                                                 1);
-        bufSize = bufSize > 0 ? bufSize : 100;
-        char * empty_audio_data = (char *)calloc(bufSize, sizeof(char));
-        memset(empty_audio_data, 0, bufSize);
-        NSData * empty_audio = [NSData dataWithBytes:empty_audio_data length:bufSize];
-        [audioManager setData:empty_audio];//播放
-        //        interval = delta;
-    }
-    
-    if (self.playing) {
-        const NSUInteger leftFrames =
-        (_decoder.validVideo ? _videoFrames.count : 0) +
-        (_decoder.validAudio ? _audioFrames.count : 0);
+    #ifdef USE_OPENAL
+        __weak typeof(&*self)weakSelf = self;
+        CYPCMAudioManager * audioManager = [CYPCMAudioManager audioManager];
         
-        if ((!leftFrames ||
-            !(_videoBufferedDuration > _maxBufferedDuration) ||
-            !(_audioBufferedDuration > _maxBufferedDuration))
-            &&
-            ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY)
+        CGFloat interval = 0;
+        if (!_buffered)
         {
+            if (_positionUpdating )
+            {
+                _positionUpdating = NO;
+            }
+            interval = [self presentAudioFrame];
+        }
+        else
+        {
+            //        const int bufSize = 100;
+            int bufSize = av_samples_get_buffer_size(NULL,
+                                                     (int)audioManager.avcodecContextNumOutputChannels,
+                                                     audioManager.audioCtx->frame_size,
+                                                     AV_SAMPLE_FMT_S16,
+                                                     1);
+            bufSize = bufSize > 0 ? bufSize : 100;
+            char * empty_audio_data = (char *)calloc(bufSize, sizeof(char));
+            memset(empty_audio_data, 0, bufSize);
+            NSData * empty_audio = [NSData dataWithBytes:empty_audio_data length:bufSize];
+            [audioManager setData:empty_audio];//播放
+            //        interval = delta;
+        }
+        
+        if (self.playing) {
+            const NSUInteger leftFrames =
+            (_decoder.validVideo ? _videoFrames.count : 0) +
+            (_decoder.validAudio ? _audioFrames.count : 0);
             
-            //            [self asyncDecodeFrames];
-            [self concurrentAsyncDecodeFrames];
+            if ((!leftFrames ||
+                !(_videoBufferedDuration > _maxBufferedDuration) ||
+                !(_audioBufferedDuration > _maxBufferedDuration))
+                &&
+                ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY)
+            {
+                
+                //            [self asyncDecodeFrames];
+                [self concurrentAsyncDecodeFrames];
+            }
+            
+            const NSTimeInterval correction = [self tickCorrection];
+            const NSTimeInterval time = MAX(interval + correction, 0.01);
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);
+            dispatch_after(popTime, _audioQueue, ^(void){
+                [weakSelf audioTick];
+            });
         }
-        
-        const NSTimeInterval correction = [self tickCorrection];
-        const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);
-        dispatch_after(popTime, _audioQueue, ^(void){
-            [weakSelf audioTick];
-        });
-    }
-#endif
+    #endif
 }
 
 - (void)progressTick
@@ -2113,8 +2113,11 @@ CYAudioManagerDelegate>
         
         if ([self.decoder validVideo])
         {
+            NSLog(@"getTotalMemorySize: %f getMemoryUsedPercent: %f %d %d",[self getTotalMemorySize], [self getMemoryUsedPercent], MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT,HAS_PLENTY_OF_MEMORY);
+            
             if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
             {
+                NSLog(@"_videoBufferedDuration: %f _maxBufferedDuration: %f",_videoBufferedDuration, _maxBufferedDuration);
                  if (!leftFrames ||
                                 (_videoBufferedDuration < _maxBufferedDuration)
                                 )
@@ -2141,7 +2144,7 @@ CYAudioManagerDelegate>
         CGFloat interval = 0.1;
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, time * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (interval/self.rate) * NSEC_PER_SEC);
         dispatch_after(popTime, _progressQueue, ^(void){
             [weakSelf progressTick];
         });
@@ -2299,6 +2302,7 @@ CYAudioManagerDelegate>
                 
                 CGFloat delta = _moviePosition - _audioPosition;
                 CGFloat limit_val = 0.1;
+//                NSLog(@"");
                 //                if (limit_val < 1) { limit_val = 1; }
                 if (delta <= limit_val && delta >= -(limit_val))//音视频处于同步
                 {
@@ -2309,9 +2313,10 @@ CYAudioManagerDelegate>
                 }
                 else if (delta > limit_val)//视频快了
                 {
-                    [_videoFrames removeObjectAtIndex:0];
+                    //视频快了不做处理
+//                    [_videoFrames removeObjectAtIndex:0];
                     _videoBufferedDuration -= frame.duration;
-                    interval = [self presentVideoFrame:frame];//呈现视频
+//                    interval = [self presentVideoFrame:frame];//呈现视频
                     //                    interval = delta;
                 }
                 else//视频慢了
@@ -2320,6 +2325,14 @@ CYAudioManagerDelegate>
                     _videoBufferedDuration -= frame.duration;
                     interval = [self presentVideoFrame:frame];//呈现视频
                     //                    interval = 0;
+                    
+                    //快进视频帧
+                    NSInteger frameCount = delta/(frame.duration/self.rate);
+                    if (_videoFrames.count > frameCount) {
+                        [_videoFrames removeObjectsInRange:NSMakeRange(0, frameCount)];
+                    }else{
+                        [_videoFrames removeAllObjects];
+                    }
                 }
             }
         }
@@ -3654,6 +3667,60 @@ vm_size_t memory_usage(void) {
         [self.controlView.selectTableView reloadTableView];
         [self.controlView.selectTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:_currentSelections inSection:0]];
     }];
+}
+
+- (void)controlViewOnRateBtnClick:(CYVideoPlayerControlView *)controlView{
+    
+    __weak typeof(self) _self = self;
+    
+    _cyAnima(^{
+        _cyShowViews(@[self.controlView.selectTableView]);
+        self.hideControl = YES;
+    });
+    
+    //倍速选项
+    NSArray * rates = @[@(0.5),@(0.75),@(1.0),@(1.25),@(1.5),@(2.0)];
+    __block NSMutableArray *ratesMarray = [NSMutableArray arrayWithArray:rates];
+    self.controlView.selectTableView.dataArray = ratesMarray;
+    
+    self.controlView.selectTableView.numberOfRowsInSection = ^NSInteger(UITableView * _Nonnull tableView, NSInteger section) {
+        return ratesMarray.count;
+    };
+    
+    self.controlView.selectTableView.cellForRowAtIndexPath = ^UITableViewCell *(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        UITableViewCell * cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+        cell.backgroundColor = [UIColor clearColor];
+        cell.textLabel.textColor = [UIColor whiteColor];
+        cell.textLabel.font = [UIFont fontWithName:@"PingFang-SC-Medium" size:20];
+        cell.textLabel.textAlignment = NSTextAlignmentCenter;
+        NSString * text = ratesMarray[indexPath.row];
+        if (self.rate == [text doubleValue]) {
+            cell.textLabel.textColor = CYColorWithHEX(0x00c5b5);
+        }
+        cell.textLabel.text = [NSString stringWithFormat:@"%@X",text];
+        return cell;
+    };
+    
+    self.controlView.selectTableView.heightForRowAtIndexPath = ^CGFloat(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        __strong typeof(_self) self = _self;
+        return self.controlView.selectTableView.frame.size.height / ratesMarray.count;
+    };
+    
+    self.controlView.selectTableView.didSelectRowAtIndexPath = ^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        __strong typeof(_self) self = _self;
+        if ([self.delegate respondsToSelector:@selector(CYFFmpegPlayer:ChangeDefinition:)])
+        {
+            NSString * rate = [ratesMarray objectAtIndex:indexPath.row];
+            
+
+            [self.delegate CYFFmpegPlayer:self changeRate:[rate doubleValue]];
+        }
+        _cyAnima(^{
+            _cyHiddenViews(@[self.controlView.selectTableView]);
+        });
+    };
+    
+    [self.controlView.selectTableView reloadTableView];
 }
 
 @end

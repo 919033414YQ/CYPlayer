@@ -19,6 +19,7 @@
 #import <objc/runtime.h>
 #import "CYVideoPlayerResources.h"
 #import "CYHardwareDecompressVideo.h"
+#import "CYSonicManager.h"
 
 #define CY_DocumentDir [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
 #define CY_BundlePath(res) [[NSBundle mainBundle] pathForResource:res ofType:nil]
@@ -1951,7 +1952,7 @@ void get_video_scale_max_size(AVCodecContext *videoCodecCtx, int * width, int * 
     const int64_t frameDuration = av_frame_get_pkt_duration(videoFrame);
     if (frameDuration) {
         
-        duration = frameDuration * _videoTimeBase * self.rate;
+        duration = frameDuration * _videoTimeBase; //* self.rate;
         duration += videoFrame->repeat_pict * _videoTimeBase * 0.5;
         
     } else {
@@ -2329,8 +2330,8 @@ void audio_swr_resampling_audio_destory(SwrContext **swr_ctx){
     const NSUInteger numChannels = audioManager.avcodecContextNumOutputChannels;
 #endif
     
-    CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase * self.rate;
-    CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase * self.rate;
+    CGFloat position = av_frame_get_best_effort_timestamp(audioFrame) * _audioTimeBase; //* self.rate;
+    CGFloat duration = av_frame_get_pkt_duration(audioFrame) * _audioTimeBase; //* self.rate;
     
     NSInteger numFrames;
     
@@ -2717,7 +2718,7 @@ error:
     [[CYPCMAudioManager audioManager] setPlayRate: rate];
 #endif
 #ifdef USE_AUDIOTOOL
-    
+    [[CYSonicManager sonicManager] setPlaySpeed:rate];
 #endif
 //    dispatch_semaphore_wait(_swrContextLock, DISPATCH_TIME_FOREVER);
 //    BOOL result = audio_swr_resampling_audio_init(&_swrContext, _audioCodecCtx, rate);

@@ -18,10 +18,15 @@
     NSArray *_localMovies;
     NSArray *_remoteMovies;
     CYFFmpegPlayer *vc;
+    CGFloat _rate;
 }
 
 @property (nonatomic, strong) UIView * contentView;
 @property (nonatomic, strong) UIButton * infoBtn;
+@property (nonatomic, strong) UIButton *addRateBtn;
+@property (nonatomic, strong) UILabel *rateLabel;
+@property (nonatomic, strong) UIButton *reduceRateBtn;
+
 
 @end
 
@@ -126,7 +131,9 @@
         }
     };
     
+    _rate = 1.0;
     [self addInfoBtn];
+    [self addRateView];
 }
 
 - (void)addInfoBtn
@@ -140,6 +147,43 @@
         make.centerX.equalTo(self.infoBtn.superview.mas_centerX);
         make.width.height.equalTo(@50);
         make.top.equalTo(self.contentView.mas_bottom).offset(20);
+    }];
+}
+
+- (void)addRateView{
+    
+    self.rateLabel = [[UILabel alloc] init];
+    self.rateLabel.textColor = [UIColor whiteColor];
+    self.rateLabel.font = [UIFont systemFontOfSize:15];
+    self.rateLabel.textAlignment = NSTextAlignmentCenter;
+    self.rateLabel.text = @"倍数";
+    [self.view addSubview:self.rateLabel];
+    [self.rateLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.infoBtn.superview.mas_centerX);
+        make.width.height.equalTo(@50);
+        make.top.equalTo(self.infoBtn.mas_bottom).offset(20);
+    }];
+    
+    self.reduceRateBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+    [self.reduceRateBtn setTitle:@"-" forState:UIControlStateNormal];
+    [self.view addSubview:self.reduceRateBtn];
+    [self.reduceRateBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [self.reduceRateBtn addTarget:self action:@selector(reduceBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.reduceRateBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.rateLabel.mas_left).offset(-20);
+        make.width.height.equalTo(@50);
+        make.top.equalTo(self.infoBtn.mas_bottom).offset(20);
+    }];
+    
+    self.addRateBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+    [self.addRateBtn setTitle:@"+" forState:UIControlStateNormal];
+    [self.view addSubview:self.addRateBtn];
+    [self.addRateBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [self.addRateBtn addTarget:self action:@selector(rateBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.addRateBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.rateLabel.mas_right).offset(20);
+        make.width.height.equalTo(@50);
+        make.top.equalTo(self.infoBtn.mas_bottom).offset(20);
     }];
 }
 
@@ -174,6 +218,23 @@
         NSString * info = [[vc.decoder info] description];
         UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Info" message:(info.length ? info : @"") delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
+    }
+}
+
+
+- (void)rateBtnClick:(UIButton *)sender{
+    if (vc.decoder) {
+        _rate+=0.5;
+        vc.rate = _rate;
+        _rateLabel.text = [NSString stringWithFormat:@"%.2f",_rate];
+    }
+}
+
+- (void)reduceBtnClick:(UIButton *)sender{
+    if (vc.decoder) {
+        _rate -= 0.5;
+        vc.rate = _rate;
+        _rateLabel.text = [NSString stringWithFormat:@"%.2f",_rate];
     }
 }
 
@@ -280,6 +341,10 @@
         };
     }];
         [vc changeSelectionsPath:url];
+}
+
+- (void)CYFFmpegPlayer:(CYFFmpegPlayer *)player changeRate:(double)rate{
+    vc.rate = rate;
 }
 
 @end
