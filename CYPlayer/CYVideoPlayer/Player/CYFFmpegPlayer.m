@@ -96,7 +96,7 @@ static NSMutableDictionary * gHistory = nil;//播放记录
 #define LOCAL_MAX_BUFFERED_DURATION   0.4
 #define NETWORK_MIN_BUFFERED_DURATION 2.0
 #define NETWORK_MAX_BUFFERED_DURATION 8.0
-#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 90//100 相当于关闭
+#define MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT 100//100 相当于关闭
 #define HAS_PLENTY_OF_MEMORY [self getAvailableMemorySize] >= 0//0相当于关闭
 
 @interface CYFFmpegPlayer ()<
@@ -1774,8 +1774,13 @@ CYAudioManagerDelegate>
 //        }
         
         const NSTimeInterval correction = [self tickCorrection];
-        const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC);
+        NSTimeInterval time = MAX(interval + correction, 0.01);
+        if (interval > 0) {
+            time = interval/self.rate;
+        }else{
+            time = 0.04/self.rate;
+        }
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.005) * NSEC_PER_SEC);
         dispatch_after(popTime, _videoQueue, ^(void){
             [weakSelf videoTick];
         });
@@ -2113,19 +2118,18 @@ CYAudioManagerDelegate>
         
         if ([self.decoder validVideo])
         {
-            NSLog(@"getTotalMemorySize: %f getMemoryUsedPercent: %f %d %d",[self getTotalMemorySize], [self getMemoryUsedPercent], MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT,HAS_PLENTY_OF_MEMORY);
             
-            if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
-            {
-                NSLog(@"_videoBufferedDuration: %f _maxBufferedDuration: %f",_videoBufferedDuration, _maxBufferedDuration);
-                 if (!leftFrames ||
-                                (_videoBufferedDuration < _maxBufferedDuration)
-                                )
-                            {
-                                //            [self asyncDecodeFrames];
-                                [self concurrentAsyncDecodeFrames];
-                            }
-            }
+//            if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
+//            {
+//                NSLog(@"_videoBufferedDuration: %f _maxBufferedDuration: %f",_videoBufferedDuration, _maxBufferedDuration);
+//                 if (!leftFrames ||
+//                                (_videoBufferedDuration < _maxBufferedDuration)
+//                                )
+//                            {
+//                                //            [self asyncDecodeFrames];
+//                                [self concurrentAsyncDecodeFrames];
+//                            }
+//            }
            
         }
         else if (![self.decoder validVideo] && [self.decoder validAudio])
@@ -2144,7 +2148,7 @@ CYAudioManagerDelegate>
         CGFloat interval = 0.1;
         const NSTimeInterval correction = [self tickCorrection];
         const NSTimeInterval time = MAX(interval + correction, 0.01);
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (interval/self.rate) * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW,  0.01 * NSEC_PER_SEC);
         dispatch_after(popTime, _progressQueue, ^(void){
             [weakSelf progressTick];
         });
@@ -2717,6 +2721,7 @@ CYAudioManagerDelegate>
                 }];
                 //横屏按钮界面处理
                 self.controlView.bottomControlView.fullBtn.selected = YES;
+                self.controlView.bottomControlView.is_FullScreen = YES;
             }
             else {
                 _cyHiddenViews(@[self.controlView.topControlView.moreBtn,
@@ -2729,6 +2734,7 @@ CYAudioManagerDelegate>
                 }];
                 //横屏按钮界面处理
                 self.controlView.bottomControlView.fullBtn.selected = NO;
+                self.controlView.bottomControlView.is_FullScreen = YES;
             }
         });//_cyAnima(^{})
         if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);

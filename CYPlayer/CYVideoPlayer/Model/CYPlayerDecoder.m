@@ -3688,7 +3688,8 @@ error:
         av_packet_unref(packet);
     }
     av_packet_unref(packet);
-    
+    av_packet_free(&packet);
+
     return result;
 }
 

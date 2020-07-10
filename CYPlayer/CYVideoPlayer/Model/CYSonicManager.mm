@@ -72,6 +72,7 @@
             }
         } while (samplesRead > 0);
     }
+    free(outBytes);
     return sonicdDatas;
 }
 
