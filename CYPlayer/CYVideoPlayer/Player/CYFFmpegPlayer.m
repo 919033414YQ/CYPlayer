@@ -1756,31 +1756,35 @@ CYAudioManagerDelegate>
     
     if (self.playing)
     {
-//        const NSUInteger leftFrames =
-//        (_decoder.validVideo ? _videoFrames.count : 0) +
-//        (_decoder.validAudio ? _audioFrames.count : 0);
-//
-//        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
-//        {
-//            if (!leftFrames ||
-//                (_videoBufferedDuration < _maxBufferedDuration)
-////                ||
-////                !(_audioBufferedDuration > _maxBufferedDuration)
-//                )
-//            {
-//                //            [self asyncDecodeFrames];
-//                [self concurrentAsyncDecodeFrames];
-//            }
-//        }
+        const NSUInteger leftFrames =
+        (_decoder.validVideo ? _videoFrames.count : 0) +
+        (_decoder.validAudio ? _audioFrames.count : 0);
+
+        if ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT && HAS_PLENTY_OF_MEMORY)
+        {
+            if (!leftFrames ||
+                (_videoBufferedDuration < _maxBufferedDuration)
+//                ||
+//                !(_audioBufferedDuration > _maxBufferedDuration)
+                )
+            {
+                //            [self asyncDecodeFrames];
+                [self concurrentAsyncDecodeFrames];
+            }
+        }
         
         const NSTimeInterval correction = [self tickCorrection];
         NSTimeInterval time = MAX(interval + correction, 0.01);
+        
+        if (self.rate == 0) {
+            self.rate = 1.0;
+        }
         if (interval > 0) {
             time = interval/self.rate;
         }else{
             time = 0.04/self.rate;
         }
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.005) * NSEC_PER_SEC);
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (time - 0.003) * NSEC_PER_SEC);
         dispatch_after(popTime, _videoQueue, ^(void){
             [weakSelf videoTick];
         });
@@ -1797,24 +1801,6 @@ CYAudioManagerDelegate>
 #ifdef USE_AUDIOTOOL
     //fillSignalF(outData,numFrames,numChannels);
     //return;
-    
-    if (self.playing) {
-        const NSUInteger leftFrames =
-        (_decoder.validVideo ? _videoFrames.count : 0) +
-        (_decoder.validAudio ? _audioFrames.count : 0);
-    
-        if ((!leftFrames ||
-            !(_videoBufferedDuration > _maxBufferedDuration) ||
-            !(_audioBufferedDuration > _maxBufferedDuration))
-            &&
-            ([self getMemoryUsedPercent] <= MAX_BUFFERED_DURATION_MEMORY_USED_PERCENT) && HAS_PLENTY_OF_MEMORY)
-        {
-            
-            //            [self asyncDecodeFrames];
-            [self concurrentAsyncDecodeFrames];
-        }
-        
-    }
     
     if (_buffered && _audioFrames.count <= 0) {
         memset(outData, 0, numFrames * numChannels * sizeof(float));
@@ -2319,7 +2305,7 @@ CYAudioManagerDelegate>
                 {
                     //视频快了不做处理
 //                    [_videoFrames removeObjectAtIndex:0];
-                    _videoBufferedDuration -= frame.duration;
+//                    _videoBufferedDuration -= frame.duration;
 //                    interval = [self presentVideoFrame:frame];//呈现视频
                     //                    interval = delta;
                 }
@@ -2334,8 +2320,10 @@ CYAudioManagerDelegate>
                     NSInteger frameCount = delta/(frame.duration/self.rate);
                     if (_videoFrames.count > frameCount) {
                         [_videoFrames removeObjectsInRange:NSMakeRange(0, frameCount)];
+                        _videoBufferedDuration -= frame.duration*frameCount;
                     }else{
                         [_videoFrames removeAllObjects];
+                        _videoBufferedDuration = 0;
                     }
                 }
             }
@@ -2734,7 +2722,7 @@ CYAudioManagerDelegate>
                 }];
                 //横屏按钮界面处理
                 self.controlView.bottomControlView.fullBtn.selected = NO;
-                self.controlView.bottomControlView.is_FullScreen = YES;
+                self.controlView.bottomControlView.is_FullScreen = NO;
             }
         });//_cyAnima(^{})
         if ( self.rotatedScreen ) self.rotatedScreen(self, observer.isFullScreen);

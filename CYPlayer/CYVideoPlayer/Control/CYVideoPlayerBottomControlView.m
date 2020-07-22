@@ -261,7 +261,6 @@
              [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
                 make.height.centerY.equalTo(_playBtn);
-    //            make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
                 make.trailing.equalTo(_rateButton.mas_leading).offset(-8);
             }];
             //倍速
@@ -273,20 +272,13 @@
             }];
              //清晰度btn
             [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-                //            make.bottom.equalTo(_playBtn);
-                //            make.height.equalTo(@30);
-                //                    make.leading.equalTo(_playBtn.mas_trailing);
                 make.width.equalTo(_selectionsBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
                 make.height.equalTo(@(20));
                 make.leading.equalTo(_rateButton.mas_trailing);
             }];
             [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-                //            make.bottom.equalTo(_playBtn);
-                //            make.height.equalTo(@30);
                 make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
-    //            make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
-
                 make.trailing.equalTo(_fullBtn.mas_leading);
                 make.width.equalTo(_definitionBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
@@ -297,7 +289,6 @@
              [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
                 make.height.centerY.equalTo(_playBtn);
-    //            make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
                 make.trailing.equalTo(_definitionBtn.mas_leading).offset(-8);
             }];
             //倍速
@@ -307,9 +298,6 @@
             }];
              //清晰度btn
             [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-                //            make.bottom.equalTo(_playBtn);
-                //            make.height.equalTo(@30);
-                //                    make.leading.equalTo(_playBtn.mas_trailing);
                 make.width.equalTo(_selectionsBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
                 make.height.equalTo(@(20));
@@ -317,11 +305,7 @@
             }];
             
             [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-                //            make.bottom.equalTo(_playBtn);
-                //            make.height.equalTo(@30);
                 make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
-    //            make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
-                
                 make.trailing.equalTo(_fullBtn.mas_leading);
                 make.width.equalTo(_definitionBtn.mas_width);
                 make.centerY.equalTo(_playBtn);
@@ -352,6 +336,36 @@
             make.leading.equalTo(_separateLabel.mas_trailing);
         }];
         
+        if (_is_FullScreen) {
+            _rateButton.hidden = NO;
+            [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
+                make.height.centerY.equalTo(_playBtn);
+                make.trailing.equalTo(_rateButton.mas_leading).offset(-8);
+            }];
+            //倍速
+            [_rateButton mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.width.equalTo(@(30));
+                make.centerY.equalTo(_playBtn);
+                make.height.equalTo(@(20));
+                make.leading.equalTo(_progressSlider.mas_trailing);
+                make.trailing.equalTo(_fullBtn.mas_leading);
+
+            }];
+            
+        }else{
+            _rateButton.hidden = YES;
+            [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
+                make.height.centerY.equalTo(_playBtn);
+                make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
+            }];
+            
+            [_rateButton mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.width.equalTo(@0);
+                make.height.equalTo(@(0));
+            }];
+        }
         //清晰度btn
         [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.equalTo(@0);
@@ -361,13 +375,6 @@
         [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.equalTo(@0);
             make.height.equalTo(@0);
-        }];
-        
-        
-        [_progressSlider mas_remakeConstraints:^(MASConstraintMaker *make) {
-            make.leading.equalTo(_durationTimeLabel.mas_trailing).offset(8);
-            make.height.centerY.equalTo(_playBtn);
-            make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
         }];
     }
     else if (hasDefinitionOrSelectionsControl && !enableProgressControl)
@@ -507,21 +514,15 @@
     
     //清晰度btn
     [_definitionBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.bottom.equalTo(_playBtn);
-//        make.leading.equalTo(_playBtn.mas_trailing);
         make.width.equalTo(_selectionsBtn.mas_width);
-//        make.height.equalTo(@30);
         make.centerY.equalTo(_playBtn);
         make.leading.equalTo(_rateButton.mas_trailing);
         make.height.equalTo(@20);
     }];
     
     [_selectionsBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.bottom.equalTo(_playBtn);
         make.leading.equalTo(_definitionBtn.mas_trailing).offset(4);
-//        make.trailing.equalTo(_progressSlider.mas_leading).offset(-8);
         make.width.equalTo(_definitionBtn.mas_width);
-//        make.height.equalTo(@30);
         make.centerY.equalTo(_playBtn);
         make.height.equalTo(@20);
         make.trailing.equalTo(_fullBtn.mas_leading).offset(-8);
@@ -561,11 +562,6 @@
 }
 
 - (void)clickedBtn:(UIButton *)btn {
-
-    if (btn.tag == CYVideoPlayControlViewTag_Full) {
-        _is_FullScreen = !btn.selected;
-        [self refreshConstrainsWithSettings:self.tempSetting];
-    }
     if ( ![_delegate respondsToSelector:@selector(bottomControlView:clickedBtnTag:)] ) return;
     [_delegate bottomControlView:self clickedBtnTag:btn.tag];
 }

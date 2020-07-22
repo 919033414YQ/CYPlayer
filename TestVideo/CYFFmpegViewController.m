@@ -133,7 +133,7 @@
     
     _rate = 1.0;
     [self addInfoBtn];
-    [self addRateView];
+//    [self addRateView];
 }
 
 - (void)addInfoBtn
